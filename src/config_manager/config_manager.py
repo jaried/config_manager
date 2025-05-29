@@ -10,33 +10,36 @@ import threading
 import atexit
 import time
 import uuid
-import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, Union
-from multiprocessing import Lock as ProcessLock
+from typing import Any, Dict, Optional, Type
+from collections.abc import Iterable, Mapping
 from .config_node import ConfigNode
 from .utils import lock_file, unlock_file
 
 
 class ConfigManager(ConfigNode):
     """配置管理器类，支持自动保存和类型提示"""
-    _instance = None
-    _process_lock = ProcessLock()
+    _instances = {}
+    _thread_lock = threading.Lock()
     _global_listeners = []
 
     def __new__(cls, config_path: str = None,
                 watch: bool = False, auto_create: bool = True,
                 autosave_delay: float = 0.1):
-        if cls._instance is None:
-            with cls._process_lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
-                    initialized = cls._instance._initialize(
+        # 使用配置文件路径作为实例键，支持多个配置文件
+        resolved_path = cls._resolve_config_path(config_path)
+
+        if resolved_path not in cls._instances:
+            with cls._thread_lock:
+                if resolved_path not in cls._instances:
+                    instance = super().__new__(cls)
+                    initialized = instance._initialize(
                         config_path, watch, auto_create, autosave_delay
                     )
                     if not initialized:
                         return None
-        return cls._instance
+                    cls._instances[resolved_path] = instance
+        return cls._instances[resolved_path]
 
     def __init__(self, config_path: str = None,
                  watch: bool = False, auto_create: bool = True,
@@ -46,6 +49,9 @@ class ConfigManager(ConfigNode):
 
     def _initialize(self, config_path: str, watch: bool,
                     auto_create: bool, autosave_delay: float):
+        # 先初始化ConfigNode的_data
+        super(ConfigManager, self).__setattr__('_data', {})
+
         self._config_path = self._resolve_config_path(config_path)
         self._watch = watch
         self._auto_create = auto_create
@@ -68,14 +74,20 @@ class ConfigManager(ConfigNode):
 
         return True
 
-    def _resolve_config_path(self, config_path: str) -> str:
+    @staticmethod
+    def _resolve_config_path(config_path: str) -> str:
         """解析配置文件路径"""
         if config_path is not None:
-            return os.path.abspath(config_path)
+            resolved_path = os.path.abspath(config_path)
+            return resolved_path
 
-        # 获取项目根目录
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(project_root, 'src', 'config', 'config.yaml')
+        # 修正路径解析逻辑 - 确保在 src/config 下
+        current_file = os.path.abspath(__file__)
+        src_dir = os.path.dirname(os.path.dirname(current_file))  # 从 config_manager 目录向上到 src
+        config_dir = os.path.join(src_dir, 'config')
+        os.makedirs(config_dir, exist_ok=True)
+        resolved_path = os.path.join(config_dir, 'config.yaml')
+        return resolved_path
 
     def _schedule_autosave(self):
         """安排自动保存任务"""
@@ -94,11 +106,15 @@ class ConfigManager(ConfigNode):
     def _perform_autosave(self):
         """执行自动保存"""
         try:
-            saved = self.save()
-            if saved:
-                print(f"配置已自动保存到 {self._config_path}")
+            # 确保有数据才保存
+            if hasattr(self, '_data') and self._data:
+                saved = self.save()
+                if saved:
+                    print(f"配置已自动保存到 {self._config_path}")
+            else:
+                print("自动保存跳过：无数据")
         except Exception as e:
-            print(f"自动保存失败: {e}")
+            print(f"自动保存失败: {str(e)}")
         finally:
             with self._autosave_lock:
                 self._autosave_timer = None
@@ -120,47 +136,65 @@ class ConfigManager(ConfigNode):
                 return False
 
         try:
-            with open(self._config_path, 'r') as f:
+            with open(self._config_path, 'r', encoding='utf-8') as f:
                 lock_file(f)
-                loaded_data = yaml.safe_load(f) or {}
-                unlock_file(f)
+                try:
+                    loaded_data = yaml.safe_load(f) or {}
+                finally:
+                    unlock_file(f)
 
-            # 分离数据和类型提示
-            self._data = loaded_data.get('__data__', {})
+            # 获取原始数据
+            raw_data = loaded_data.get('__data__', {})
+
+            # 清空当前数据并重新构建
+            self._data.clear()
+
+            # 使用 from_dict 重新构建数据结构，但要确保正确处理
+            if raw_data:
+                for key, value in raw_data.items():
+                    if isinstance(value, dict):
+                        # 对于字典值，创建ConfigNode
+                        self._data[key] = ConfigNode(value)
+                    else:
+                        # 对于其他值，直接设置
+                        self._data[key] = value
+
             self._type_hints = loaded_data.get('__type_hints__', {})
 
             self._last_mtime = os.path.getmtime(self._config_path)
             print(f"配置已从 {self._config_path} 加载")
             return True
         except Exception as e:
-            print(f"加载配置失败: {e}")
-            # 即使加载失败，也要初始化数据，避免递归错误
+            print(f"加载配置失败: {str(e)}")
             self._data = {}
             return False
 
     def save(self):
-        """保存配置到文件（原子替换，兼容 Windows 临时文件占用）"""
+        """保存配置到文件（原子替换）"""
         try:
             dir_path = os.path.dirname(self._config_path)
             if dir_path:
                 os.makedirs(dir_path, exist_ok=True)
 
-            save_data = {
-                '__data__': self.to_dict(),
-                '__type_hints__': self._type_hints
-            }
+            # 在保存时加锁，确保线程安全
+            with self._autosave_lock:
+                # 构建保存数据，使用 to_dict 方法
+                data_to_save = self.to_dict()
+
+                save_data = {
+                    '__data__': data_to_save,
+                    '__type_hints__': self._type_hints
+                }
 
             tmp_path = f"{self._config_path}.tmp"
-            with open(tmp_path, 'w') as f:
-                lock_file(f)
-                yaml.dump(save_data, f, default_flow_style=False)
-                unlock_file(f)
+            with open(tmp_path, 'w', encoding='utf-8') as f:
+                yaml.dump(save_data, f, default_flow_style=False, allow_unicode=True)
 
             os.replace(tmp_path, self._config_path)
             self._last_mtime = os.path.getmtime(self._config_path)
             return True
         except Exception as e:
-            print(f"保存配置失败: {e}")
+            print(f"保存配置失败: {str(e)}")
             return False
 
     def reload(self):
@@ -195,7 +229,7 @@ class ConfigManager(ConfigNode):
                         self._last_mtime = current_mtime
                 time.sleep(1)
             except Exception as e:
-                print(f"监视配置出错: {e}")
+                print(f"监视配置出错: {str(e)}")
                 time.sleep(5)
         return
 
@@ -207,7 +241,37 @@ class ConfigManager(ConfigNode):
             self._perform_autosave()
         return
 
-    def _convert_type(self, value: Any, target_type: Type) -> Any:
+    @classmethod
+    def build(cls, obj: Any) -> Any:
+        """构建对象，递归转换嵌套结构（ConfigManager 版本）"""
+        # 如果已经是ConfigNode，直接返回，避免递归
+        if isinstance(obj, ConfigNode):
+            return obj
+
+        # 如果是Mapping类型（字典等），转换为ConfigNode（不是ConfigManager）
+        if isinstance(obj, Mapping):
+            built_obj = ConfigNode(obj)
+            return built_obj
+
+        # 如果是可迭代对象但不是字符串，递归处理元素
+        if not isinstance(obj, str) and isinstance(obj, Iterable):
+            try:
+                if hasattr(obj, '__iter__'):
+                    built_items = []
+                    for x in obj:
+                        built_items.append(ConfigNode.build(x))
+                    # 保持原始类型
+                    built_obj = obj.__class__(built_items)
+                    return built_obj
+            except (TypeError, ValueError):
+                # 如果无法构建，直接返回原对象
+                return obj
+
+        # 其他情况直接返回
+        return obj
+
+    @staticmethod
+    def _convert_type(value: Any, target_type: Type) -> Any:
         """将值转换为目标类型"""
         if target_type is None:
             return value
@@ -225,11 +289,17 @@ class ConfigManager(ConfigNode):
         current = self
 
         for k in keys:
-            if not hasattr(current, k):
-                return self._convert_type(default, as_type)
-            current = getattr(current, k)
+            # 检查属性是否存在
+            if hasattr(current, '_data') and k in current._data:
+                current = current._data[k]
+            elif hasattr(current, k):
+                current = getattr(current, k)
+            else:
+                converted_default = self._convert_type(default, as_type)
+                return converted_default
 
-        return self._convert_type(current, as_type)
+        converted_value = self._convert_type(current, as_type)
+        return converted_value
 
     def set(self, key: str, value: Any, autosave: bool = True, type_hint: Type = None):
         """设置配置值并自动保存，支持类型提示"""
@@ -247,15 +317,27 @@ class ConfigManager(ConfigNode):
         if isinstance(value, Path):
             value = str(value)
 
-        setattr(current, keys[-1], value)
+        # 直接设置值，避免通过build方法
+        final_key = keys[-1]
+        if isinstance(value, dict):
+            setattr(current, final_key, ConfigNode(value))
+        else:
+            # 直接设置到_data中，避免触发__setattr__的build过程
+            if hasattr(current, '_data'):
+                current._data[final_key] = value
+            else:
+                setattr(current, final_key, value)
 
         if autosave:
+            # 确保自动保存被触发
+            print(f"调试：触发自动保存，key={key}, value={value}")
             self._schedule_autosave()
         return
 
     def get_type_hint(self, key: str) -> Optional[str]:
         """获取配置项的类型提示"""
-        return self._type_hints.get(key)
+        type_hint = self._type_hints.get(key)
+        return type_hint
 
     def set_type_hint(self, key: str, type_hint: Type):
         """设置配置项的类型提示"""
@@ -268,10 +350,18 @@ class ConfigManager(ConfigNode):
         path_str = self.get(key)
         if path_str is None:
             return default
-        return Path(path_str)
+        path_obj = Path(path_str)
+        return path_obj
 
-    def update(self, updates: Dict[str, Any], autosave: bool = True):
-        """批量更新配置值"""
+    def update(self, *args, **kwargs):
+        """批量更新配置值（重写以兼容ConfigNode签名）"""
+        if args and isinstance(args[0], dict):
+            updates = args[0]
+            autosave = kwargs.get('autosave', True)
+        else:
+            updates = dict(*args, **kwargs)
+            autosave = True
+
         for key, value in updates.items():
             self.set(key, value, autosave=False)
 
@@ -283,33 +373,57 @@ class ConfigManager(ConfigNode):
         """获取配置文件路径"""
         return self._config_path
 
-    def generate_config_id(self) -> str:
+    @staticmethod
+    def generate_config_id() -> str:
         """生成唯一配置ID"""
         config_id = str(uuid.uuid4())
         return config_id
 
     def snapshot(self) -> Dict:
-        """创建配置快照"""
+        """创建配置快照，避免递归"""
+        data_dict = {}
+        for key, value in self._data.items():
+            if isinstance(value, ConfigNode):
+                if value is not self:
+                    data_dict[key] = value.to_dict()
+                else:
+                    data_dict[key] = "<self-reference>"
+            else:
+                data_dict[key] = value
+
         snapshot_data = {
-            'data': self.to_dict(),
+            'data': data_dict,
             'type_hints': self._type_hints.copy()
         }
         return snapshot_data
 
     def restore(self, snapshot: Dict):
         """从快照恢复配置"""
-        self.from_dict(snapshot.get('data', {}))
+        # 清空当前数据
+        self._data.clear()
+
+        # 恢复数据
+        snapshot_data = snapshot.get('data', {})
+        for key, value in snapshot_data.items():
+            if isinstance(value, dict):
+                self._data[key] = ConfigNode(value)
+            else:
+                self._data[key] = value
+
+        # 恢复类型提示
         self._type_hints = snapshot.get('type_hints', {}).copy()
+
+        # 保存到文件
         self.save()
         return
 
-    def temporary(self, changes: Dict[str, Any]):
+    def temporary(self, temp_changes: Dict[str, Any]):
         """临时修改配置的上下文管理器"""
 
         class TemporaryContext:
-            def __init__(self, config, changes):
+            def __init__(self, config, changes_dict):
                 self.config = config
-                self.changes = changes
+                self.changes = changes_dict
                 self.original = {}
                 self.snapshot = None
 
@@ -323,11 +437,12 @@ class ConfigManager(ConfigNode):
             def __exit__(self, exc_type, exc_val, exc_tb):
                 self.config.restore(self.snapshot)
 
-        return TemporaryContext(self, changes)
+        context = TemporaryContext(self, temp_changes)
+        return context
 
 
 def get_config_manager(config_path: str = None,
-                       watch: bool = False,
+                       watch: bool = True,
                        auto_create: bool = True,
                        autosave_delay: float = 0.1) -> ConfigManager:
     """
@@ -344,3 +459,13 @@ def get_config_manager(config_path: str = None,
     """
     manager = ConfigManager(config_path, watch, auto_create, autosave_delay)
     return manager
+
+
+def _clear_instances_for_testing():
+    """清理所有实例，仅用于测试"""
+    with ConfigManager._thread_lock:
+        for instance in ConfigManager._instances.values():
+            if hasattr(instance, '_cleanup'):
+                instance._cleanup()
+        ConfigManager._instances.clear()
+    return

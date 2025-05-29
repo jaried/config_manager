@@ -14,24 +14,32 @@ class ConfigNode:
 
     def __init__(self, *args, **kwargs):
         """初始化配置节点"""
-        self._data = {}
-        self.update(*args, **kwargs)
+        super().__setattr__('_data', {})
+        if args or kwargs:
+            self.update(*args, **kwargs)
         return
 
     def __dir__(self) -> Iterable[str]:
         """返回属性列表以支持IDE自动补全"""
         default_attrs = list(super().__dir__())
         dict_keys = list(self._data.keys())
-        return unique_list_order_preserved(default_attrs + dict_keys)
+        unique_attrs = unique_list_order_preserved(default_attrs + dict_keys)
+        return unique_attrs
 
     def __repr__(self) -> str:
         """返回对象的字符串表示形式"""
-        return f"{self.__class__.__name__}({self._data})"
+        class_name = self.__class__.__name__
+        repr_str = f"{class_name}({self._data})"
+        return repr_str
 
     def __getattr__(self, name: str) -> Any:
         """通过属性访问值（属性不存在时抛出AttributeError）"""
-        if name in self._data:
-            return self._data[name]
+        if '_data' not in super().__getattribute__('__dict__'):
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+        data = super().__getattribute__('_data')
+        if name in data:
+            return data[name]
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def __setattr__(self, name: str, value: Any):
@@ -39,7 +47,20 @@ class ConfigNode:
         if name.startswith('_'):
             super().__setattr__(name, value)
             return
-        self._data[name] = self.build(value)
+
+        if '_data' not in self.__dict__:
+            super().__setattr__('_data', {})
+
+        # 使用实例方法而不是类方法来构建值
+        if hasattr(self, 'build'):
+            built_value = self.build(value)
+        else:
+            built_value = ConfigNode.build(value)
+        self._data[name] = built_value
+
+        # 如果这是ConfigManager实例，触发自动保存
+        if hasattr(self, '_schedule_autosave'):
+            self._schedule_autosave()
         return
 
     def __delattr__(self, name: str):
@@ -51,11 +72,17 @@ class ConfigNode:
 
     def __getitem__(self, key: str) -> Any:
         """通过键访问值"""
-        return self._data[key]
+        value = self._data[key]
+        return value
 
     def __setitem__(self, key: str, value: Any):
         """通过键设置值"""
-        self._data[key] = self.build(value)
+        # 使用实例方法而不是类方法来构建值
+        if hasattr(self, 'build'):
+            built_value = self.build(value)
+        else:
+            built_value = ConfigNode.build(value)
+        self._data[key] = built_value
         return
 
     def __delitem__(self, key: str):
@@ -65,15 +92,18 @@ class ConfigNode:
 
     def __contains__(self, key: str) -> bool:
         """检查键是否存在"""
-        return key in self._data
+        result = key in self._data
+        return result
 
     def __len__(self) -> int:
         """返回节点包含的属性数量"""
-        return len(self._data)
+        length = len(self._data)
+        return length
 
     def __iter__(self):
         """返回迭代器（返回自身）"""
-        return iter([self])
+        iterator = iter([self])
+        return iterator
 
     def __deepcopy__(self, memo: Dict) -> ConfigNode:
         """深拷贝方法"""
@@ -85,36 +115,92 @@ class ConfigNode:
 
     def get(self, key: str, default: Any = None) -> Any:
         """安全获取值"""
-        return self._data.get(key, default)
+        value = self._data.get(key, default)
+        return value
 
     def update(self, *args, **kwargs):
         """更新节点内容"""
-        for key, value in dict(*args, **kwargs).items():
-            self[key] = self.build(value)
+        if args:
+            updates = dict(*args, **kwargs)
+        else:
+            updates = kwargs
+
+        for key, value in updates.items():
+            # 使用实例方法而不是类方法来构建值
+            if hasattr(self, 'build'):
+                self[key] = self.build(value)
+            else:
+                self[key] = ConfigNode.build(value)
         return
 
     @classmethod
     def build(cls, obj: Any) -> Any:
         """构建对象，递归转换嵌套结构"""
+        # 如果已经是ConfigNode，直接返回，避免递归
+        if isinstance(obj, ConfigNode):
+            return obj
+
+        # 如果是Mapping类型（字典等），转换为ConfigNode
         if isinstance(obj, Mapping):
-            return cls(obj)
+            # 确保创建的是ConfigNode而不是子类
+            built_obj = ConfigNode(obj)
+            return built_obj
+
+        # 如果是可迭代对象但不是字符串，递归处理元素
         if not isinstance(obj, str) and isinstance(obj, Iterable):
-            return obj.__class__(cls.build(x) for x in obj)
+            try:
+                if hasattr(obj, '__iter__'):
+                    built_items = []
+                    for x in obj:
+                        built_items.append(cls.build(x))
+                    # 保持原始类型
+                    built_obj = obj.__class__(built_items)
+                    return built_obj
+            except (TypeError, ValueError):
+                # 如果无法构建，直接返回原对象
+                return obj
+
+        # 其他情况直接返回
         return obj
 
     def to_dict(self) -> Dict:
-        """转换为普通字典"""
+        """转换为普通字典，避免递归"""
         result = {}
-        for key, value in self._data.items():
-            if isinstance(value, ConfigNode):
-                result[key] = value.to_dict()
-            else:
-                result[key] = value
+        # 直接访问_data避免递归
+        if hasattr(self, '_data'):
+            data = super().__getattribute__('_data')
+            for key, value in data.items():
+                if isinstance(value, ConfigNode):
+                    # 检查是否是同一个对象，避免递归
+                    if value is not self:
+                        result[key] = value.to_dict()
+                    else:
+                        result[key] = "<self-reference>"
+                else:
+                    result[key] = value
         return result
 
     def from_dict(self, data: Dict):
         """从字典加载"""
-        self._data.clear()
+        # 直接访问_data避免递归
+        if '_data' not in self.__dict__:
+            super().__setattr__('_data', {})
+
+        data_dict = super().__getattribute__('_data')
+        data_dict.clear()
+
         for key, value in data.items():
-            self[key] = value
+            # 直接设置到_data中，而不是通过属性访问
+            if isinstance(value, dict):
+                data_dict[key] = ConfigNode(value)
+            else:
+                data_dict[key] = value
         return
+
+
+def unique_list_order_preserved(seq: Iterable) -> List[Any]:
+    """返回保持原始顺序的唯一元素列表"""
+    seen = set()
+    seen_add = seen.add
+    result = [x for x in seq if not (x in seen or seen_add(x))]
+    return result

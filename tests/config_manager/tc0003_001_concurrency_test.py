@@ -8,15 +8,26 @@ import pytest
 import threading
 import time
 import tempfile
-from src.config_manager.config_manager import get_config_manager
+import os
+from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
+
+
+@pytest.fixture(autouse=True)
+def cleanup_instances():
+    """每个测试后清理实例"""
+    yield
+    _clear_instances_for_testing()
+    return
 
 
 def test_tc0003_001_001_thread_safety():
     """测试多线程安全性"""
-    with tempfile.NamedTemporaryFile(suffix='.yaml') as tmpfile:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config_file = os.path.join(tmpdir, 'test_config.yaml')
         cfg = get_config_manager(
-            config_path=tmpfile.name,
-            autosave_delay=0.1
+            config_path=config_file,
+            autosave_delay=0.1,
+            watch=False
         )
         results = []
         threads = []
@@ -29,20 +40,16 @@ def test_tc0003_001_001_thread_safety():
             results.append(value)
             return
 
-        # 创建多个线程
         for i in range(5):
             t = threading.Thread(target=worker, args=(i,))
             threads.append(t)
             t.start()
 
-        # 等待所有线程完成
         for t in threads:
             t.join()
 
-        # 等待自动保存完成
         time.sleep(0.2)
 
-        # 验证所有值
         for i in range(5):
             value = cfg.get(f"thread_{i}")
             assert value == f"value_{i}"
