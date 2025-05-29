@@ -1,0 +1,13 @@
+setup.py
+src/config_manager/__init__.py
+src/config_manager/config_manager.py
+src/config_manager/config_node.py
+src/config_manager/utils.py
+src/config_manager.egg-info/PKG-INFO
+src/config_manager.egg-info/SOURCES.txt
+src/config_manager.egg-info/dependency_links.txt
+src/config_manager.egg-info/requires.txt
+src/config_manager.egg-info/top_level.txt
+src/demo/__init__.py
+src/demo/advanced_features.py
+src/demo/basic_usage.py
