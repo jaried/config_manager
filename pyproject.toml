@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "config_manager"
+version = "1.0.0"
+description = "A robust configuration manager with auto-save feature"
+authors = [
+    {name = "Tony Xiao", email = "tony.xiao@gmail.com"}
+]
+requires-python = ">=3.7"
+dependencies = [
+    "pyyaml",
+    "pytest"
+]
+
+[project.urls]
+Homepage = "https://github.com/jaried/config_manager"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
