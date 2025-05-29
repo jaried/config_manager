@@ -436,6 +436,7 @@ class ConfigManager(ConfigNode):
 
             def __exit__(self, exc_type, exc_val, exc_tb):
                 self.config.restore(self.snapshot)
+                return
 
         context = TemporaryContext(self, temp_changes)
         return context
