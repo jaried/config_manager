@@ -1,0 +1,34 @@
+__data__:
+  api:
+    authentication:
+      method: jwt
+      token_expiry: 3600
+    endpoints:
+      orders: /api/v1/orders
+      products: /api/v1/products
+      users: /api/v1/users
+    rate_limits:
+      burst_limit: 50
+      requests_per_minute: 1000
+  app_name: MyAwesomeApp
+  app_version: 1.1.0
+  database:
+    credentials:
+      password: default_password
+      username: admin
+    host: db.example.com
+    port: 6432
+  debug_mode: false
+  features:
+    experimental: false
+    new_ui: true
+  logging:
+    level: INFO
+    path: \var\log\myapp
+  server:
+    port: '8080'
+    timeout: '30.5'
+__type_hints__:
+  logging.path: Path
+  server.port: int
+  server.timeout: float

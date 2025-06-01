@@ -52,6 +52,8 @@ class ConfigManager(ConfigNode):
         # 先初始化ConfigNode的_data
         super(ConfigManager, self).__setattr__('_data', {})
 
+        # 记录原始配置路径
+        self._original_config_path = config_path
         self._config_path = self._resolve_config_path(config_path)
         self._watch = watch
         self._auto_create = auto_create
@@ -62,10 +64,15 @@ class ConfigManager(ConfigNode):
         self._type_hints = {}
         self._autosave_timer = None
         self._autosave_lock = threading.Lock()
+        
+        # 不在这里设置_first_start_time，让_setup_first_start_time来处理
 
         loaded = self._load()
         if not loaded and not self._auto_create:
             return False
+
+        # 设置或获取first_start_time（在_load之后，确保_data已初始化）
+        self._setup_first_start_time()
 
         atexit.register(self._cleanup)
 
@@ -74,6 +81,87 @@ class ConfigManager(ConfigNode):
 
         return True
 
+    def _setup_first_start_time(self):
+        """设置或获取首次启动时间"""
+        # 尝试从配置中获取first_start_time
+        if hasattr(self, '_data') and 'first_start_time' in self._data:
+            try:
+                # 从配置中读取时间字符串并转换为datetime对象
+                time_str = self._data['first_start_time']
+                self._first_start_time = datetime.fromisoformat(time_str)
+                return
+            except (ValueError, TypeError):
+                # 如果转换失败，使用启动模块的时间
+                pass
+        
+        # 如果配置中没有或转换失败，尝试获取启动模块的start_time
+        if not hasattr(self, '_first_start_time'):
+            self._first_start_time = self._get_caller_start_time()
+        
+        # 将first_start_time保存到配置中
+        if hasattr(self, '_data'):
+            self._data['first_start_time'] = self._first_start_time.isoformat()
+            # 不在这里触发自动保存，避免递归调用
+        return
+
+    def _get_caller_start_time(self):
+        """获取调用模块的start_time变量"""
+        import inspect
+        
+        # 关闭调用链显示
+        show_call_chain = False
+        
+        try:
+            # 遍历调用栈，查找包含start_time变量的模块
+            for i, frame_info in enumerate(inspect.stack()):
+                frame = frame_info.frame
+                frame_globals = frame.f_globals
+                module_name = frame_globals.get('__name__', '')
+                filename = frame_info.filename
+                
+                # 调试信息：打印调用栈信息
+                if show_call_chain:
+                    print(f"Frame {i}: module={module_name}, file={filename}")
+                    print(f"  has start_time: {'start_time' in frame_globals}")
+                
+                # 跳过config_manager模块自身和相关的内部模块
+                if (module_name.startswith('config_manager') or 
+                    module_name.startswith('src.config_manager') or
+                    module_name in ['inspect', 'threading']):
+                    continue
+                
+                # 查找start_time变量
+                if 'start_time' in frame_globals:
+                    start_time_var = frame_globals['start_time']
+                    
+                    # 调试信息：找到start_time
+                    if show_call_chain:
+                        print(f"  Found start_time in {module_name}: {start_time_var} (type: {type(start_time_var)})")
+                    
+                    # 验证是否为datetime对象
+                    if isinstance(start_time_var, datetime):
+                        return start_time_var
+                    
+                    # 如果是字符串，尝试转换
+                    if isinstance(start_time_var, str):
+                        try:
+                            converted_time = datetime.fromisoformat(start_time_var)
+                            return converted_time
+                        except (ValueError, TypeError):
+                            continue
+            
+            # 如果没有找到合适的start_time，使用当前时间
+            if show_call_chain:
+                print("No suitable start_time found, using current time")
+            return datetime.now()
+            
+        except Exception as e:
+            # 调试信息：异常情况
+            if show_call_chain:
+                print(f"Exception in _get_caller_start_time: {e}")
+            # 如果出现任何异常，使用当前时间作为后备
+            return datetime.now()
+
     @staticmethod
     def _resolve_config_path(config_path: str) -> str:
         """解析配置文件路径"""
@@ -81,13 +169,54 @@ class ConfigManager(ConfigNode):
             resolved_path = os.path.abspath(config_path)
             return resolved_path
 
-        # 修正路径解析逻辑 - 确保在 src/config 下
+        # 默认路径逻辑 - 临时使用，实际保存时会使用备份路径
         current_file = os.path.abspath(__file__)
         src_dir = os.path.dirname(os.path.dirname(current_file))  # 从 config_manager 目录向上到 src
         config_dir = os.path.join(src_dir, 'config')
         os.makedirs(config_dir, exist_ok=True)
         resolved_path = os.path.join(config_dir, 'config.yaml')
         return resolved_path
+
+    def _get_backup_path(self) -> str:
+        """获取备份路径，基于first_start_time生成时间戳"""
+        # 确保_first_start_time存在，如果不存在则使用启动模块的start_time
+        if not hasattr(self, '_first_start_time') or self._first_start_time is None:
+            self._first_start_time = self._get_caller_start_time()
+        
+        # 使用first_start_time作为时间基准
+        base_time = self._first_start_time
+        date_str = base_time.strftime('%Y%m%d')
+        time_str = base_time.strftime('%H%M%S')
+        
+        # 确定原始文件名
+        if hasattr(self, '_original_config_path') and self._original_config_path is not None:
+            # 显式指定的路径
+            original_path = self._original_config_path
+            original_dir = os.path.dirname(original_path)
+            original_name = os.path.basename(original_path)
+            
+            # 去掉扩展名，添加时间戳
+            name_without_ext = os.path.splitext(original_name)[0]
+            backup_filename = f"{name_without_ext}_{date_str}_{time_str}.yaml"
+            
+            # 生成备份目录结构
+            backup_dir = os.path.join(original_dir, 'backup', date_str, time_str)
+            os.makedirs(backup_dir, exist_ok=True)
+            backup_path = os.path.join(backup_dir, backup_filename)
+            return backup_path
+        else:
+            # 默认路径
+            current_file = os.path.abspath(__file__)
+            src_dir = os.path.dirname(os.path.dirname(current_file))
+            
+            # 默认文件名为config，添加时间戳
+            backup_filename = f"config_{date_str}_{time_str}.yaml"
+            
+            # 生成备份目录结构
+            backup_dir = os.path.join(src_dir, 'config', 'backup', date_str, time_str)
+            os.makedirs(backup_dir, exist_ok=True)
+            backup_path = os.path.join(backup_dir, backup_filename)
+            return backup_path
 
     def _schedule_autosave(self):
         """安排自动保存任务"""
@@ -172,7 +301,10 @@ class ConfigManager(ConfigNode):
     def save(self):
         """保存配置到文件（原子替换）"""
         try:
-            dir_path = os.path.dirname(self._config_path)
+            # 获取备份路径，每次保存时生成新的时间戳
+            backup_path = self._get_backup_path()
+            
+            dir_path = os.path.dirname(backup_path)
             if dir_path:
                 os.makedirs(dir_path, exist_ok=True)
 
@@ -186,12 +318,15 @@ class ConfigManager(ConfigNode):
                     '__type_hints__': self._type_hints
                 }
 
-            tmp_path = f"{self._config_path}.tmp"
+            tmp_path = f"{backup_path}.tmp"
             with open(tmp_path, 'w', encoding='utf-8') as f:
                 yaml.dump(save_data, f, default_flow_style=False, allow_unicode=True)
 
-            os.replace(tmp_path, self._config_path)
-            self._last_mtime = os.path.getmtime(self._config_path)
+            os.replace(tmp_path, backup_path)
+            
+            # 更新配置路径为最新的备份路径
+            self._config_path = backup_path
+            self._last_mtime = os.path.getmtime(backup_path)
             return True
         except Exception as e:
             print(f"保存配置失败: {str(e)}")

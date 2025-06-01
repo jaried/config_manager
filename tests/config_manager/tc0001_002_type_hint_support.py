@@ -41,8 +41,9 @@ def test_tc0002_001_001_autosave_basic():
         # 等待自动保存
         time.sleep(0.2)
 
-        # 验证文件存在
-        file_exists = os.path.exists(config_file)
+        # 验证备份文件存在（现在文件保存到备份路径）
+        backup_path = cfg._get_backup_path()
+        file_exists = os.path.exists(backup_path)
         assert file_exists
 
         reloaded = cfg.reload()
@@ -104,6 +105,8 @@ def test_tc0002_001_003_autosave_delay():
         # 等待自动保存
         time.sleep(0.6)
 
-        file_exists = os.path.exists(config_file)
+        # 验证备份文件存在（现在文件保存到备份路径）
+        backup_path = cfg._get_backup_path()
+        file_exists = os.path.exists(backup_path)
         assert file_exists
     return

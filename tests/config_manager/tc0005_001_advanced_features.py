@@ -82,9 +82,17 @@ def test_tc0005_001_003_config_path_methods():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         cfg = get_config_manager(config_path=config_file, watch=False)
 
-        # 测试get_config_path
+        # 设置一个值触发自动保存，生成备份文件
+        cfg.path_test = "test_value"
+        time.sleep(0.2)  # 等待自动保存
+
+        # 测试get_config_path - 现在应该返回备份路径
         retrieved_path = cfg.get_config_path()
-        assert retrieved_path == config_file
+        
+        # 验证返回的是备份路径格式
+        assert 'backup' in retrieved_path
+        assert retrieved_path.endswith('.yaml')
+        assert os.path.exists(retrieved_path)
 
         # 测试generate_config_id
         id1 = cfg.generate_config_id()
