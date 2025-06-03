@@ -247,7 +247,7 @@ def test_tc0002_001_007_backup_directory_structure():
 
         backup_path = cfg._get_backup_path()
         
-        # 验证目录结构：原目录/backup/yyyymmdd/HHMMSS/文件名
+        # 验证目录结构：原目录/backup/yyyymmdd/HHMMSS/filename_yyyymmdd_HHMMSS.yaml
         path_parts = backup_path.split(os.sep)
         
         # 查找backup在路径中的位置

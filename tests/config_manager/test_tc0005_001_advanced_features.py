@@ -82,16 +82,15 @@ def test_tc0005_001_003_config_path_methods():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         cfg = get_config_manager(config_path=config_file, watch=False)
 
-        # 设置一个值触发自动保存，生成备份文件
+        # 设置一个值触发自动保存
         cfg.path_test = "test_value"
         time.sleep(0.2)  # 等待自动保存
 
-        # 测试get_config_path - 现在应该返回备份路径
+        # 测试get_config_path - 现在应该返回原始配置路径
         retrieved_path = cfg.get_config_path()
-        
-        # 验证返回的是备份路径格式
-        assert 'backup' in retrieved_path
-        assert retrieved_path.endswith('.yaml')
+
+        # 验证返回的是原始配置路径
+        assert retrieved_path == config_file
         assert os.path.exists(retrieved_path)
 
         # 测试generate_config_id
@@ -143,4 +142,45 @@ def test_tc0005_001_005_empty_snapshot_restore():
         # 值应该被清除
         empty_value = cfg.get('test_empty')
         assert empty_value is None
+    return
+
+
+def test_tc0005_001_006_backup_loading():
+    """测试备份文件的创建和历史版本管理"""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config_file = os.path.join(tmpdir, 'test_config.yaml')
+
+        # 创建配置管理器并设置值
+        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg.backup_test = "original_value"
+        cfg.nested_backup = {}
+        cfg.nested_backup.value = "nested_value"
+
+        # 等待自动保存
+        time.sleep(0.2)
+
+        # 验证原始配置文件存在
+        assert os.path.exists(config_file)
+        assert cfg.get_config_path() == config_file
+
+        # 验证备份文件也被创建
+        config_dir = os.path.dirname(config_file)
+        backup_dir = os.path.join(config_dir, 'backup')
+        assert os.path.exists(backup_dir)
+
+        # 修改值并再次保存
+        cfg.backup_test = "modified_value"
+        time.sleep(0.2)
+
+        # 验证原始配置文件被更新
+        assert cfg.backup_test == "modified_value"
+
+        # 重新加载配置验证持久化
+        reloaded = cfg.reload()
+        assert reloaded
+        assert cfg.backup_test == "modified_value"
+        assert cfg.nested_backup.value == "nested_value"
+
+        # 验证配置路径始终是原始路径
+        assert cfg.get_config_path() == config_file
     return
