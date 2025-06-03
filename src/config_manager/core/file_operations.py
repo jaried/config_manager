@@ -13,16 +13,20 @@ class FileOperations:
 
     def load_config(self, config_path: str, auto_create: bool, call_chain_tracker) -> Optional[Dict]:
         """加载配置文件"""
+        # 检查调用链显示开关
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
         if not os.path.exists(config_path):
             if auto_create:
                 print(f"配置文件不存在，创建新配置: {config_path}")
 
-                # 强制显示调用链
-                try:
-                    call_chain = call_chain_tracker.get_call_chain()
-                    print(f"创建配置调用链: {call_chain}")
-                except Exception as e:
-                    print(f"获取创建调用链失败: {e}")
+                # 根据开关决定是否显示调用链
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    try:
+                        call_chain = call_chain_tracker.get_call_chain()
+                        print(f"创建配置调用链: {call_chain}")
+                    except Exception as e:
+                        print(f"获取创建调用链失败: {e}")
 
                 # 创建空配置并保存
                 empty_data = {'__data__': {}, '__type_hints__': {}}
@@ -40,19 +44,20 @@ class FileOperations:
                 finally:
                     unlock_file(f)
 
-            # 强制显示加载调用链
+            # 根据开关决定是否显示加载调用链
             print(f"配置已从 {config_path} 加载")
-            try:
-                call_chain = call_chain_tracker.get_call_chain()
-                print(f"加载配置调用链: {call_chain}")
-            except Exception as e:
-                print(f"获取加载调用链失败: {e}")
-                # 尝试获取详细调试信息
+            if ENABLE_CALL_CHAIN_DISPLAY:
                 try:
-                    debug_info = call_chain_tracker.get_detailed_call_info()
-                    print(f"调用链调试信息: {debug_info}")
-                except Exception as debug_e:
-                    print(f"获取调试信息也失败: {debug_e}")
+                    call_chain = call_chain_tracker.get_call_chain()
+                    print(f"加载配置调用链: {call_chain}")
+                except Exception as e:
+                    print(f"获取加载调用链失败: {e}")
+                    # 尝试获取详细调试信息
+                    try:
+                        debug_info = call_chain_tracker.get_detailed_call_info()
+                        print(f"调用链调试信息: {debug_info}")
+                    except Exception as debug_e:
+                        print(f"获取调试信息也失败: {debug_e}")
 
             return loaded_data
         except Exception as e:

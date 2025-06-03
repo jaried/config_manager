@@ -41,6 +41,9 @@ class ConfigManagerCore(ConfigNode):
 
     def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float) -> bool:
         """初始化配置管理器"""
+        # 检查调用链显示开关
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
         # 确保_data已经存在（防御性编程）
         if not hasattr(self, '_data'):
             self._data = {}
@@ -56,15 +59,16 @@ class ConfigManagerCore(ConfigNode):
         self._watcher = FileWatcher() if watch else None
         self._call_chain_tracker = CallChainTracker()
 
-        # 立即测试调用链追踪器
-        print("=== 调用链追踪器测试 ===")
-        try:
-            test_chain = self._call_chain_tracker.get_call_chain()
-            print(f"初始化时调用链: {test_chain}")
-        except Exception as e:
-            print(f"调用链追踪器测试失败: {e}")
-            import traceback
-            traceback.print_exc()
+        # 根据开关决定是否测试调用链追踪器
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print("=== 调用链追踪器测试 ===")
+            try:
+                test_chain = self._call_chain_tracker.get_call_chain()
+                print(f"初始化时调用链: {test_chain}")
+            except Exception as e:
+                print(f"调用链追踪器测试失败: {e}")
+                import traceback
+                traceback.print_exc()
 
         # 设置基本属性
         self._original_config_path = config_path
@@ -93,44 +97,57 @@ class ConfigManagerCore(ConfigNode):
 
     def _setup_first_start_time(self):
         """设置或获取首次启动时间"""
-        print("=== 设置首次启动时间 ===")
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print("=== 设置首次启动时间 ===")
 
         # 尝试从配置中获取first_start_time
         if hasattr(self, '_data') and 'first_start_time' in self._data:
             try:
                 time_str = self._data['first_start_time']
                 self._first_start_time = datetime.fromisoformat(time_str)
-                print(f"从配置加载首次启动时间: {self._first_start_time}")
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"从配置加载首次启动时间: {self._first_start_time}")
                 return
             except (ValueError, TypeError):
-                print("配置中的首次启动时间格式错误")
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print("配置中的首次启动时间格式错误")
 
         # 获取调用模块的start_time
         if not hasattr(self, '_first_start_time') or self._first_start_time is None:
             try:
                 self._first_start_time = self._call_chain_tracker.get_caller_start_time()
-                print(f"从调用链获取首次启动时间: {self._first_start_time}")
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"从调用链获取首次启动时间: {self._first_start_time}")
             except Exception as e:
-                print(f"获取调用模块start_time失败: {e}")
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"获取调用模块start_time失败: {e}")
                 self._first_start_time = datetime.now()
-                print(f"使用当前时间作为首次启动时间: {self._first_start_time}")
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"使用当前时间作为首次启动时间: {self._first_start_time}")
 
         # 保存到配置中
         if hasattr(self, '_data'):
             self._data['first_start_time'] = self._first_start_time.isoformat()
-            print(f"首次启动时间已保存到配置")
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                print(f"首次启动时间已保存到配置")
         return
 
     def _load(self):
         """加载配置文件"""
-        print(f"=== 开始加载配置文件: {self._config_path} ===")
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
-        # 强制显示调用链
-        try:
-            load_call_chain = self._call_chain_tracker.get_call_chain()
-            print(f"加载配置时的调用链: {load_call_chain}")
-        except Exception as e:
-            print(f"获取加载调用链失败: {e}")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print(f"=== 开始加载配置文件: {self._config_path} ===")
+
+        # 根据开关决定是否显示调用链
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            try:
+                load_call_chain = self._call_chain_tracker.get_call_chain()
+                print(f"加载配置时的调用链: {load_call_chain}")
+            except Exception as e:
+                print(f"获取加载调用链失败: {e}")
 
         loaded = self._file_ops.load_config(
             self._config_path,
@@ -141,7 +158,8 @@ class ConfigManagerCore(ConfigNode):
         if loaded:
             self._data.clear()
             raw_data = loaded.get('__data__', {})
-            print(f"加载的原始数据: {raw_data}")
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                print(f"加载的原始数据: {raw_data}")
 
             # 重建数据结构
             if raw_data:
@@ -152,29 +170,36 @@ class ConfigManagerCore(ConfigNode):
                         self._data[key] = value
 
             self._type_hints = loaded.get('__type_hints__', {})
-            print(f"配置加载完成，_data内容: {self._data}")
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                print(f"配置加载完成，_data内容: {self._data}")
             return True
 
-        print("配置加载失败")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print("配置加载失败")
         return False
 
     def save(self):
         """保存配置到文件"""
-        print("=== 开始保存配置 ===")
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
-        # 显示保存时的调用链
-        try:
-            save_call_chain = self._call_chain_tracker.get_call_chain()
-            print(f"保存配置时的调用链: {save_call_chain}")
-        except Exception as e:
-            print(f"获取保存调用链失败: {e}")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print("=== 开始保存配置 ===")
+
+        # 根据开关决定是否显示保存时的调用链
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            try:
+                save_call_chain = self._call_chain_tracker.get_call_chain()
+                print(f"保存配置时的调用链: {save_call_chain}")
+            except Exception as e:
+                print(f"获取保存调用链失败: {e}")
 
         data_to_save = {
             '__data__': self.to_dict(),
             '__type_hints__': self._type_hints
         }
 
-        print(f"准备保存的数据: {data_to_save}")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print(f"准备保存的数据: {data_to_save}")
 
         saved = self._file_ops.save_config(
             self._config_path,
@@ -182,22 +207,28 @@ class ConfigManagerCore(ConfigNode):
             self._get_backup_path()
         )
 
-        print(f"保存结果: {saved}")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print(f"保存结果: {saved}")
         return saved
 
     def reload(self):
         """重新加载配置"""
-        print("=== 重新加载配置 ===")
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
-        # 显示重新加载时的调用链
-        try:
-            reload_call_chain = self._call_chain_tracker.get_call_chain()
-            print(f"重新加载配置时的调用链: {reload_call_chain}")
-        except Exception as e:
-            print(f"获取重新加载调用链失败: {e}")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print("=== 重新加载配置 ===")
+
+        # 根据开关决定是否显示重新加载时的调用链
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            try:
+                reload_call_chain = self._call_chain_tracker.get_call_chain()
+                print(f"重新加载配置时的调用链: {reload_call_chain}")
+            except Exception as e:
+                print(f"获取重新加载调用链失败: {e}")
 
         reloaded = self._load()
-        print(f"重新加载结果: {reloaded}")
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            print(f"重新加载结果: {reloaded}")
         return reloaded
 
     def _get_backup_path(self) -> str:
@@ -209,26 +240,32 @@ class ConfigManagerCore(ConfigNode):
 
     def _on_file_changed(self):
         """文件变化回调"""
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
         print("检测到配置文件变化，重新加载...")
 
-        # 显示文件变化时的调用链
-        try:
-            change_call_chain = self._call_chain_tracker.get_call_chain()
-            print(f"文件变化回调的调用链: {change_call_chain}")
-        except Exception as e:
-            print(f"获取文件变化调用链失败: {e}")
+        # 根据开关决定是否显示文件变化时的调用链
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            try:
+                change_call_chain = self._call_chain_tracker.get_call_chain()
+                print(f"文件变化回调的调用链: {change_call_chain}")
+            except Exception as e:
+                print(f"获取文件变化调用链失败: {e}")
 
         self.reload()
         return
 
     def _schedule_autosave(self):
         """安排自动保存"""
-        # 显示自动保存调度时的调用链
-        try:
-            autosave_call_chain = self._call_chain_tracker.get_call_chain()
-            print(f"安排自动保存时的调用链: {autosave_call_chain}")
-        except Exception as e:
-            print(f"获取自动保存调用链失败: {e}")
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
+        # 根据开关决定是否显示自动保存调度时的调用链
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            try:
+                autosave_call_chain = self._call_chain_tracker.get_call_chain()
+                print(f"安排自动保存时的调用链: {autosave_call_chain}")
+            except Exception as e:
+                print(f"获取自动保存调用链失败: {e}")
 
         self._autosave_manager.schedule_save(self.save)
         return
