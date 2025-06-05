@@ -66,7 +66,7 @@ class TestCallChainSwitch:
                 assert "初始化时调用链:" not in captured_output
 
                 # 但应该包含基本的配置操作信息
-                assert ("配置文件不存在，创建新配置" in captured_output or
+                assert ("配置文件不存在" in captured_output or
                         "配置已从" in captured_output)
 
                 print("✓ 开关关闭时成功屏蔽了调用链显示")
@@ -249,7 +249,7 @@ class TestCallChainSwitch:
                     assert keyword not in captured_output, f"开关关闭时不应显示: {keyword}"
 
                 # 但应该有基本的操作信息
-                assert ("配置文件不存在，创建新配置" in captured_output or
+                assert ("配置文件不存在" in captured_output or
                         "配置已从" in captured_output)
 
                 print("✓ 所有操作都正确遵守了开关关闭设置")

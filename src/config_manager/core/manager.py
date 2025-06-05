@@ -38,19 +38,24 @@ class ConfigManagerCore(ConfigNode):
         self._auto_create = True
         self._type_hints = {}
         self._first_start_time = None
+        self._is_main_program = False  # 新增：标记是否为主程序
 
-    def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float) -> bool:
+    def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float,
+                   first_start_time: datetime = None) -> bool:
         """初始化配置管理器"""
         # 检查调用链显示开关
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         # 确保_data已经存在（防御性编程）
-        if not hasattr(self, '_data'):
+        if not hasattr(self, '_data') or self._data is None:
             self._data = {}
 
         # 确保_type_hints也存在
         if not hasattr(self, '_type_hints'):
             self._type_hints = {}
+
+        # 判断是否为主程序（传入了first_start_time参数）
+        self._is_main_program = first_start_time is not None
 
         # 初始化各个组件
         self._path_resolver = PathResolver()
@@ -80,11 +85,12 @@ class ConfigManagerCore(ConfigNode):
 
         # 加载配置
         loaded = self._load()
+        
+        # 设置首次启动时间（无论配置是否加载成功都要设置）
+        self._setup_first_start_time(first_start_time)
+        
         if not loaded and not self._auto_create:
             return False
-
-        # 设置首次启动时间
-        self._setup_first_start_time()
 
         # 注册清理函数
         atexit.register(self._cleanup)
@@ -94,45 +100,6 @@ class ConfigManagerCore(ConfigNode):
             self._watcher.start(self._config_path, self._on_file_changed)
 
         return True
-
-    def _setup_first_start_time(self):
-        """设置或获取首次启动时间"""
-        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
-
-        if ENABLE_CALL_CHAIN_DISPLAY:
-            print("=== 设置首次启动时间 ===")
-
-        # 尝试从配置中获取first_start_time
-        if hasattr(self, '_data') and 'first_start_time' in self._data:
-            try:
-                time_str = self._data['first_start_time']
-                self._first_start_time = datetime.fromisoformat(time_str)
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    print(f"从配置加载首次启动时间: {self._first_start_time}")
-                return
-            except (ValueError, TypeError):
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    print("配置中的首次启动时间格式错误")
-
-        # 获取调用模块的start_time
-        if not hasattr(self, '_first_start_time') or self._first_start_time is None:
-            try:
-                self._first_start_time = self._call_chain_tracker.get_caller_start_time()
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    print(f"从调用链获取首次启动时间: {self._first_start_time}")
-            except Exception as e:
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    print(f"获取调用模块start_time失败: {e}")
-                self._first_start_time = datetime.now()
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    print(f"使用当前时间作为首次启动时间: {self._first_start_time}")
-
-        # 保存到配置中
-        if hasattr(self, '_data'):
-            self._data['first_start_time'] = self._first_start_time.isoformat()
-            if ENABLE_CALL_CHAIN_DISPLAY:
-                print(f"首次启动时间已保存到配置")
-        return
 
     def _load(self):
         """加载配置文件"""
@@ -480,3 +447,39 @@ class ConfigManagerCore(ConfigNode):
 
         # 其他情况直接返回
         return obj
+
+    def _setup_first_start_time(self, first_start_time: datetime = None):
+        """设置首次启动时间"""
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+        
+        # 检查配置中是否已经有first_start_time
+        existing_time_str = self._data.get('first_start_time')
+        
+        if existing_time_str:
+            # 如果配置中已经有时间，解析并使用它
+            try:
+                self._first_start_time = datetime.fromisoformat(existing_time_str)
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"从配置中读取首次启动时间: {self._first_start_time}")
+                return
+            except (ValueError, TypeError) as e:
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"解析配置中的首次启动时间失败: {e}")
+        
+        # 如果没有现有时间，使用传入的时间或当前时间
+        if first_start_time is not None:
+            self._first_start_time = first_start_time
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                print(f"使用传入的首次启动时间: {self._first_start_time}")
+        else:
+            self._first_start_time = datetime.now()
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                print(f"使用当前时间作为首次启动时间: {self._first_start_time}")
+        
+        # 保存到配置中
+        self._data['first_start_time'] = self._first_start_time.isoformat()
+        
+        # 立即保存配置
+        self.save()
+        
+        return

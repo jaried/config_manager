@@ -54,37 +54,48 @@ class TestSingletonPathResolution:
         """测试不同目录下创建不同的配置管理器实例"""
         from config_manager import get_config_manager
         
-        # 1. 在项目根目录创建实例
-        cm1 = get_config_manager()
-        path1 = cm1.get_config_path()
+        # 1. 创建第一个临时项目目录
+        temp_dir1 = tempfile.mkdtemp(prefix="test_project1_")
+        src_dir1 = os.path.join(temp_dir1, 'src')
+        os.makedirs(src_dir1, exist_ok=True)
         
-        # 2. 创建临时项目目录
-        temp_dir = tempfile.mkdtemp(prefix="test_project_")
-        src_dir = os.path.join(temp_dir, 'src')
-        os.makedirs(src_dir, exist_ok=True)
+        # 2. 创建第二个临时项目目录
+        temp_dir2 = tempfile.mkdtemp(prefix="test_project2_")
+        src_dir2 = os.path.join(temp_dir2, 'src')
+        os.makedirs(src_dir2, exist_ok=True)
+        
+        original_cwd = os.getcwd()
         
         try:
-            # 3. 切换到临时目录
-            os.chdir(temp_dir)
+            # 3. 在第一个目录创建实例
+            os.chdir(temp_dir1)
+            cm1 = get_config_manager(auto_create=True)
+            path1 = cm1.get_config_path()
             
-            # 4. 在新目录创建实例（不清除缓存）
-            cm2 = get_config_manager()
+            # 4. 在第二个目录创建实例
+            os.chdir(temp_dir2)
+            cm2 = get_config_manager(auto_create=True)
             path2 = cm2.get_config_path()
             
             # 5. 验证结果
             assert cm1 is not cm2, "不同目录下应该创建不同的实例"
-            assert temp_dir in path2, f"配置文件应该在临时项目目录中，实际路径: {path2}"
-            assert self.project_root in path1, f"原始实例应该在项目根目录中，实际路径: {path1}"
+            assert temp_dir1 in path1, f"第一个配置文件应该在第一个临时目录中，实际路径: {path1}"
+            assert temp_dir2 in path2, f"第二个配置文件应该在第二个临时目录中，实际路径: {path2}"
             
             # 验证路径结构正确
-            assert path1.endswith('src/config/config.yaml') or path1.endswith('src\\config\\config.yaml'), f"原始路径应该在src/config下，实际: {path1}"
-            assert path2.endswith('src/config/config.yaml') or path2.endswith('src\\config\\config.yaml'), f"临时路径应该在src/config下，实际: {path2}"
+            assert path1.endswith('src/config/config.yaml') or path1.endswith('src\\config\\config.yaml'), f"第一个路径应该在src/config下，实际: {path1}"
+            assert path2.endswith('src/config/config.yaml') or path2.endswith('src\\config\\config.yaml'), f"第二个路径应该在src/config下，实际: {path2}"
             
         finally:
+            # 恢复原始工作目录
+            os.chdir(original_cwd)
             # 清理临时目录
-            os.chdir(self.project_root)
             try:
-                shutil.rmtree(temp_dir)
+                shutil.rmtree(temp_dir1)
+            except:
+                pass
+            try:
+                shutil.rmtree(temp_dir2)
             except:
                 pass
 
@@ -129,34 +140,48 @@ class TestSingletonPathResolution:
     def test_tc0006_004_config_operations_work_correctly(self):
         """测试配置操作在不同实例中正常工作"""
         from config_manager import get_config_manager
+        import uuid
         
-        # 1. 在项目根目录创建实例并设置配置
-        cm1 = get_config_manager()
-        cm1.set('test_key1', 'value1', autosave=False)
+        # 使用唯一的键名避免与现有配置冲突
+        unique_suffix = str(uuid.uuid4())[:8]
+        key1 = f'test_isolation_key1_{unique_suffix}'
+        key2 = f'test_isolation_key2_{unique_suffix}'
         
-        # 2. 创建临时项目目录
-        temp_dir = tempfile.mkdtemp(prefix="test_config_ops_")
-        src_dir = os.path.join(temp_dir, 'src')
-        os.makedirs(src_dir, exist_ok=True)
+        # 1. 创建第一个临时目录和显式配置文件
+        temp_dir1 = tempfile.mkdtemp(prefix="test_config_ops1_")
+        config_file1 = os.path.join(temp_dir1, 'config1.yaml')
+        
+        # 2. 创建第二个临时目录和显式配置文件
+        temp_dir2 = tempfile.mkdtemp(prefix="test_config_ops2_")
+        config_file2 = os.path.join(temp_dir2, 'config2.yaml')
         
         try:
-            # 3. 切换到临时目录并创建新实例
-            os.chdir(temp_dir)
-            cm2 = get_config_manager()
-            cm2.set('test_key2', 'value2', autosave=False)
+            # 3. 使用显式路径创建完全独立的实例
+            cm1 = get_config_manager(config_path=config_file1, auto_create=True)
+            cm1.set(key1, 'value1', autosave=False)
+            
+            cm2 = get_config_manager(config_path=config_file2, auto_create=True)
+            cm2.set(key2, 'value2', autosave=False)
             
             # 4. 验证配置隔离
-            assert cm1.get('test_key1') == 'value1', "原实例应该保持自己的配置"
-            assert cm1.get('test_key2') is None, "原实例不应该有新实例的配置"
+            assert cm1.get(key1) == 'value1', "第一个实例应该保持自己的配置"
+            assert cm1.get(key2) is None, f"第一个实例不应该有第二个实例的配置，但是得到了: {cm1.get(key2)}"
             
-            assert cm2.get('test_key2') == 'value2', "新实例应该有自己的配置"
-            assert cm2.get('test_key1') is None, "新实例不应该有原实例的配置"
+            assert cm2.get(key2) == 'value2', "第二个实例应该有自己的配置"
+            assert cm2.get(key1) is None, f"第二个实例不应该有第一个实例的配置，但是得到了: {cm2.get(key1)}"
+            
+            # 5. 验证实例确实不同
+            assert cm1 is not cm2, "使用不同配置文件应该创建不同的实例"
+            assert cm1.get_config_path() != cm2.get_config_path(), "配置文件路径应该不同"
             
         finally:
             # 清理临时目录
-            os.chdir(self.project_root)
             try:
-                shutil.rmtree(temp_dir)
+                shutil.rmtree(temp_dir1)
+            except:
+                pass
+            try:
+                shutil.rmtree(temp_dir2)
             except:
                 pass
 

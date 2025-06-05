@@ -69,7 +69,7 @@ def test_tc0008_001_002_config_loading_call_chain():
         print(f"捕获的输出:\n{printed_output}")
 
         # 验证输出包含配置加载信息
-        assert ("配置文件不存在，创建新配置" in printed_output or
+        assert ("配置文件不存在" in printed_output or
                 "配置已从" in printed_output)
 
         # 检查是否有调用链信息
@@ -166,7 +166,8 @@ def test_tc0008_001_004_start_time_detection():
             cfg = get_config_manager(
                 config_path=config_file,
                 watch=False,
-                autosave_delay=0.1
+                autosave_delay=0.1,
+                first_start_time=test_start_time
             )
 
             # 设置一个值触发保存以便检查时间

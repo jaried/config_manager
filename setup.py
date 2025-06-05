@@ -13,7 +13,6 @@ setup(
     package_dir={'': 'src'},
     install_requires=[
         'pyyaml',
-        'pytest'  # 仅用于测试
     ],
     author='Tony Xiao',
     author_email='tony.xiao@gmail.com',

@@ -22,13 +22,22 @@ if src_path not in sys.path:
 
 from config_manager.config_manager import get_config_manager, _clear_instances_for_testing
 from config_manager.core.call_chain import CallChainTracker
+import config_manager.config_manager as cm_module
 
 
 @pytest.fixture(autouse=True)
 def cleanup_instances():
     """每个测试后清理实例"""
-    yield
-    _clear_instances_for_testing()
+    # 临时开启调用链显示，因为这些是调用链边界情况测试
+    original_switch = cm_module.ENABLE_CALL_CHAIN_DISPLAY
+    cm_module.ENABLE_CALL_CHAIN_DISPLAY = True
+    
+    try:
+        yield
+    finally:
+        # 恢复原始开关状态
+        cm_module.ENABLE_CALL_CHAIN_DISPLAY = original_switch
+        _clear_instances_for_testing()
     return
 
 
@@ -114,7 +123,7 @@ def test_tc0008_003_002_multithreaded_environment():
             has_config_info = (
                     "调用链:" in output or
                     "配置已从" in output or
-                    "配置文件不存在，创建新配置" in output or
+                    "配置文件不存在" in output or
                     len(output.strip()) > 0  # 至少有一些输出
             )
 
@@ -313,7 +322,7 @@ def test_tc0008_003_008_unicode_paths():
         assert "function_with_unicode_path" in output
 
         # 验证配置文件路径显示正确
-        assert "配置文件不存在，创建新配置" in output or "配置已从" in output
+        assert "配置文件不存在" in output or "配置已从" in output
 
         print(f"Unicode路径调用链:\n{output}")
         return

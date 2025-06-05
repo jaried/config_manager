@@ -1,385 +1,713 @@
-配置管理器 (Configuration Manager)
-目录
-概述
+# 配置管理器 (Config Manager)
 
-主要特性
+一个强大、易用的 Python 配置管理库，支持自动保存、类型提示、文件监视等高级功能。
 
-安装
+## 特性
 
-快速开始
+- 🚀 **简单易用**：直观的点操作语法访问配置项
+- 💾 **自动保存**：配置变更时自动保存到文件
+- 🔒 **线程安全**：支持多线程环境安全使用
+- 🎯 **类型安全**：完整的类型提示支持
+- 📁 **文件监视**：实时监控配置文件变化并自动重载
+- 🔄 **快照恢复**：便捷的配置状态保存和恢复
+- ⚡ **高性能**：优化的内存和 I/O 操作
+- 🌐 **跨平台**：支持 Windows、Linux、macOS
 
-使用示例
+## 安装
 
-高级功能
+从源代码仓库安装：
 
-测试
-
-贡献指南
-
-许可证
-
-概述
-配置管理器是一个强大的Python库，旨在简化应用程序配置的管理过程。它提供了直观的点操作语法、自动保存功能、类型提示支持以及多种高级配置管理功能，使开发者能够轻松处理复杂的配置需求。
-
-主要特性
-点操作语法 - 使用 config.key.subkey 形式访问和设置嵌套配置
-
-自动保存 - 配置更改后自动保存到文件，可自定义延迟时间
-
-类型提示支持 - 支持存储和自动转换路径等特殊类型
-
-文件监视 - 可选的文件变化监视和自动重载功能
-
-配置快照 - 创建和恢复配置快照
-
-临时配置 - 使用上下文管理器创建临时配置
-
-唯一ID生成 - 生成全局唯一配置ID
-
-多进程安全 - 支持多进程环境下的安全配置访问
-
-安装
-bash
-pip install config_manager
-或者从源代码安装：
-
-bash
+```bash
 git clone https://github.com/jaried/config_manager.git
 cd config_manager
 pip install -e .
-快速开始
-python
+```
+
+## API 参考
+
+### get_config_manager() 函数
+
+配置管理器的主要入口函数，用于获取配置管理器实例。
+
+```python
+def get_config_manager(
+    config_path: str = None,
+    watch: bool = False,
+    auto_create: bool = False,
+    autosave_delay: float = None,
+    first_start_time: datetime = None
+) -> ConfigManager:
+```
+
+#### 参数说明
+
+| 参数  | 类型  | 默认值 | 是否必需 | 说明  |
+| --- | --- | --- | --- | --- |
+| `config_path` | `str` | `None` | 否   | 配置文件路径。如果为 `None`，会自动查找项目根目录并使用 `src/config/config.yaml` |
+| `watch` | `bool` | `False` | 否   | 是否启用文件监视。为 `True` 时会监控配置文件变化并自动重载 |
+| `auto_create` | `bool` | `False` | 否   | 配置文件不存在时是否自动创建。为 `True` 时会在指定路径创建新的配置文件 |
+| `autosave_delay` | `float` | `None` | 否   | 自动保存延迟时间（秒）。配置修改后延迟指定时间再保存，避免频繁 I/O |
+| `first_start_time` | `datetime` | `None` | 主程序需要 | 应用首次启动时间。**主程序调用时必须提供**，用于记录启动时间和生成备份文件时间戳 |
+
+#### 返回值
+
+返回 `ConfigManager` 实例，提供配置管理的所有功能。
+
+## 快速开始
+
+### 1. 最简单的使用
+
+```python
 from config_manager import get_config_manager
-from pathlib import Path
+from datetime import datetime
 
-# 初始化配置管理器
-cfg = get_config_manager()
+# 主程序中必须传递启动时间
+start_time = datetime.now()
+cfg = get_config_manager(first_start_time=start_time)
 
-# 设置基本配置
-cfg.app_name = "MyApp"
-cfg.app_version = "1.0.0"
+# 设置配置
+cfg.app_name = "我的应用"
+cfg.version = "1.0.0"
+
+# 读取配置
+print(f"应用名称: {cfg.app_name}")
+print(f"版本号: {cfg.version}")
+```
+
+### 2. 库/模块调用（不需要 first_start_time）
+
+```python
+from config_manager import get_config_manager
+
+# 在库或子模块中可以不传递 first_start_time
+def some_library_function():
+    cfg = get_config_manager()  # 使用默认参数
+    return cfg.some_setting
+```
+
+### 3. 嵌套配置
+
+```python
+from datetime import datetime
+
+# 主程序中使用
+start_time = datetime.now()
+cfg = get_config_manager(first_start_time=start_time)
 
 # 设置嵌套配置
 cfg.database = {}
 cfg.database.host = "localhost"
 cfg.database.port = 5432
+cfg.database.username = "admin"
 
-# 设置路径类型值
-log_path = Path("/var/log/myapp")
-cfg.set("logging.path", log_path, type_hint=Path)
+# 读取嵌套配置
+print(f"数据库地址: {cfg.database.host}:{cfg.database.port}")
+print(f"用户名: {cfg.database.username}")
+```
 
-# 获取路径值
-log_dir = cfg.get_path("logging.path")
-print(f"Log directory: {log_dir}")
+### 4. 批量设置配置
 
-# 批量更新
+```python
+from datetime import datetime
+
+start_time = datetime.now()
+cfg = get_config_manager(first_start_time=start_time)
+
+# 使用 update 方法批量设置
 cfg.update({
-    "app_version": "1.1.0",
-    "database.port": 6432
+    "app_name": "新应用名称",
+    "database": {
+        "host": "192.168.1.100",
+        "port": 3306,
+        "ssl": True
+    },
+    "features": {
+        "cache_enabled": True,
+        "debug_mode": False
+    }
 })
-使用示例
-基本使用
-python
-from config_manager import get_config_manager
+```
 
-# 初始化配置
+## 进阶使用
+
+### 1. 主程序完整初始化
+
+```python
+from datetime import datetime
+
+# 主程序中的完整初始化
+start_time = datetime.now()
+
+cfg = get_config_manager(
+    config_path="./config/my_config.yaml",
+    auto_create=True,  # 文件不存在时自动创建
+    watch=True,        # 启用文件监视
+    autosave_delay=1.0,  # 1秒自动保存延迟
+    first_start_time=start_time  # 主程序必须提供
+)
+```
+
+### 2. 子模块中的简单使用
+
+```python
+# 在子模块、工具函数或库代码中
+def get_database_config():
+    cfg = get_config_manager()  # 不需要 first_start_time
+    return {
+        'host': cfg.database.host,
+        'port': cfg.database.port,
+        'username': cfg.database.username
+    }
+```
+
+### 3. 启用文件监视
+
+```python
+from datetime import datetime
+
+start_time = datetime.now()
+
+# 启用文件监视，当配置文件被外部修改时自动重载
+cfg = get_config_manager(
+    watch=True,  # 启用文件监视
+    autosave_delay=0.5,  # 设置自动保存延迟（秒）
+    first_start_time=start_time  # 主程序中必须提供
+)
+
+# 现在当你用其他程序修改配置文件时，配置会自动重载
+```
+
+### 4. 完整参数示例
+
+```python
+from datetime import datetime
+
+start_time = datetime.now()
+
+# 使用所有参数的完整示例（主程序）
+cfg = get_config_manager(
+    config_path="./data/production_config.yaml",  # 自定义配置文件路径
+    watch=True,                                   # 启用文件监视
+    auto_create=True,                            # 文件不存在时自动创建
+    autosave_delay=2.0,                          # 2秒自动保存延迟
+    first_start_time=start_time                  # 主程序必须提供
+)
+```
+
+### 5. 安全的配置访问
+
+```python
+# 可以在任何地方使用（主程序或子模块）
 cfg = get_config_manager()
 
-# 设置简单值
-cfg.app_name = "MyApp"
-cfg.debug_mode = False
+# 使用 get 方法安全访问，提供默认值
+timeout = cfg.get("database.timeout", default=30)
+max_connections = cfg.get("database.max_connections", default=100)
 
-# 设置嵌套值
-cfg.database = {}
-cfg.database.host = "db.example.com"
-cfg.database.credentials = {}
-cfg.database.credentials.username = "admin"
+# 指定类型转换
+port = cfg.get("server.port", default="8080", as_type=int)
+```
 
-# 访问值
-print(f"App name: {cfg.app_name}")
-print(f"DB host: {cfg.database.host}")
-print(f"DB user: {cfg.database.credentials.username}")
+### 6. 类型提示和转换
 
-# 重新加载配置
-cfg.reload()
-路径类型支持
-python
+```python
 from pathlib import Path
-from config_manager import get_config_manager
 
 cfg = get_config_manager()
 
-# 设置路径值
-log_path = Path("/var/log/myapp")
-cfg.set("logging.path", log_path, type_hint=Path)
+# 设置类型提示
+cfg.set("log_directory", "/var/log/myapp", type_hint=Path)
+cfg.set("server.port", "8080", type_hint=int)
+cfg.set("server.timeout", "30.5", type_hint=float)
 
-# 获取路径值
-log_dir = cfg.get_path("logging.path")
-print(f"Log directory: {log_dir}")
-print(f"Type: {type(log_dir)}")
+# 获取带类型转换的值
+log_dir = cfg.get_path("log_directory")  # 返回 Path 对象
+port = cfg.get("server.port", as_type=int)  # 返回 int 类型
+```
 
-# 获取类型提示
-print(f"Type hint: {cfg.get_type_hint('logging.path')}")
-高级功能
-配置快照
-python
+## 高级功能
+
+### 1. 配置快照和恢复
+
+```python
+cfg = get_config_manager()
+
 # 创建配置快照
 snapshot = cfg.snapshot()
 
 # 修改配置
-cfg.app_name = "ModifiedApp"
+cfg.database.host = "new-host"
+cfg.app_name = "修改后的名称"
 
-# 恢复快照
+# 从快照恢复配置
 cfg.restore(snapshot)
-print(f"App name restored: {cfg.app_name}")
-临时配置上下文
-python
-with cfg.temporary({"debug_mode": True, "log_level": "DEBUG"}) as temp_cfg:
-    print(f"Temp debug mode: {temp_cfg.debug_mode}")
-    print(f"Temp log level: {temp_cfg.log_level}")
+print(cfg.database.host)  # 恢复到原来的值
+```
 
-print(f"Original debug mode: {cfg.debug_mode}")
-文件监视和自动重载
-python
-# 启用文件监视
-cfg = get_config_manager(watch=True)
+### 2. 临时配置上下文
 
-# 手动修改配置文件后自动重载
-print("Modify the config file and see it reload automatically...")
-生成唯一配置ID
-python
-config_id = cfg.generate_config_id()
-print(f"Generated config ID: {config_id}")
-测试
-项目包含全面的测试套件，使用pytest运行：
+```python
+cfg = get_config_manager()
 
-bash
-pytest tests/
-测试文件命名规范：
+# 使用临时配置，退出上下文后自动恢复
+with cfg.temporary({
+    "debug_mode": True,
+    "database.timeout": 5,
+    "logging.level": "DEBUG"
+}) as temp_cfg:
+    # 在这个上下文中使用临时配置
+    print(f"调试模式: {temp_cfg.debug_mode}")  # True
+    # 执行需要调试配置的代码...
 
-tc0001_001_basic_operations.py - 基本操作测试
+# 退出上下文后配置自动恢复
+print(f"调试模式: {cfg.debug_mode}")  # 原来的值
+```
 
-tc0001_002_type_hint_support.py - 类型提示支持测试
+### 3. 生成唯一 ID
 
-tc0002_001_autosave_feature.py - 自动保存功能测试
+```python
+cfg = get_config_manager()
 
-tc0003_001_concurrency_test.py - 并发测试
+# 为实验、会话等生成唯一 ID
+experiment_id = cfg.generate_config_id()
+cfg.experiments[experiment_id] = {
+    "name": "实验A",
+    "parameters": {"learning_rate": 0.01},
+    "status": "running"
+}
+```
 
-tc0004_001_error_handling.py - 错误处理测试
+## 测试中的配置管理
 
-贡献指南
-我们欢迎贡献！请遵循以下步骤：
+在测试用例中，经常需要临时修改配置以测试不同的场景。配置管理器提供了多种方法来安全地进行测试配置管理。
 
-Fork 仓库
+### 方法一：使用 temporary() 上下文管理器（推荐）
 
-创建特性分支 (git checkout -b feature/AmazingFeature)
+这是最安全和推荐的方式，确保配置在测试完成后自动恢复：
 
-提交更改 (git commit -m 'Add some AmazingFeature')
+```python
+# tests/01_unit_tests/test_example.py
+from __future__ import annotations
 
-推送到分支 (git push origin feature/AmazingFeature)
-
-打开 Pull Request
-
-请确保遵循项目编码规范：
-
-所有函数必须有显式的return或pass
-
-文件头部包含四行标准注释
-
-测试文件和函数使用tc前缀编号
-
-许可证
-本项目采用 MIT 许可证 - 详情请参阅 LICENSE 文件。
-
-Configuration Manager
-Table of Contents
-Overview
-
-Key Features
-
-Installation
-
-Quick Start
-
-Usage Examples
-
-Advanced Features
-
-Testing
-
-Contributing
-
-License
-
-Overview
-Configuration Manager is a powerful Python library designed to simplify application configuration management. It provides intuitive dot-notation syntax, auto-save functionality, type hint support, and various advanced configuration management features, enabling developers to handle complex configuration requirements with ease.
-
-Key Features
-Dot-notation Syntax - Access and set nested configurations using config.key.subkey format
-
-Auto-save - Automatically save changes to file with customizable delay
-
-Type Hint Support - Store and auto-convert special types like Path
-
-File Watching - Optional file change monitoring and auto-reload
-
-Configuration Snapshots - Create and restore configuration snapshots
-
-Temporary Configurations - Context manager for temporary configurations
-
-Unique ID Generation - Generate globally unique configuration IDs
-
-Multi-process Safety - Safe configuration access in multi-process environments
-
-Installation
-bash
-pip install config_manager
-Or install from source:
-
-bash
-git clone https://github.com/jaried/config_manager.git
-cd config_manager
-pip install -e .
-Quick Start
-python
+import pytest
 from config_manager import get_config_manager
+
+
+class TestExample:
+    """示例测试类"""
+    
+    def test_with_temporary_config(self):
+        """使用临时配置的测试"""
+        cfg = get_config_manager()
+        
+        # 获取原始值进行验证
+        original_timeout = cfg.get('timeout', 30)
+        
+        # 使用临时配置上下文
+        temp_changes = {
+            "timeout": 10,
+            "retry_count": 1,
+            "test_mode": True
+        }
+        
+        with cfg.temporary(temp_changes) as temp_cfg:
+            # 在此上下文中，配置已被临时修改
+            assert temp_cfg.timeout == 10
+            assert temp_cfg.retry_count == 1
+            assert temp_cfg.test_mode == True
+            
+            # 执行需要特定配置的测试逻辑
+            result = some_function_that_uses_config(temp_cfg)
+            assert result == expected_value
+        
+        # 退出上下文后，配置自动恢复
+        assert cfg.get('timeout', 30) == original_timeout
+        assert cfg.get('test_mode', None) is None
+```
+
+### 方法二：使用 pytest fixtures
+
+对于需要在多个测试中使用相同临时配置的情况：
+
+```python
+# tests/conftest.py 或测试文件中
+from __future__ import annotations
+
+import pytest
+from config_manager import get_config_manager
+
+
+@pytest.fixture
+def test_config():
+    """提供测试专用配置的fixture"""
+    cfg = get_config_manager()
+    
+    test_changes = {
+        "timeout": 5,
+        "retry_count": 1,
+        "test_mode": True,
+        "base_dir": "/tmp/test"
+    }
+    
+    with cfg.temporary(test_changes) as temp_cfg:
+        yield temp_cfg
+
+
+class TestExample:
+    """示例测试类"""
+    
+    def test_with_fixture_config(self, test_config):
+        """使用fixture提供的测试配置"""
+        assert test_config.timeout == 5
+        assert test_config.test_mode == True
+        
+        # 执行测试逻辑
+        result = function_that_uses_config(test_config)
+        assert result == expected_value
+```
+
+### 方法三：使用 unittest.mock.patch
+
+如果需要更精细的控制，可以使用 mock：
+
+```python
+# tests/01_unit_tests/test_example.py
+from __future__ import annotations
+
+import pytest
+from unittest.mock import patch, MagicMock
+from config_manager import get_config_manager
+
+
+class TestExample:
+    """示例测试类"""
+    
+    @patch('your_module.get_config_manager')
+    def test_with_mocked_config(self, mock_get_config):
+        """使用模拟配置的测试"""
+        # 创建模拟配置对象
+        mock_config = MagicMock()
+        mock_config.timeout = 5
+        mock_config.retry_count = 1
+        mock_config.test_mode = True
+        
+        mock_get_config.return_value = mock_config
+        
+        # 执行测试
+        result = function_that_uses_config()
+        
+        # 验证结果
+        assert result == expected_value
+        mock_get_config.assert_called_once()
+```
+
+### 方法四：使用快照和恢复
+
+```python
+# tests/01_unit_tests/test_example.py
+from __future__ import annotations
+
+import pytest
+from config_manager import get_config_manager
+
+
+class TestExample:
+    """示例测试类"""
+    
+    def test_with_manual_config_management(self):
+        """手动管理配置的测试"""
+        cfg = get_config_manager()
+        
+        # 创建快照
+        snapshot = cfg.snapshot()
+        
+        try:
+            # 临时修改配置
+            cfg.set('timeout', 10, autosave=False)
+            cfg.set('test_mode', True, autosave=False)
+            
+            # 执行测试
+            assert cfg.timeout == 10
+            assert cfg.test_mode == True
+            
+            result = function_that_uses_config(cfg)
+            assert result == expected_value
+            
+        finally:
+            # 恢复配置
+            cfg.restore(snapshot)
+```
+
+### 测试配置管理最佳实践
+
+1. **优先使用 temporary() 方法**：这是最安全和最符合规范的方式
+2. **避免直接修改全局配置**：这可能影响其他测试的执行
+3. **确保配置恢复**：使用上下文管理器或 try/finally 确保配置能够恢复
+4. **测试隔离**：每个测试都应该能够独立运行，不受其他测试的配置影响
+5. **使用 autosave=False**：在测试中临时修改配置时，通常不希望这些修改被自动保存到文件
+
+## 配置文件格式
+
+配置管理器使用 YAML 格式存储配置，自动生成的配置文件结构如下：
+
+```yaml
+__data__:
+  app_name: "我的应用"
+  version: "1.0.0"
+  first_start_time: "2025-06-04T10:30:00.123456"
+  database:
+    host: "localhost"
+    port: 5432
+    username: "admin"
+  features:
+    cache_enabled: true
+    debug_mode: false
+__type_hints__:
+  server.port: int
+  server.timeout: float
+  log_directory: Path
+```
+
+## 环境变量支持
+
+配置管理器支持通过环境变量注入敏感信息：
+
+```python
+import os
+
+cfg = get_config_manager()
+
+# 在配置中使用环境变量
+cfg.database.password = os.getenv("DB_PASSWORD", "default_password")
+cfg.api.secret_key = os.getenv("API_SECRET_KEY")
+```
+
+## 完整示例
+
+### 主程序示例
+
+```python
+from config_manager import get_config_manager
+from datetime import datetime
 from pathlib import Path
+import os
 
-# Initialize configuration manager
-cfg = get_config_manager()
+def main():
+    # 记录应用启动时间（主程序必须）
+    start_time = datetime.now()
 
-# Set basic configurations
-cfg.app_name = "MyApp"
-cfg.app_version = "1.0.0"
+    # 获取配置管理器（主程序完整初始化）
+    cfg = get_config_manager(
+        config_path="./config/app_config.yaml",
+        watch=True,
+        auto_create=True,
+        autosave_delay=1.0,
+        first_start_time=start_time  # 主程序必须提供
+    )
 
-# Set nested configurations
-cfg.database = {}
-cfg.database.host = "localhost"
-cfg.database.port = 5432
+    # 初始化应用配置
+    if not hasattr(cfg, 'app_name'):
+        cfg.update({
+            "app_name": "示例应用",
+            "version": "1.0.0",
+            "database": {
+                "host": "localhost",
+                "port": 5432,
+                "name": "myapp_db",
+                "username": "admin",
+                "password": os.getenv("DB_PASSWORD", "")
+            },
+            "server": {
+                "host": "0.0.0.0",
+                "port": 8080,
+                "workers": 4
+            },
+            "logging": {
+                "level": "INFO",
+                "file": "app.log"
+            }
+        })
 
-# Set path value
-log_path = Path("/var/log/myapp")
-cfg.set("logging.path", log_path, type_hint=Path)
+    # 设置类型提示
+    cfg.set_type_hint("server.port", int)
+    cfg.set_type_hint("logging.file", Path)
 
-# Get path value
-log_dir = cfg.get_path("logging.path")
-print(f"Log directory: {log_dir}")
+    # 使用配置
+    print(f"启动 {cfg.app_name} v{cfg.version}")
+    print(f"启动时间: {cfg.first_start_time}")
+    print(f"数据库连接: {cfg.database.host}:{cfg.database.port}")
+    print(f"服务器监听: {cfg.server.host}:{cfg.server.port}")
 
-# Batch update
-cfg.update({
-    "app_version": "1.1.0",
-    "database.port": 6432
-})
-Usage Examples
-Basic Usage
-python
+    # 调用子模块
+    from my_module import process_data
+    process_data()
+
+    print("应用配置完成!")
+
+if __name__ == "__main__":
+    main()
+```
+
+### 子模块示例
+
+```python
+# my_module.py
 from config_manager import get_config_manager
 
-# Initialize configuration
-cfg = get_config_manager()
+def process_data():
+    """子模块中不需要传递 first_start_time"""
+    cfg = get_config_manager()  # 简单调用
 
-# Set simple values
-cfg.app_name = "MyApp"
-cfg.debug_mode = False
+    # 直接使用配置
+    batch_size = cfg.get("processing.batch_size", default=100)
+    timeout = cfg.get("processing.timeout", default=30)
 
-# Set nested values
-cfg.database = {}
-cfg.database.host = "db.example.com"
-cfg.database.credentials = {}
-cfg.database.credentials.username = "admin"
+    print(f"数据处理批次大小: {batch_size}")
+    print(f"处理超时时间: {timeout}")
 
-# Access values
-print(f"App name: {cfg.app_name}")
-print(f"DB host: {cfg.database.host}")
-print(f"DB user: {cfg.database.credentials.username}")
+    # 可以修改配置
+    cfg.processing = cfg.processing or {}
+    cfg.processing.last_run = datetime.now().isoformat()
 
-# Reload configuration
-cfg.reload()
-Path Type Support
-python
-from pathlib import Path
+def get_database_connection():
+    """获取数据库连接配置的工具函数"""
+    cfg = get_config_manager()
+    return {
+        'host': cfg.database.host,
+        'port': cfg.database.port,
+        'database': cfg.database.name,
+        'username': cfg.database.username,
+        'password': cfg.database.password
+    }
+```
+
+## 运行演示
+
+项目包含完整的演示代码，展示各种功能：
+
+```bash
+# 运行基本功能演示
+python src/demo/demo_config_manager_basic.py
+
+# 运行自动保存功能演示
+python src/demo/demo_config_manager_autosave.py
+
+# 运行高级功能演示
+python src/demo/demo_config_manager_advanced.py
+
+# 运行文件操作演示
+python src/demo/demo_config_manager_file_operations.py
+
+# 运行完整功能演示
+python src/demo/demo_config_manager_all.py
+```
+
+## 测试
+
+运行测试套件：
+
+```bash
+# 运行所有测试
+pytest
+
+# 运行单元测试
+pytest tests/01_unit_tests/
+
+# 运行集成测试  
+pytest tests/02_integration_tests/
+
+# 运行特定测试文件
+pytest tests/01_unit_tests/test_config_manager.py
+```
+
+## 重要提醒
+
+### first_start_time 参数使用规则
+
+**主程序必须提供 `first_start_time` 参数：**
+
+```python
+from datetime import datetime
 from config_manager import get_config_manager
 
-cfg = get_config_manager()
+# ✅ 主程序中的正确用法
+def main():
+    start_time = datetime.now()
+    cfg = get_config_manager(first_start_time=start_time)
+    # ... 主程序逻辑
 
-# Set path value
-log_path = Path("/var/log/myapp")
-cfg.set("logging.path", log_path, type_hint=Path)
+# ✅ 子模块中的正确用法
+def some_function():
+    cfg = get_config_manager()  # 不需要 first_start_time
+    # ... 使用配置
 
-# Get path value
-log_dir = cfg.get_path("logging.path")
-print(f"Log directory: {log_dir}")
-print(f"Type: {type(log_dir)}")
+# ❌ 主程序中的错误用法
+def main():
+    cfg = get_config_manager()  # 主程序应该提供 first_start_time
+```
 
-# Get type hint
-print(f"Type hint: {cfg.get_type_hint('logging.path')}")
-Advanced Features
-Configuration Snapshots
-python
-# Create configuration snapshot
-snapshot = cfg.snapshot()
+**使用场景：**
 
-# Modify configuration
-cfg.app_name = "ModifiedApp"
+- **主程序（main.py、app.py）**：必须提供 `first_start_time`
+- **库代码、工具函数、子模块**：可以不提供 `first_start_time`
+- **测试代码**：通常不需要提供 `first_start_time`
 
-# Restore snapshot
-cfg.restore(snapshot)
-print(f"App name restored: {cfg.app_name}")
-Temporary Configuration Context
-python
-with cfg.temporary({"debug_mode": True, "log_level": "DEBUG"}) as temp_cfg:
-    print(f"Temp debug mode: {temp_cfg.debug_mode}")
-    print(f"Temp log level: {temp_cfg.log_level}")
+`first_start_time` 参数用于：
 
-print(f"Original debug mode: {cfg.debug_mode}")
-File Watching and Auto-reload
-python
-# Enable file watching
-cfg = get_config_manager(watch=True)
+- 记录应用的首次启动时间
+- 生成配置文件的备份时间戳
+- 提供时间相关的配置功能
 
-# Auto-reload when config file is modified
-print("Modify the config file and see it reload automatically...")
-Generate Unique Configuration ID
-python
-config_id = cfg.generate_config_id()
-print(f"Generated config ID: {config_id}")
-Testing
-The project includes a comprehensive test suite. Run tests with pytest:
+## 常见问题
 
-bash
-pytest tests/
-Test file naming convention:
+### Q: 配置文件存储在哪里？
 
-tc0001_001_basic_operations.py - Basic operations tests
+A: 默认存储在 `src/config/config.yaml`。如果没有指定路径，会自动查找项目根目录并创建合适的配置目录。
 
-tc0001_002_type_hint_support.py - Type hint support tests
+### Q: 如何处理并发访问？
 
-tc0002_001_autosave_feature.py - Auto-save feature tests
+A: 配置管理器内置线程安全机制，支持多线程环境下的并发访问。
 
-tc0003_001_concurrency_test.py - Concurrency tests
+### Q: 如何备份配置？
 
-tc0004_001_error_handling.py - Error handling tests
+A: 配置管理器会自动创建带时间戳的备份文件到 `backup/` 目录，也可以使用 `snapshot()` 方法手动创建快照。
 
-Contributing
-Contributions are welcome! Please follow these steps:
+### Q: 配置文件损坏怎么办？
 
-Fork the repository
+A: 可以从自动备份恢复，或使用 `restore()` 方法从之前的快照恢复。
 
-Create your feature branch (git checkout -b feature/AmazingFeature)
+### Q: 什么时候需要传递 first_start_time？
 
-Commit your changes (git commit -m 'Add some AmazingFeature')
+A: 只有主程序（应用入口点）需要传递此参数。库代码、工具函数、子模块调用时不需要传递。
 
-Push to the branch (git push origin feature/AmazingFeature)
+### Q: autosave_delay 设置多少合适？
 
-Open a Pull Request
+A: 建议值：
 
-Please adhere to the project coding standards:
+- 开发环境：0.1-0.5 秒（快速响应）
+- 生产环境：1-5 秒（减少 I/O 频率）
+- 高频修改场景：2-10 秒（避免过度保存）
 
-All functions must have explicit return or pass
+### Q: 什么时候需要启用 watch 功能？
 
-File headers include four-line standard comments
+A: 在以下场景建议启用：
 
-Test files and functions use tc prefix numbering
+- 多进程应用需要共享配置
+- 需要支持热更新配置
+- 运维人员需要在线修改配置
+- 配置文件可能被外部工具修改
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Q: 测试中如何临时修改配置？
+
+A: 推荐使用 `temporary()` 上下文管理器：
+
+```python
+with cfg.temporary({"test_mode": True}) as temp_cfg:
+    # 使用临时配置进行测试
+    pass
+# 配置自动恢复
+```
+
+## 许可证
+
+本项目采用 MIT 许可证。详见 LICENSE 文件。
