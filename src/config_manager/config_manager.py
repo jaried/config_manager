@@ -23,7 +23,7 @@ class ConfigManager(ConfigManagerCore):
     _global_listeners = []
 
     def __new__(cls, config_path: str = None,
-                watch: bool = False, auto_create: bool = False,
+                watch: bool = True, auto_create: bool = False,
                 autosave_delay: float = 0.1, first_start_time: datetime = None):
         # 生成缓存键 - 修复：基于实际解析的路径
         cache_key = cls._generate_cache_key(config_path)

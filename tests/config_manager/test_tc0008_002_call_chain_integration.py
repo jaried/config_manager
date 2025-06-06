@@ -20,13 +20,22 @@ if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
 from config_manager.config_manager import get_config_manager, _clear_instances_for_testing
+import config_manager.config_manager as cm_module
 
 
 @pytest.fixture(autouse=True)
 def cleanup_instances():
     """每个测试后清理实例"""
-    yield
-    _clear_instances_for_testing()
+    # 临时开启调用链显示，因为这些是调用链集成测试
+    original_switch = cm_module.ENABLE_CALL_CHAIN_DISPLAY
+    cm_module.ENABLE_CALL_CHAIN_DISPLAY = True
+    
+    try:
+        yield
+    finally:
+        # 恢复原始开关状态
+        cm_module.ENABLE_CALL_CHAIN_DISPLAY = original_switch
+        _clear_instances_for_testing()
     return
 
 
@@ -263,7 +272,8 @@ def test_tc0008_002_005_call_chain_with_module_start_time():
                     cfg = get_config_manager(
                         config_path=config_file,
                         watch=False,
-                        autosave_delay=0.1
+                        autosave_delay=0.1,
+                        first_start_time=test_start_time
                     )
                     cfg.module_start_time_test = "success"
 

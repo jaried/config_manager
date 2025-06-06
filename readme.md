@@ -10,6 +10,7 @@
 - 🎯 **类型安全**：完整的类型提示支持
 - 📁 **文件监视**：实时监控配置文件变化并自动重载
 - 🔄 **快照恢复**：便捷的配置状态保存和恢复
+- 📍 **路径感知**：配置对象知道自己的配置文件路径
 - ⚡ **高性能**：优化的内存和 I/O 操作
 - 🌐 **跨平台**：支持 Windows、Linux、macOS
 
@@ -263,7 +264,36 @@ with cfg.temporary({
 print(f"调试模式: {cfg.debug_mode}")  # 原来的值
 ```
 
-### 3. 生成唯一 ID
+### 3. 配置文件路径访问
+
+```python
+cfg = get_config_manager(config_path="/path/to/config.yaml")
+
+# 获取配置文件的绝对路径
+config_path = cfg.get_config_file_path()
+print(f"配置文件路径: {config_path}")
+
+# 也可以直接从配置数据中访问
+config_path = cfg.config_file_path
+
+# 基于配置文件路径创建相关目录
+import os
+config_dir = os.path.dirname(config_path)
+log_dir = os.path.join(config_dir, "logs")
+data_dir = os.path.join(config_dir, "data")
+
+os.makedirs(log_dir, exist_ok=True)
+os.makedirs(data_dir, exist_ok=True)
+
+# 将路径信息保存到配置中
+cfg.paths = {}
+cfg.paths.config_file = config_path
+cfg.paths.config_dir = config_dir
+cfg.paths.log_dir = log_dir
+cfg.paths.data_dir = data_dir
+```
+
+### 4. 生成唯一 ID
 
 ```python
 cfg = get_config_manager()
@@ -455,6 +485,7 @@ __data__:
   app_name: "我的应用"
   version: "1.0.0"
   first_start_time: "2025-06-04T10:30:00.123456"
+  config_file_path: "/absolute/path/to/config.yaml"  # 配置文件绝对路径
   database:
     host: "localhost"
     port: 5432
@@ -597,6 +628,9 @@ python src/demo/demo_config_manager_advanced.py
 
 # 运行文件操作演示
 python src/demo/demo_config_manager_file_operations.py
+
+# 运行配置文件路径访问演示
+python src/demo/demo_config_path_access.py
 
 # 运行完整功能演示
 python src/demo/demo_config_manager_all.py

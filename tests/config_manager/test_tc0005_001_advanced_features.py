@@ -80,7 +80,7 @@ def test_tc0005_001_003_config_path_methods():
     """测试配置路径相关方法"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
 
         # 设置一个值触发自动保存
         cfg.path_test = "test_value"
@@ -151,7 +151,7 @@ def test_tc0005_001_006_backup_loading():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
 
         # 创建配置管理器并设置值
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
         cfg.backup_test = "original_value"
         cfg.nested_backup = {}
         cfg.nested_backup.value = "nested_value"

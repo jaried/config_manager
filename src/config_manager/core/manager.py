@@ -85,10 +85,13 @@ class ConfigManagerCore(ConfigNode):
 
         # 加载配置
         loaded = self._load()
-        
+
         # 设置首次启动时间（无论配置是否加载成功都要设置）
         self._setup_first_start_time(first_start_time)
-        
+
+        # 将配置文件的绝对路径作为配置数据的一部分存储
+        self._data['config_file_path'] = self._config_path
+
         if not loaded and not self._auto_create:
             return False
 
@@ -358,6 +361,11 @@ class ConfigManagerCore(ConfigNode):
         """获取配置文件路径"""
         return self._config_path
 
+    def get_config_file_path(self) -> str:
+        """获取配置文件的绝对路径（从配置数据中获取）"""
+        config_file_path = self._data.get('config_file_path', self._config_path)
+        return config_file_path
+
     # ========== 快照和恢复功能 ==========
 
     def snapshot(self) -> Dict:
@@ -451,11 +459,11 @@ class ConfigManagerCore(ConfigNode):
     def _setup_first_start_time(self, first_start_time: datetime = None):
         """设置首次启动时间"""
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
-        
+
         # 检查配置中是否已经有first_start_time
         existing_time_str = self._data.get('first_start_time')
-        
-        if existing_time_str:
+
+        if existing_time_str and first_start_time is None:
             # 如果配置中已经有时间，解析并使用它
             try:
                 self._first_start_time = datetime.fromisoformat(existing_time_str)
@@ -465,7 +473,7 @@ class ConfigManagerCore(ConfigNode):
             except (ValueError, TypeError) as e:
                 if ENABLE_CALL_CHAIN_DISPLAY:
                     print(f"解析配置中的首次启动时间失败: {e}")
-        
+
         # 如果没有现有时间，使用传入的时间或当前时间
         if first_start_time is not None:
             self._first_start_time = first_start_time
@@ -475,11 +483,11 @@ class ConfigManagerCore(ConfigNode):
             self._first_start_time = datetime.now()
             if ENABLE_CALL_CHAIN_DISPLAY:
                 print(f"使用当前时间作为首次启动时间: {self._first_start_time}")
-        
+
         # 保存到配置中
         self._data['first_start_time'] = self._first_start_time.isoformat()
-        
+
         # 立即保存配置
         self.save()
-        
+
         return

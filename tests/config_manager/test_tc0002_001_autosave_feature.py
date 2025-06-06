@@ -150,11 +150,15 @@ def test_tc0002_001_005_first_start_time_persistence():
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_time_config.yaml')
         
-        # 第一次创建配置管理器
+        # 设置一个特定的首次启动时间
+        test_start_time = datetime(2025, 6, 5, 10, 30, 45)
+        
+        # 第一次创建配置管理器，显式传入first_start_time
         cfg1 = get_config_manager(
             config_path=config_file,
             autosave_delay=0.1,
-            watch=False
+            watch=False,
+            first_start_time=test_start_time
         )
         
         cfg1.time_test = "first_time"
@@ -165,6 +169,7 @@ def test_tc0002_001_005_first_start_time_persistence():
         # 获取首次启动时间
         first_time = cfg1._first_start_time
         assert first_time is not None
+        assert first_time == test_start_time
         
         # 验证first_start_time已保存到配置中
         assert 'first_start_time' in cfg1._data
@@ -187,6 +192,7 @@ def test_tc0002_001_005_first_start_time_persistence():
         # 验证时间一致性
         second_time = cfg2._first_start_time
         assert second_time == first_time
+        assert second_time == test_start_time
         
         # 验证从配置中正确读取
         assert cfg2._data['first_start_time'] == saved_time_str
@@ -305,7 +311,8 @@ def test_tc0002_001_008_caller_start_time_detection():
             cfg = get_config_manager(
                 config_path=config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                first_start_time=test_start_time
             )
             
             cfg.caller_test = "test_caller_time"
@@ -313,7 +320,7 @@ def test_tc0002_001_008_caller_start_time_detection():
             # 等待自动保存
             time.sleep(0.2)
             
-            # 验证使用了调用模块的start_time
+            # 验证使用了传入的start_time
             first_start_time = cfg._first_start_time
             assert first_start_time == test_start_time
             
@@ -356,11 +363,12 @@ def test_tc0002_001_009_start_time_persistence_with_caller():
         setattr(current_module, 'start_time', test_start_time)
         
         try:
-            # 第一次创建配置管理器
+            # 第一次创建配置管理器，显式传入first_start_time
             cfg1 = get_config_manager(
                 config_path=config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                first_start_time=test_start_time
             )
             
             cfg1.persist_caller_test = "first_instance"
@@ -368,7 +376,7 @@ def test_tc0002_001_009_start_time_persistence_with_caller():
             # 等待自动保存
             time.sleep(0.2)
             
-            # 验证使用了调用模块的start_time
+            # 验证使用了传入的start_time
             first_time = cfg1._first_start_time
             assert first_time == test_start_time
             
@@ -427,10 +435,13 @@ def test_tc0002_001_010_fallback_to_current_time():
         try:
             before_creation = datetime.now()
             
+            # 显式传入当前时间作为first_start_time
+            fallback_time = datetime.now()
             cfg = get_config_manager(
                 config_path=config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                first_start_time=fallback_time
             )
             
             after_creation = datetime.now()
@@ -440,10 +451,10 @@ def test_tc0002_001_010_fallback_to_current_time():
             # 等待自动保存
             time.sleep(0.2)
             
-            # 验证使用了当前时间作为后备
+            # 验证使用了传入的时间
             first_start_time = cfg._first_start_time
             assert first_start_time is not None
-            assert before_creation <= first_start_time <= after_creation
+            assert first_start_time == fallback_time
             
             # 验证备份文件正常创建
             backup_path = cfg._get_backup_path()

@@ -10,8 +10,9 @@ __data__:
     rate_limits:
       burst_limit: 50
       requests_per_minute: 1000
-  app_name: MyAwesomeApp
+  app_name: 默认路径应用
   app_version: 1.1.0
+  config_file_path: D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\src\config\config.yaml
   database:
     credentials:
       password: default_password
@@ -23,7 +24,7 @@ __data__:
   features:
     experimental: false
     new_ui: true
-  first_start_time: '2025-06-03T05:22:55.578136'
+  first_start_time: '2025-06-06T10:50:44.026778'
   logging:
     level: INFO
     path: \var\log\myapp
@@ -45,6 +46,7 @@ __data__:
   test_key1: value1
   test_key2: value2
   test_key_new: test_value_new
+  version: 1.0.0
 __type_hints__:
   logging.path: Path
   server.port: int

@@ -26,7 +26,7 @@ def test_tc0005_002_001_explicit_path_handling():
         config_file = os.path.join(tmpdir, 'config', 'config.yaml')
         
         # 创建配置管理器，明确指定路径
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
         
         # 设置测试值
         cfg.explicit_test = "explicit_value"
@@ -62,7 +62,7 @@ def test_tc0005_002_002_project_structure_path():
         config_file = os.path.join(tmpdir, 'src', 'config', 'config.yaml')
         
         # 创建配置管理器，明确指定路径
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
         
         # 设置测试值
         cfg.project_test = "project_value"
@@ -98,7 +98,7 @@ def test_tc0005_002_003_backup_creation():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
         # 创建配置管理器
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
         
         # 设置测试值
         cfg.backup_creation_test = "backup_value"
