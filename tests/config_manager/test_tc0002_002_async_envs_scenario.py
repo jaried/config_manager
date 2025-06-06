@@ -9,9 +9,13 @@ import tempfile
 import asyncio
 import os
 import sys
-import yaml
+from ruamel.yaml import YAML
 from unittest.mock import patch, MagicMock
 from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
+
+# 创建YAML实例用于测试
+yaml = YAML()
+yaml.default_flow_style = False
 
 
 @pytest.fixture(autouse=True)
@@ -132,7 +136,7 @@ def test_tc0002_002_002_envs_path_simulation():
             }
         }
         with open(envs_config_file, 'w', encoding='utf-8') as f:
-            yaml.dump(initial_config, f, default_flow_style=False, allow_unicode=True)
+            yaml.dump(initial_config, f)
 
         async def simulate_envs_scenario():
             # 模拟第一次调用（正常项目路径）
@@ -310,7 +314,7 @@ def test_tc0002_002_005_mock_real_scenario():
             }
         }
         with open(envs_config, 'w', encoding='utf-8') as f:
-            yaml.dump(envs_initial_config, f, default_flow_style=False, allow_unicode=True)
+            yaml.dump(envs_initial_config, f)
 
         async def simulate_real_scenario():
             # 第一步：模拟main.py中的调用
@@ -393,14 +397,14 @@ def test_tc0002_002_005_mock_real_scenario():
 
         # 验证备份文件内容
         with open(scheduler_backup, 'r', encoding='utf-8') as f:
-            scheduler_backup_content = yaml.safe_load(f)
+            scheduler_backup_content = yaml.load(f)
 
         assert scheduler_backup_content['__data__']['environment'] == 'conda_env'
         assert scheduler_backup_content['__data__']['scheduler_started'] == "scheduler_module_started"
 
         # 验证main配置的备份文件内容
         with open(main_backup_path, 'r', encoding='utf-8') as f:
-            main_backup_content = yaml.safe_load(f)
+            main_backup_content = yaml.load(f)
 
         assert main_backup_content['__data__']['main_startup'] == "main_module_started"
         assert main_backup_content['__data__']['project_root'] == expected_main_data['project_root']

@@ -3,13 +3,28 @@ from __future__ import annotations
 from datetime import datetime
 
 import os
-import yaml
+from ruamel.yaml import YAML
 from typing import Dict, Any, Optional
 from ..utils import lock_file, unlock_file
 
 
 class FileOperations:
     """文件操作管理器"""
+
+    def __init__(self):
+        """初始化文件操作管理器"""
+        # 创建YAML实例，配置为保留注释和格式
+        self._yaml = YAML()
+        self._yaml.preserve_quotes = True
+        self._yaml.map_indent = 2
+        self._yaml.sequence_indent = 4
+        self._yaml.sequence_dash_offset = 2
+        self._yaml.default_flow_style = False
+        
+        # 存储原始YAML结构以保留注释
+        self._original_yaml_data = None
+        self._config_path = None
+        return
 
     def load_config(self, config_path: str, auto_create: bool, call_chain_tracker) -> Optional[Dict]:
         """加载配置文件"""
@@ -40,7 +55,12 @@ class FileOperations:
             with open(config_path, 'r', encoding='utf-8') as f:
                 lock_file(f)
                 try:
-                    loaded_data = yaml.safe_load(f) or {}
+                    # 加载YAML数据，保留注释结构
+                    loaded_data = self._yaml.load(f) or {}
+                    
+                    # 保存原始YAML结构和路径，用于后续保存时保留注释
+                    self._original_yaml_data = loaded_data
+                    self._config_path = config_path
                 finally:
                     unlock_file(f)
 
@@ -65,16 +85,19 @@ class FileOperations:
             return None
 
     def save_config(self, config_path: str, data: Dict[str, Any], backup_path: str = None) -> bool:
-        """保存配置到文件"""
+        """保存配置到文件，保留注释和格式"""
         try:
             # 保存到主配置文件
             original_dir = os.path.dirname(config_path)
             if original_dir:
                 os.makedirs(original_dir, exist_ok=True)
 
+            # 准备要保存的数据
+            data_to_save = self._prepare_data_for_save(config_path, data)
+
             tmp_original_path = f"{config_path}.tmp"
             with open(tmp_original_path, 'w', encoding='utf-8') as f:
-                yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+                self._yaml.dump(data_to_save, f)
 
             os.replace(tmp_original_path, config_path)
 
@@ -87,7 +110,7 @@ class FileOperations:
 
                     tmp_backup_path = f"{backup_path}.tmp"
                     with open(tmp_backup_path, 'w', encoding='utf-8') as f:
-                        yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+                        self._yaml.dump(data_to_save, f)
 
                     os.replace(tmp_backup_path, backup_path)
                     print(f"配置已自动备份到 {backup_path}")
@@ -98,6 +121,39 @@ class FileOperations:
         except Exception as e:
             print(f"保存配置失败: {str(e)}")
             return False
+
+    def _prepare_data_for_save(self, config_path: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """准备要保存的数据，尽可能保留原始结构和注释"""
+        # 如果有原始YAML数据且路径匹配，则更新原始结构
+        if (self._original_yaml_data is not None and 
+            self._config_path == config_path and
+            isinstance(self._original_yaml_data, dict)):
+            
+            # 深度更新原始数据结构
+            updated_data = self._deep_update_yaml_data(self._original_yaml_data, data)
+            return updated_data
+        else:
+            # 没有原始结构，直接返回新数据
+            return data
+
+    def _deep_update_yaml_data(self, original: Any, new_data: Any) -> Any:
+        """深度更新YAML数据，保留原始结构和注释"""
+        if isinstance(original, dict) and isinstance(new_data, dict):
+            # 对于字典，逐个更新键值
+            for key, value in new_data.items():
+                if key in original:
+                    # 递归更新已存在的键
+                    original[key] = self._deep_update_yaml_data(original[key], value)
+                else:
+                    # 添加新键
+                    original[key] = value
+            return original
+        elif isinstance(original, list) and isinstance(new_data, list):
+            # 对于列表，直接替换（保持简单）
+            return new_data
+        else:
+            # 对于其他类型，直接替换
+            return new_data
 
     def get_backup_path(self, config_path: str, base_time: datetime) -> str:
         """获取备份路径，基于给定时间生成时间戳"""

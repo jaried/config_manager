@@ -1,6 +1,20 @@
 # 配置管理器 (Config Manager)
 
-一个强大、易用的 Python 配置管理库，支持自动保存、类型提示、文件监视等高级功能。
+一个强大、易用的 Python 配置管理库，支持自动保存、类型提示、文件监视、**YAML注释保留**等高级功能。
+
+## 目录
+
+- [特性](#特性)
+- [安装](#安装)
+- [快速开始](#快速开始)
+- [进阶使用](#进阶使用)
+- [高级功能](#高级功能)
+  - [配置文件注释管理](#5-配置文件注释管理) 💬
+- [配置文件格式](#配置文件格式)
+  - [YAML注释保留功能](#yaml注释保留功能) 💬
+- [测试中的配置管理](#测试中的配置管理)
+- [完整示例](#完整示例)
+- [常见问题](#常见问题)
 
 ## 特性
 
@@ -11,6 +25,7 @@
 - 📁 **文件监视**：实时监控配置文件变化并自动重载
 - 🔄 **快照恢复**：便捷的配置状态保存和恢复
 - 📍 **路径感知**：配置对象知道自己的配置文件路径
+- 💬 **注释保留**：完美保留YAML配置文件中的注释和格式
 - ⚡ **高性能**：优化的内存和 I/O 操作
 - 🌐 **跨平台**：支持 Windows、Linux、macOS
 
@@ -23,6 +38,12 @@ git clone https://github.com/jaried/config_manager.git
 cd config_manager
 pip install -e .
 ```
+
+### 依赖要求
+
+- Python 3.8+
+- ruamel.yaml (用于YAML注释保留)
+- pytest (用于测试)
 
 ## API 参考
 
@@ -307,6 +328,78 @@ cfg.experiments[experiment_id] = {
 }
 ```
 
+### 5. 配置文件注释管理
+
+配置管理器完美支持YAML注释，让你可以在配置文件中添加详细的文档说明：
+
+```python
+# 创建带注释的配置文件
+cfg = get_config_manager(config_path="./config/documented_config.yaml", auto_create=True)
+
+# 手动创建带注释的配置文件内容
+config_with_comments = """# 应用配置文件
+# 版本: 1.0
+# 最后更新: 2025-06-06
+
+__data__:
+  # 应用基本信息
+  app_name: "我的应用"    # 应用名称，显示在标题栏
+  version: "1.0.0"       # 语义化版本号
+  
+  # 数据库连接配置
+  database:
+    host: "localhost"    # 数据库服务器地址
+    port: 5432          # PostgreSQL默认端口
+    name: "myapp_db"    # 数据库名称
+    timeout: 30         # 连接超时时间（秒）
+    
+  # 性能调优参数
+  performance:
+    max_workers: 4      # 最大工作线程数
+    cache_size: 1000    # 缓存大小（条目数）
+    batch_size: 100     # 批处理大小
+    
+  # 功能开关
+  features:
+    enable_cache: true   # 启用缓存功能
+    debug_mode: false   # 调试模式（生产环境请关闭）
+    log_sql: false      # 是否记录SQL语句
+    
+__type_hints__:
+  database.port: int
+  database.timeout: int
+  performance.max_workers: int
+
+# 配置文件说明：
+# 1. 修改配置后会自动保存
+# 2. 所有注释都会被保留
+# 3. 支持嵌套配置结构
+"""
+
+# 将带注释的内容写入文件
+with open("./config/documented_config.yaml", "w", encoding="utf-8") as f:
+    f.write(config_with_comments)
+
+# 现在通过配置管理器修改配置
+cfg = get_config_manager(config_path="./config/documented_config.yaml")
+cfg.app_name = "更新后的应用名"
+cfg.database.host = "production-server"
+cfg.new_setting = "新增的配置项"
+
+# 保存后，所有注释都会被完美保留！
+cfg.save()
+
+print("配置已更新，注释完整保留！")
+```
+
+**注释保留的优势：**
+
+- 📝 **文档化配置**：直接在配置文件中编写说明文档
+- 🔧 **运维友好**：运维人员可以直接查看配置说明
+- 📚 **知识传承**：配置的历史和用途得以保留
+- 🎯 **减少错误**：清晰的注释减少配置错误
+- 🔄 **版本控制友好**：Git等版本控制工具能更好地跟踪变化
+
 ## 测试中的配置管理
 
 在测试用例中，经常需要临时修改配置以测试不同的场景。配置管理器提供了多种方法来安全地进行测试配置管理。
@@ -481,23 +574,76 @@ class TestExample:
 配置管理器使用 YAML 格式存储配置，自动生成的配置文件结构如下：
 
 ```yaml
+# 应用配置文件
+# 这里可以添加配置说明和使用指南
 __data__:
   app_name: "我的应用"
   version: "1.0.0"
   first_start_time: "2025-06-04T10:30:00.123456"
   config_file_path: "/absolute/path/to/config.yaml"  # 配置文件绝对路径
+  
+  # 数据库配置
   database:
-    host: "localhost"
-    port: 5432
-    username: "admin"
+    host: "localhost"     # 数据库主机地址
+    port: 5432           # 数据库端口
+    username: "admin"    # 数据库用户名
+    
+  # 功能开关
   features:
-    cache_enabled: true
-    debug_mode: false
+    cache_enabled: true   # 是否启用缓存
+    debug_mode: false    # 调试模式开关
+    
 __type_hints__:
   server.port: int
   server.timeout: float
   log_directory: Path
+
+# 配置文件末尾注释
 ```
+
+### YAML注释保留功能
+
+配置管理器使用 `ruamel.yaml` 库，**完美保留配置文件中的所有注释和格式**：
+
+- ✅ **顶部注释**：文件开头的说明注释
+- ✅ **行内注释**：配置项后的说明注释  
+- ✅ **节点注释**：配置节点上方的分组注释
+- ✅ **末尾注释**：文件结尾的备注信息
+
+**示例：注释保留效果**
+
+修改前的配置文件：
+```yaml
+# 这是我的应用配置文件
+__data__:
+  # 应用基本信息
+  app_name: "旧应用名"  # 应用名称
+  version: "1.0.0"     # 版本号
+  
+  # 数据库配置
+  database:
+    host: "localhost"  # 数据库地址
+    port: 5432        # 端口号
+```
+
+通过配置管理器修改后：
+```yaml
+# 这是我的应用配置文件
+__data__:
+  # 应用基本信息
+  app_name: "新应用名"  # 应用名称
+  version: "2.0.0"     # 版本号
+  
+  # 数据库配置
+  database:
+    host: "localhost"  # 数据库地址
+    port: 5432        # 端口号
+    
+  # 新增配置项
+  new_feature: true
+```
+
+**所有注释都被完美保留！**
 
 ## 环境变量支持
 
@@ -731,6 +877,16 @@ A: 在以下场景建议启用：
 - 运维人员需要在线修改配置
 - 配置文件可能被外部工具修改
 
+### Q: 配置文件中的注释会丢失吗？
+
+A: **不会！** 配置管理器使用 `ruamel.yaml` 库，完美保留所有类型的YAML注释：
+
+- 顶部注释、行内注释、节点注释、末尾注释
+- 原始格式和缩进
+- 引号风格和其他YAML格式特性
+
+这意味着你可以在配置文件中添加详细的说明文档，这些注释在配置更新后会被完整保留。
+
 ### Q: 测试中如何临时修改配置？
 
 A: 推荐使用 `temporary()` 上下文管理器：
@@ -741,6 +897,38 @@ with cfg.temporary({"test_mode": True}) as temp_cfg:
     pass
 # 配置自动恢复
 ```
+
+## 更新日志
+
+### v2.1.0 (2025-06-06)
+
+**🎉 重大功能更新：YAML注释保留**
+
+- ✨ **新增**：完美的YAML注释保留功能
+  - 支持顶部注释、行内注释、节点注释、末尾注释
+  - 保留原始格式和缩进风格
+  - 使用 `ruamel.yaml` 替代 `pyyaml` 实现
+- 🔧 **改进**：智能数据合并策略
+  - 更新配置时保留原始YAML结构
+  - 新增配置项时保持格式一致性
+- 🧪 **测试**：增强多线程测试稳定性
+  - 优化多线程环境下的输出捕获
+  - 改进测试用例的健壮性
+- 📚 **文档**：完善注释保留功能说明
+  - 新增详细的使用示例
+  - 添加最佳实践指南
+
+**迁移说明**：
+- 依赖从 `pyyaml` 更新为 `ruamel.yaml`
+- API保持完全兼容，无需修改现有代码
+- 现有配置文件格式完全兼容
+
+### v2.0.x
+
+- 基础配置管理功能
+- 自动保存和文件监视
+- 类型提示和快照恢复
+- 多线程安全支持
 
 ## 许可证
 

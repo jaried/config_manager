@@ -9,6 +9,11 @@ import tempfile
 import os
 import sys
 import time
+from ruamel.yaml import YAML
+
+# 创建YAML实例用于测试
+yaml = YAML()
+yaml.default_flow_style = False
 
 # 添加src到路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -253,9 +258,8 @@ class TestConfigFilePath:
             time.sleep(0.2)  # 等待自动保存
             
             # 直接读取YAML文件验证结构
-            import yaml
             with open(config_file, 'r', encoding='utf-8') as f:
-                yaml_content = yaml.safe_load(f)
+                yaml_content = yaml.load(f)
             
             # 验证YAML文件结构
             assert '__data__' in yaml_content, "YAML文件应该包含__data__节点"

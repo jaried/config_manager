@@ -8,7 +8,11 @@ import pytest
 import tempfile
 import time
 import os
-import yaml
+from ruamel.yaml import YAML
+
+# 创建YAML实例用于测试
+yaml = YAML()
+yaml.default_flow_style = False
 from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
 
 
@@ -284,7 +288,7 @@ def test_tc0002_001_007_backup_directory_structure():
         
         # 验证文件内容正确
         with open(backup_path, 'r', encoding='utf-8') as f:
-            backup_content = yaml.safe_load(f)
+            backup_content = yaml.load(f)
         
         assert backup_content is not None
         assert '__data__' in backup_content
