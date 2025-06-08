@@ -127,9 +127,24 @@ class ConfigManagerCore(ConfigNode):
 
         if loaded:
             self._data.clear()
-            raw_data = loaded.get('__data__', {})
-            if ENABLE_CALL_CHAIN_DISPLAY:
-                print(f"加载的原始数据: {raw_data}")
+            
+            # 检查是否为标准格式（包含__data__节点）
+            if '__data__' in loaded:
+                # 标准格式：使用__data__节点下的数据
+                raw_data = loaded.get('__data__', {})
+                self._type_hints = loaded.get('__type_hints__', {})
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"检测到标准格式，加载__data__节点: {raw_data}")
+            else:
+                # 原始格式：直接使用整个loaded数据，但排除内部键
+                raw_data = {}
+                for key, value in loaded.items():
+                    # 排除ConfigManager的内部键
+                    if not key.startswith('__'):
+                        raw_data[key] = value
+                self._type_hints = {}
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    print(f"检测到原始格式，直接加载配置数据: {raw_data}")
 
             # 重建数据结构
             if raw_data:
@@ -139,7 +154,6 @@ class ConfigManagerCore(ConfigNode):
                     else:
                         self._data[key] = value
 
-            self._type_hints = loaded.get('__type_hints__', {})
             if ENABLE_CALL_CHAIN_DISPLAY:
                 print(f"配置加载完成，_data内容: {self._data}")
             return True

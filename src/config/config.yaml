@@ -12,6 +12,7 @@ __data__:
       requests_per_minute: 1000
   app_name: 默认路径应用
   app_version: 1.1.0
+  project_name: config_manager
   config_file_path: 
     D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\src\config\config.yaml
   database:
@@ -25,7 +26,7 @@ __data__:
   features:
     experimental: false
     new_ui: true
-  first_start_time: '2025-06-07T03:42:49.811366'
+  first_start_time: '2025-01-07T10:00:00'
   logging:
     level: INFO
     path: \var\log\myapp
@@ -36,7 +37,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-07T03:42:58.664789'
+  scheduler_start_time: '2025-06-08T12:38:41.798951'
   scheduler_status: running
   server:
     port: '8080'
@@ -48,6 +49,7 @@ __data__:
   test_key2: value2
   test_key_new: test_value_new
   version: 1.0.0
+  test_backup_isolation: production_value
 __type_hints__:
   logging.path: Path
   server.port: int
