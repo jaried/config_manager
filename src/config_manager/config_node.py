@@ -38,6 +38,21 @@ class ConfigNode:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
         data = super().__getattribute__('_data')
+        
+        # 特殊处理debug_mode：优先使用配置文件中的值，如果没有则使用is_debug()
+        if name == 'debug_mode':
+            # 首先检查配置文件中是否有debug_mode设置
+            if 'debug_mode' in data:
+                return data['debug_mode']
+            
+            # 如果配置文件中没有，则使用is_debug()的值
+            try:
+                from is_debug import is_debug
+                return is_debug()
+            except ImportError:
+                # 如果is_debug模块不可用，默认为生产模式
+                return False
+
         if name in data:
             return data[name]
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")

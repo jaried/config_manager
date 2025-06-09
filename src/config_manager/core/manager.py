@@ -15,6 +15,7 @@ from .file_operations import FileOperations
 from .autosave_manager import AutosaveManager
 from .watcher import FileWatcher
 from .call_chain import CallChainTracker
+from .path_configuration import PathConfigurationManager
 
 
 class ConfigManagerCore(ConfigNode):
@@ -30,6 +31,7 @@ class ConfigManagerCore(ConfigNode):
         self._autosave_manager = None
         self._watcher = None
         self._call_chain_tracker = None
+        self._path_config_manager = None
 
         # 基本属性
         self._original_config_path = None
@@ -97,6 +99,9 @@ class ConfigManagerCore(ConfigNode):
 
         # 注册清理函数
         atexit.register(self._cleanup)
+
+        # 初始化路径配置
+        self._initialize_path_configuration()
 
         # 启动文件监视
         if watch and self._watcher:
@@ -322,6 +327,10 @@ class ConfigManagerCore(ConfigNode):
         if isinstance(value, Path):
             value = str(value)
 
+        # 检查是否为路径配置，如果是则自动创建目录
+        if self._is_path_configuration(key, value):
+            self._create_directory_for_path(key, value)
+
         # 设置值
         final_key = keys[-1]
         if isinstance(value, dict):
@@ -331,6 +340,10 @@ class ConfigManagerCore(ConfigNode):
                 current._data[final_key] = value
             else:
                 setattr(current, final_key, value)
+
+        # 检查是否需要更新路径配置
+        if self._should_update_path_config(key):
+            self._update_path_configuration()
 
         if autosave:
             self._schedule_autosave()
@@ -505,3 +518,142 @@ class ConfigManagerCore(ConfigNode):
         self.save()
 
         return
+
+    def _initialize_path_configuration(self) -> None:
+        """初始化路径配置"""
+        try:
+            self._path_config_manager = PathConfigurationManager(self)
+            self._path_config_manager.initialize_path_configuration()
+        except Exception as e:
+            # 路径配置初始化失败，记录错误但不影响主流程
+            print(f"路径配置初始化失败: {e}")
+            import traceback
+            traceback.print_exc()
+            self._path_config_manager = None
+
+    def _should_update_path_config(self, key: str) -> bool:
+        """判断是否需要更新路径配置"""
+        path_related_keys = [
+            'base_dir', 'project_name', 'experiment_name', 
+            'first_start_time', 'debug_mode'
+        ]
+        return key in path_related_keys
+
+    def _update_path_configuration(self) -> None:
+        """更新路径配置"""
+        if self._path_config_manager:
+            try:
+                # 清除缓存，确保使用最新配置
+                self._path_config_manager.invalidate_cache()
+                path_configs = self._path_config_manager.generate_all_paths()
+                
+                # 首先创建所有目录
+                from .path_configuration import DirectoryCreator
+                directory_creator = DirectoryCreator()
+                creation_results = directory_creator.create_path_structure(path_configs)
+                
+                # 记录目录创建结果
+                for key, success in creation_results.items():
+                    if not success:
+                        print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
+                
+                # 然后设置配置值
+                for path_key, path_value in path_configs.items():
+                    # 避免递归调用，直接设置值而不触发路径更新
+                    self._data[path_key] = path_value
+                    # 同时设置到paths命名空间
+                    if path_key.startswith('paths.'):
+                        nested_key = path_key[6:]  # 去掉'paths.'前缀
+                        if 'paths' not in self._data:
+                            self._data['paths'] = ConfigNode()
+                        if hasattr(self._data['paths'], '_data'):
+                            self._data['paths']._data[nested_key] = path_value
+                        else:
+                            setattr(self._data['paths'], nested_key, path_value)
+            except Exception as e:
+                print(f"路径配置更新失败: {e}")
+                import traceback
+                traceback.print_exc()
+
+    def get_path_configuration_info(self) -> Dict[str, Any]:
+        """获取路径配置信息"""
+        if self._path_config_manager:
+            return self._path_config_manager.get_path_info()
+        return {}
+
+    def create_path_directories(self, create_all: bool = False) -> Dict[str, bool]:
+        """创建路径目录结构"""
+        if self._path_config_manager:
+            return self._path_config_manager.create_directories(create_all)
+        return {}
+
+    def update_debug_mode(self) -> None:
+        """更新调试模式"""
+        if self._path_config_manager:
+            self._path_config_manager.update_debug_mode()
+    
+    def _is_path_configuration(self, key: str, value: Any) -> bool:
+        """判断是否为路径配置
+        
+        Args:
+            key: 配置键
+            value: 配置值
+            
+        Returns:
+            bool: 是否为路径配置
+        """
+        # 检查是否为字符串类型
+        if not isinstance(value, str):
+            return False
+        
+        # 检查是否为paths命名空间
+        if key.startswith('paths.'):
+            return True
+        
+        # 检查字段名是否包含路径关键词
+        path_keywords = ['dir', 'path', 'directory', 'folder', 'location', 'root', 'base']
+        key_lower = key.lower()
+        if any(keyword in key_lower for keyword in path_keywords):
+            # 进一步检查值是否像路径
+            return self._looks_like_path(value)
+        
+        return False
+    
+    def _looks_like_path(self, value: str) -> bool:
+        """判断字符串是否像路径
+        
+        Args:
+            value: 字符串值
+            
+        Returns:
+            bool: 是否像路径
+        """
+        if not value:
+            return False
+        
+        # 检查是否包含路径分隔符
+        if '/' in value or '\\' in value:
+            return True
+        
+        # 检查是否为Windows盘符格式
+        if len(value) >= 2 and value[1] == ':':
+            return True
+        
+        return False
+    
+    def _create_directory_for_path(self, key: str, path: str) -> None:
+        """为路径配置创建目录
+        
+        Args:
+            key: 配置键
+            path: 路径值
+        """
+        try:
+            from pathlib import Path
+            Path(path).mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError, ValueError) as e:
+            # 目录创建失败，记录警告但不中断程序
+            print(f"警告: 无法创建目录 {key}: {path}, 错误: {e}")
+        except Exception as e:
+            # 其他未预期的错误
+            print(f"警告: 创建目录时发生未知错误 {key}: {path}, 错误: {e}")

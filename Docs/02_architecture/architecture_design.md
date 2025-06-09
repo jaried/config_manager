@@ -47,6 +47,10 @@
 │  │ FileWatcher  │ │CallChainTracker│ │TestEnvironment│        │
 │  │   文件监视   │ │   调用链追踪 │ │   测试环境   │        │
 │  └──────────────┘ └──────────────┘ └──────────────┘        │
+│  ┌──────────────┐ ┌──────────────┐                         │
+│  │PathConfiguration│ │   is_debug   │                         │
+│  │   路径配置   │ │   调试检测   │                         │
+│  └──────────────┘ └──────────────┘                         │
 ├─────────────────────────────────────────────────────────────┤
 │  存储层 (Storage Layer)                                     │
 │  ┌─────────────────┐  ┌─────────────────┐                   │
@@ -165,6 +169,35 @@
 - **`_is_protected_field(key, value)`**: 保护网络URL、正则表达式等特殊字段
 - **`_replace_all_paths_in_config(config, test_base_dir, temp_base)`**: 递归路径替换
 - **`_convert_to_test_path(original_path, test_base_dir, temp_base)`**: 路径转换算法
+
+### 3.9 PathConfigurationManager 类（新增）
+
+路径配置管理器，负责标准化路径配置的生成和管理。
+
+**职责**：
+- 集成is_debug模块，自动检测调试模式
+- 生成标准化的项目路径结构
+- 支持调试模式和生产模式的路径隔离
+- 基于时间生成日志目录结构
+- 提供检查点和模型存储路径管理
+
+**关键方法**：
+- `initialize_path_configuration()`: 初始化路径配置
+- `update_debug_mode()`: 更新调试模式状态
+- `generate_work_directory()`: 生成工作目录路径
+- `generate_checkpoint_directories()`: 生成检查点目录
+- `generate_log_directories()`: 生成日志目录
+- `parse_time_components()`: 解析时间组件
+- `validate_path_configuration()`: 验证路径配置
+
+**配置字段管理**：
+- `debug_mode`: 调试模式标志（基于is_debug()）
+- `base_dir`: 基础存储路径
+- `work_dir`: 工作目录路径
+- `checkpoint_dir`: 检查点目录
+- `best_checkpoint_dir`: 最佳检查点目录
+- `tsb_logs_dir`: TensorBoard日志目录
+- `logs_dir`: 普通日志目录
 
 ## 4. 配置文件路径管理设计（新增功能）
 
@@ -369,6 +402,36 @@ environments = TestEnvironmentManager.list_test_environments()
 - **路径自动适配**：备份路径基于当前配置文件路径自动生成
 - **功能一致性**：测试环境下的备份功能与生产环境完全一致
 - **清理包含**：测试环境清理时会同时清理配置文件和备份文件
+
+### 5.8 自动目录创建机制
+
+#### 5.8.1 设计目标
+- **即时可用**：路径配置设置后，对应目录立即可用
+- **错误预防**：避免外部模块因目录不存在而出错
+- **透明操作**：目录创建对用户透明，不影响配置设置流程
+
+#### 5.8.2 触发机制
+```
+路径配置设置 → 检测路径字段 → 自动创建目录
+    ↓
+1. 直接设置路径: ConfigManagerCore.set() → _create_directory_for_path()
+2. 批量更新路径: ConfigUpdater.update_path_configurations() → DirectoryCreator.create_path_structure()
+3. 路径配置管理器: PathConfigurationManager._update_path_configuration() → DirectoryCreator.create_path_structure()
+    ↓
+Path.mkdir(parents=True, exist_ok=True)
+```
+
+#### 5.8.3 适用范围
+- **paths命名空间**：所有以"paths."开头的配置项
+- **路径字段识别**：包含路径关键词的字段名
+- **值格式验证**：确认值为有效路径格式
+- **测试模式支持**：测试环境下的路径同样自动创建
+- **配置管理器集成**：路径配置管理器生成的路径自动创建
+
+#### 5.8.4 错误处理策略
+- **权限错误**：记录警告，不中断程序执行
+- **路径无效**：跳过创建，记录错误信息
+- **创建失败**：返回失败状态，但不抛出异常
 
 ## 6. 数据流设计
 
@@ -602,8 +665,42 @@ __type_hints__: {}
 - 性能监控指标
 - 错误报告机制
 
+## 13. 修复记录
+
+### 13.1 测试模式路径替换修复（2025-01-09）
+
+#### 问题描述
+测试模式下，生产环境配置中已存在的特殊路径字段（如 `base_dir`、`work_dir`）没有被正确替换为测试环境路径。
+
+#### 修复内容
+- **组件**：`ConfigManager._replace_all_paths_in_config`
+- **修复**：增强特殊路径字段的强制替换逻辑
+- **影响**：确保测试环境与生产环境完全隔离
+
+#### 技术细节
+```python
+# 修复前：只为不存在的字段添加默认值
+for key, default_path in special_path_mappings.items():
+    if key not in config_data:
+        config_data[key] = default_path
+
+# 修复后：强制替换已存在的非测试路径
+for key, default_path in special_path_mappings.items():
+    if key not in config_data:
+        config_data[key] = default_path
+    else:
+        current_value = config_data[key]
+        if isinstance(current_value, str) and temp_base not in current_value:
+            config_data[key] = default_path
+```
+
+#### 验证结果
+- ✅ 测试用例 `test_tc0012_005_007_work_dir_with_project_name` 通过
+- ✅ 所有特殊路径字段正确替换为测试环境路径
+- ✅ 保持向后兼容性，不影响现有功能
+
 ---
 
-**文档版本**: v1.2  
-**最后更新**: 2025-06-07  
-**更新内容**: 添加原始YAML格式支持设计，完善配置文件格式说明 
+**文档版本**: v1.3  
+**最后更新**: 2025-01-09  
+**更新内容**: 记录测试模式路径替换修复 

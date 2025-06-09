@@ -354,10 +354,15 @@ class ConfigManager(ConfigManagerCore):
             'storage_dir': os.path.join(test_base_dir, 'storage')
         }
 
-        # 首先确保关键路径字段存在
+        # 首先确保关键路径字段存在，并强制替换特殊路径字段
         for key, default_path in special_path_mappings.items():
             if key not in config_data:
                 config_data[key] = default_path
+            else:
+                # 对于已存在的特殊路径字段，如果不是测试路径，则强制替换
+                current_value = config_data[key]
+                if isinstance(current_value, str) and temp_base not in current_value:
+                    config_data[key] = default_path
 
         def replace_paths_recursive(obj, parent_key=''):
             """递归替换对象中的路径"""
@@ -387,9 +392,9 @@ class ConfigManager(ConfigManagerCore):
                         replace_paths_recursive(item, f"{parent_key}[{i}]")
                     elif isinstance(item, str) and cls._is_path_like(item) and temp_base not in item:
                         # 列表中的路径字符串，跳过已经是测试路径的
-                                            new_path = cls._convert_to_test_path(item, test_base_dir, temp_base)
-                    if new_path != item:
-                        obj[i] = new_path
+                        new_path = cls._convert_to_test_path(item, test_base_dir, temp_base)
+                        if new_path != item:
+                            obj[i] = new_path
 
         replace_paths_recursive(config_data)
 
