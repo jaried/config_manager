@@ -9,7 +9,8 @@
 - [快速开始](#快速开始)
 - [进阶使用](#进阶使用)
 - [高级功能](#高级功能)
-  - [配置文件注释管理](#5-配置文件注释管理) 💬
+  - [自动路径配置管理](#4-自动路径配置管理) 🏗️
+  - [配置文件注释管理](#6-配置文件注释管理) 💬
 - [配置文件格式](#配置文件格式)
   - [YAML注释保留功能](#yaml注释保留功能) 💬
 - [测试中的配置管理](#测试中的配置管理)
@@ -30,6 +31,7 @@
 - 💬 **注释保留**：完美保留YAML配置文件中的注释和格式
 - 📄 **多格式支持**：支持标准格式和原始YAML格式，自动识别
 - 🧪 **测试模式**：一键创建隔离的测试环境，智能路径替换，简化测试代码编写
+- 🏗️ **自动路径管理**：智能生成项目目录结构，支持调试模式和时间戳，自动创建所需目录
 - ⚡ **高性能**：优化的内存和 I/O 操作
 - 🌐 **跨平台**：支持 Windows、Linux、macOS
 
@@ -318,9 +320,68 @@ cfg.paths.config_file = config_path
 cfg.paths.config_dir = config_dir
 cfg.paths.log_dir = log_dir
 cfg.paths.data_dir = data_dir
+
+# 访问路径配置（推荐方式）
+print(f"配置目录: {cfg.paths.config_dir}")
+print(f"日志目录: {cfg.paths.log_dir}")
+print(f"数据目录: {cfg.paths.data_dir}")
 ```
 
-### 4. 生成唯一 ID
+### 4. 自动路径配置管理
+
+配置管理器提供强大的路径配置功能，能够自动生成和管理项目所需的各种目录路径：
+
+```python
+from datetime import datetime
+
+# 主程序中初始化配置管理器
+start_time = datetime.now()
+cfg = get_config_manager(
+    config_path="./config/project_config.yaml",
+    auto_create=True,
+    first_start_time=start_time
+)
+
+# 设置基础路径配置
+cfg.base_dir = "d:/logs"
+cfg.project_name = "my_project"
+cfg.experiment_name = "experiment_001"
+cfg.debug_mode = False
+
+# 路径配置会自动生成，通过 config.paths.xxx 访问
+print(f"工作目录: {cfg.paths.work_dir}")           # d:/logs/my_project/experiment_001
+print(f"检查点目录: {cfg.paths.checkpoint_dir}")    # d:/logs/my_project/experiment_001/checkpoint
+print(f"最佳检查点: {cfg.paths.best_checkpoint_dir}") # d:/logs/my_project/experiment_001/checkpoint/best
+print(f"调试目录: {cfg.paths.debug_dir}")          # d:/logs/my_project/experiment_001/debug
+print(f"日志目录: {cfg.paths.log_dir}")           # d:/logs/my_project/experiment_001/logs/2025-01-08/103000
+print(f"TensorBoard: {cfg.paths.tsb_logs_dir}")   # d:/logs/my_project/experiment_001/tsb_logs/2025-01-08/103000
+
+# 所有目录会自动创建，无需手动处理
+```
+
+**路径配置特性：**
+
+- 🏗️ **自动生成**：基于项目名称、实验名称自动生成标准化目录结构
+- 📁 **自动创建**：配置的所有路径目录会自动创建
+- 🐛 **调试模式支持**：调试模式下会在路径中添加debug标识
+- ⏰ **时间戳支持**：日志目录基于启动时间自动生成时间戳子目录
+- 🎯 **标准化结构**：提供机器学习项目的标准目录结构
+
+**路径访问方式：**
+
+```python
+# 推荐方式：通过paths命名空间访问
+work_dir = cfg.paths.work_dir
+log_dir = cfg.paths.log_dir
+debug_dir = cfg.paths.debug_dir
+
+# 备选方式：通过get方法访问
+work_dir = cfg.get('paths.work_dir')
+log_dir = cfg.get('paths.log_dir')
+debug_dir = cfg.get('paths.debug_dir')
+```
+
+### 5. 生成唯一 ID
 
 ```python
 cfg = get_config_manager()
@@ -334,7 +395,7 @@ cfg.experiments[experiment_id] = {
 }
 ```
 
-### 5. 配置文件注释管理
+### 6. 配置文件注释管理
 
 配置管理器完美支持YAML注释，让你可以在配置文件中添加详细的文档说明：
 
@@ -491,7 +552,7 @@ def test_with_production_config():
     
     # 验证路径已被替换
     print(f"base_dir: {cfg.base_dir}")  # 输出测试环境路径
-    print(f"log_dir: {cfg.log_dir}")    # 输出测试环境路径
+    print(f"log_dir: {cfg.paths.log_dir}")    # 输出测试环境路径
 ```
 
 ### 路径自动替换功能
@@ -503,7 +564,7 @@ def test_path_replacement():
     # 原生产配置可能包含：
     # base_dir: "d:/logs/"
     # work_dir: "d:/logs/bakamh"
-    # log_dir: "d:/logs/bakamh/logs"
+# paths.log_dir: "d:/logs/bakamh/logs"
     # data_dir: "d:/logs/bakamh/data"
     
     cfg = get_config_manager(test_mode=True)
@@ -511,11 +572,11 @@ def test_path_replacement():
     # 测试模式下，所有路径会被自动替换为：
     # base_dir: "/tmp/tests/20250607/143052"
     # work_dir: "/tmp/tests/20250607/143052"
-    # log_dir: "/tmp/tests/20250607/143052/logs"
+# paths.log_dir: "/tmp/tests/20250607/143052/logs"
     # data_dir: "/tmp/tests/20250607/143052/data"
     
     assert cfg.base_dir.startswith("/tmp/tests/")
-    assert cfg.log_dir.endswith("/logs")
+    assert cfg.paths.log_dir.endswith("/logs")
     assert cfg.data_dir.endswith("/data")
 ```
 

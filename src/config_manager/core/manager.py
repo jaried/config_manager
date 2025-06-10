@@ -503,7 +503,15 @@ class ConfigManagerCore(ConfigNode):
 
         # 如果没有现有时间，使用传入的时间或当前时间
         if first_start_time is not None:
-            self._first_start_time = first_start_time
+            # 如果传入的是字符串，先解析为datetime对象
+            if isinstance(first_start_time, str):
+                try:
+                    self._first_start_time = datetime.fromisoformat(first_start_time)
+                except (ValueError, TypeError):
+                    # 如果解析失败，使用当前时间
+                    self._first_start_time = datetime.now()
+            else:
+                self._first_start_time = first_start_time
             if ENABLE_CALL_CHAIN_DISPLAY:
                 print(f"使用传入的首次启动时间: {self._first_start_time}")
         else:
