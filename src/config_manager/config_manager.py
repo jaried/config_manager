@@ -139,11 +139,14 @@ class ConfigManager(ConfigManagerCore):
                 os.path.join(cwd, 'src', 'config', 'config.yaml'),
                 os.path.join(cwd, 'config', 'config.yaml'),
                 os.path.join(cwd, 'config.yaml'),
-                os.path.join(cwd, 'tests', 'src', 'config', 'config.yaml'),  # 测试配置
             ]
             
             for path in possible_config_paths:
                 if os.path.exists(path):
+                    # 修复: 如果找到的配置文件在tests目录下，跳过
+                    if 'tests' + os.sep in path or '/tests/' in path:
+                        print(f"⚠️  跳过tests目录下的配置文件: {path}")
+                        continue
                     prod_config_path = path
                     print(f"✓ 找到配置文件: {prod_config_path}")
                     break
@@ -166,6 +169,10 @@ class ConfigManager(ConfigManagerCore):
                     
                     for path in test_paths:
                         if os.path.exists(path):
+                            # 修复: 如果找到的配置文件在tests目录下，跳过
+                            if 'tests' + os.sep in path or '/tests/' in path:
+                                print(f"⚠️  跳过tests目录下的配置文件: {path}")
+                                continue
                             prod_config_path = path
                             print(f"✓ 在上级目录找到配置文件: {prod_config_path}")
                             break
@@ -208,6 +215,10 @@ class ConfigManager(ConfigManagerCore):
                             
                             for path in test_paths:
                                 if os.path.exists(path):
+                                    # 修复: 如果找到的配置文件在tests目录下，跳过
+                                    if 'tests' + os.sep in path or '/tests/' in path:
+                                        print(f"⚠️  跳过tests目录下的配置文件: {path}")
+                                        continue
                                     prod_config_path = path
                                     print(f"✓ 从调用栈找到配置文件: {prod_config_path}")
                                     break
@@ -241,9 +252,17 @@ class ConfigManager(ConfigManagerCore):
                 for pattern in common_patterns:
                     matches = glob.glob(pattern)
                     if matches:
-                        # 选择第一个匹配的文件
-                        prod_config_path = matches[0]
-                        print(f"✓ 通过模式匹配找到配置文件: {prod_config_path}")
+                        # 修复: 过滤掉tests目录下的配置文件
+                        filtered_matches = [
+                            match for match in matches
+                            if not ('tests' + os.sep in match or '/tests/' in match)
+                        ]
+                        if filtered_matches:
+                            # 选择第一个匹配的文件
+                            prod_config_path = filtered_matches[0]
+                            print(f"✓ 通过模式匹配找到配置文件: {prod_config_path}")
+                        else:
+                            print("⚠️  模式匹配找到的都是tests目录下的配置文件，已跳过")
                         break
 
         # 3. 从生产配置中读取project_name和first_start_time
@@ -396,7 +415,9 @@ class ConfigManager(ConfigManagerCore):
         # 2. 检查标准配置路径
         standard_config_path = os.path.join(project_root, 'src', 'config', 'config.yaml')
         if os.path.exists(standard_config_path):
-            return standard_config_path
+            # 修复: 确保不是tests目录下的配置文件
+            if not ('tests' + os.sep in standard_config_path or '/tests/' in standard_config_path):
+                return standard_config_path
 
         # 3. 检查其他可能的配置路径
         possible_paths = [
@@ -407,7 +428,9 @@ class ConfigManager(ConfigManagerCore):
 
         for path in possible_paths:
             if os.path.exists(path):
-                return path
+                # 修复: 确保不是tests目录下的配置文件
+                if not ('tests' + os.sep in path or '/tests/' in path):
+                    return path
 
         return None
 
