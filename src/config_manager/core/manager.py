@@ -686,3 +686,33 @@ class ConfigManagerCore(ConfigNode):
         except Exception as e:
             # 其他未预期的错误
             print(f"警告: 创建目录时发生未知错误 {key}: {path}, 错误: {e}")
+
+    def get_serializable_data(self):
+        """获取可序列化的配置数据，用于多进程环境
+        
+        Returns:
+            SerializableConfigData: 可序列化的配置数据对象
+        """
+        from ..serializable_config import create_serializable_config
+        return create_serializable_config(self)
+    
+    def create_serializable_snapshot(self):
+        """创建可序列化的配置快照
+        
+        Returns:
+            SerializableConfigData: 可序列化的配置快照
+        """
+        return self.get_serializable_data()
+    
+    def is_pickle_serializable(self) -> bool:
+        """检查配置管理器是否可以被pickle序列化
+        
+        Returns:
+            bool: 是否可序列化（通常返回False，因为包含不可序列化的组件）
+        """
+        try:
+            import pickle
+            pickle.dumps(self)
+            return True
+        except Exception:
+            return False

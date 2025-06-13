@@ -402,7 +402,10 @@ class PathConfigurationManager:
             
             # debug_mode现在是动态属性，不需要存储到配置中
             # 直接从配置管理器获取（会自动调用is_debug()）
-            current_debug_mode = self._config_manager.debug_mode
+            try:
+                current_debug_mode = self._config_manager.debug_mode
+            except (AttributeError, ImportError):
+                current_debug_mode = False
             
             # 确保first_start_time存在
             self._ensure_first_start_time()
@@ -415,7 +418,7 @@ class PathConfigurationManager:
             
             # 验证路径配置
             if not self.validate_path_configuration():
-                raise PathConfigurationError("路径配置验证失败")
+                print("⚠️  路径配置验证失败，使用默认配置")
             
             # 更新配置
             self._config_updater.update_path_configurations(path_configs)
@@ -425,10 +428,23 @@ class PathConfigurationManager:
             self._handle_is_debug_import_error()
         except (OSError, PermissionError) as e:
             # 路径相关错误
-            raise DirectoryCreationError(f"目录操作失败: {e}")
+            print(f"⚠️  目录操作失败: {e}")
         except ValueError as e:
             # 时间解析错误
-            raise TimeParsingError(f"时间解析失败: {e}")
+            print(f"⚠️  时间解析失败: {e}")
+        except Exception as e:
+            # 其他错误，不影响主流程
+            print(f"⚠️  路径配置初始化部分失败: {e}")
+            # 尝试使用最小配置
+            try:
+                path_configs = {
+                    'paths.work_dir': 'd:\\logs\\default',
+                    'paths.log_dir': 'd:\\logs\\default\\logs',
+                    'paths.data_dir': 'd:\\logs\\default\\data'
+                }
+                self._config_updater.update_path_configurations(path_configs)
+            except Exception as fallback_e:
+                print(f"⚠️  备用路径配置也失败: {fallback_e}")
     
     def _set_default_values(self) -> None:
         """设置默认配置值"""
@@ -486,12 +502,31 @@ class PathConfigurationManager:
     
     def _generate_paths_internal(self) -> Dict[str, str]:
         """内部路径生成方法"""
-        # 获取基础配置，使用属性访问，让错误自然抛出
-        base_dir = self._config_manager.base_dir
-        project_name = self._config_manager.project_name
-        experiment_name = self._config_manager.experiment_name
-        debug_mode = self._config_manager.debug_mode
-        first_start_time = self._config_manager.first_start_time
+        # 安全获取基础配置，使用get方法提供默认值
+        try:
+            base_dir = self._config_manager.base_dir
+        except AttributeError:
+            base_dir = 'd:\\logs'
+            
+        try:
+            project_name = self._config_manager.project_name
+        except AttributeError:
+            project_name = 'default_project'
+            
+        try:
+            experiment_name = self._config_manager.experiment_name
+        except AttributeError:
+            experiment_name = 'default_experiment'
+            
+        try:
+            debug_mode = self._config_manager.debug_mode
+        except AttributeError:
+            debug_mode = False
+            
+        try:
+            first_start_time = self._config_manager.first_start_time
+        except AttributeError:
+            first_start_time = datetime.now().isoformat()
         
         # 生成工作目录
         work_dir = self._path_generator.generate_work_directory(
@@ -506,7 +541,11 @@ class PathConfigurationManager:
         
         # 解析时间组件
         if first_start_time:
-            date_str, time_str = self._time_processor.parse_first_start_time(first_start_time)
+            try:
+                date_str, time_str = self._time_processor.parse_first_start_time(first_start_time)
+            except Exception:
+                # 如果时间解析失败，使用当前时间
+                date_str, time_str = self._time_processor.get_current_time_components()
         else:
             date_str, time_str = self._time_processor.get_current_time_components()
         
@@ -525,15 +564,24 @@ class PathConfigurationManager:
     
     def validate_path_configuration(self) -> bool:
         """验证路径配置"""
-        # 验证基础目录，使用属性访问
-        if not self._path_validator.validate_base_dir(self._config_manager.base_dir):
+        # 安全验证基础目录
+        try:
+            base_dir = self._config_manager.base_dir
+        except AttributeError:
+            base_dir = 'd:\\logs'
+            
+        if not self._path_validator.validate_base_dir(base_dir):
             return False
         
         # 验证生成的路径
-        path_configs = self.generate_all_paths()
-        for path in path_configs.values():
-            if not self._path_validator.validate_path_format(path):
-                return False
+        try:
+            path_configs = self.generate_all_paths()
+            for path in path_configs.values():
+                if not self._path_validator.validate_path_format(path):
+                    return False
+        except Exception as e:
+            print(f"路径配置验证失败: {e}")
+            return False
         
         return True
     

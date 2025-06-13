@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+运行代码前，必须先conda activate base_python3.12
+修改问题前，先阅读相关文档，比如需求、架构设计、概要设计、详细设计。
+修改完代码后，测试通过，再修正对应的需求、架构设计、概要设计、详细设计文档，相关的文档的颗粒度必须符合要求，设计文档不要代码实现。
+使用config_manager和custom_logger模块管理配置文件和logger。
+config_manger生成的config对象，通过属性访问，不要指定默认值，自然抛错。
+运行环境是windows10，请使用符合环境的脚本。
+
+临时文件禁止存放在项目根目录，必须放在temp/下。
+非测试文件，文件名和函数不要含test。
