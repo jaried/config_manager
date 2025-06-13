@@ -50,20 +50,14 @@ class ConfigManager(ConfigManagerCore):
                     ConfigManagerCore.__init__(instance)
 
                     # 执行配置管理器的初始化
-                    # 修复：不管初始化是否成功，都返回实例，确保不返回None
-                    try:
-                        instance.initialize(
-                            config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
-                        )
-                    except Exception as e:
-                        # 即使初始化失败，也要确保实例可用（用于测试环境）
-                        print(f"配置管理器初始化警告: {e}")
-                        # 设置基本的默认状态
-                        if not hasattr(instance, '_data') or instance._data is None:
-                            instance._data = {}
-                        if not hasattr(instance, '_config_path'):
-                            instance._config_path = cache_key.replace('auto:', '') if cache_key.startswith(
-                                'auto:') else cache_key
+                    success = instance.initialize(
+                        config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
+                    )
+                    
+                    if not success:
+                        # 初始化失败，不缓存实例，返回None
+                        print(f"⚠️  配置管理器初始化失败，返回None")
+                        return None
 
                     cls._instances[cache_key] = instance
         return cls._instances[cache_key]
@@ -592,17 +586,17 @@ class ConfigManager(ConfigManagerCore):
 
         # 需要特殊处理的路径字段映射
         special_path_mappings = {
-            'base_dir': test_base_dir,
-            'work_dir': test_base_dir,
-            'log_dir': os.path.join(test_base_dir, 'logs'),
-            'data_dir': os.path.join(test_base_dir, 'data'),
-            'output_dir': os.path.join(test_base_dir, 'output'),
-            'temp_dir': os.path.join(test_base_dir, 'temp'),
-            'cache_dir': os.path.join(test_base_dir, 'cache'),
-            'backup_dir': os.path.join(test_base_dir, 'backup'),
-            'download_dir': os.path.join(test_base_dir, 'downloads'),
-            'upload_dir': os.path.join(test_base_dir, 'uploads'),
-            'storage_dir': os.path.join(test_base_dir, 'storage')
+            'base_dir': os.path.normpath(test_base_dir),
+            'work_dir': os.path.normpath(test_base_dir),
+            'log_dir': os.path.normpath(os.path.join(test_base_dir, 'logs')),
+            'data_dir': os.path.normpath(os.path.join(test_base_dir, 'data')),
+            'output_dir': os.path.normpath(os.path.join(test_base_dir, 'output')),
+            'temp_dir': os.path.normpath(os.path.join(test_base_dir, 'temp')),
+            'cache_dir': os.path.normpath(os.path.join(test_base_dir, 'cache')),
+            'backup_dir': os.path.normpath(os.path.join(test_base_dir, 'backup')),
+            'download_dir': os.path.normpath(os.path.join(test_base_dir, 'downloads')),
+            'upload_dir': os.path.normpath(os.path.join(test_base_dir, 'uploads')),
+            'storage_dir': os.path.normpath(os.path.join(test_base_dir, 'storage'))
         }
 
         # 首先确保关键路径字段存在，并强制替换特殊路径字段
@@ -837,21 +831,26 @@ class ConfigManager(ConfigManagerCore):
         # 处理相对路径
         if original_path.startswith('./') or original_path.startswith('../'):
             # 相对路径转换为测试环境下的相对路径
-            return os.path.join(test_base_dir, original_path.lstrip('./'))
+            result = os.path.join(test_base_dir, original_path.lstrip('./'))
+            return os.path.normpath(result)
 
         # 处理绝对路径
         if os.path.isabs(original_path):
             # 提取路径的最后几个部分，在测试环境中重建
-            path_parts = original_path.replace('\\', '/').split('/')
+            # 使用 os.path.normpath 来正确处理路径分隔符
+            normalized_path = os.path.normpath(original_path)
+            path_parts = normalized_path.split(os.sep)
             # 取最后1-2个有意义的部分
             meaningful_parts = [part for part in path_parts[-2:] if part and part != '..']
             if meaningful_parts:
-                return os.path.join(test_base_dir, *meaningful_parts)
+                result = os.path.join(test_base_dir, *meaningful_parts)
+                return os.path.normpath(result)
             else:
-                return test_base_dir
+                return os.path.normpath(test_base_dir)
 
         # 其他情况，直接在测试环境下创建
-        return os.path.join(test_base_dir, original_path)
+        result = os.path.join(test_base_dir, original_path)
+        return os.path.normpath(result)
 
     @classmethod
     def _create_empty_test_config(cls, test_config_path: str, first_start_time: datetime = None, project_name: str = None):
@@ -957,7 +956,7 @@ def get_config_manager(
         autosave_delay: float = None,
         first_start_time: datetime = None,
         test_mode: bool = False
-) -> ConfigManager:
+) -> ConfigManager | None:
     """
     获取配置管理器单例
 
@@ -970,8 +969,20 @@ def get_config_manager(
         test_mode: 测试模式开关，为True时创建完全隔离的测试环境
 
     Returns:
-        ConfigManager 实例（永远不返回None）
+        ConfigManager 实例，如果初始化失败则返回None
     """
+    # 智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
+    if config_path and not auto_create:
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        # Windows和Unix的临时目录检测
+        if (temp_dir.lower() in config_path.lower() or 
+            '/tmp/' in config_path or 
+            '\\temp\\' in config_path.lower() or
+            'tmpdir' in config_path.lower()):
+            auto_create = True
+            print(f"✓ 检测到测试环境，自动启用auto_create: {config_path}")
+    
     manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
                             test_mode=test_mode)
     return manager

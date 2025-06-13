@@ -55,7 +55,7 @@ class TestProjectRootDetection:
         from src.config_manager.config_manager import get_config_manager
 
         # 1. 在项目根目录创建实例
-        cm1 = get_config_manager()
+        cm1 = get_config_manager(auto_create=True)
         path1 = cm1.get_config_path()
 
         # 2. 创建临时项目目录
@@ -73,7 +73,7 @@ class TestProjectRootDetection:
         try:
             # 测试从scripts目录运行
             os.chdir(sub_dir)
-            cm1 = get_config_manager()
+            cm1 = get_config_manager(auto_create=True)
             actual_path1 = cm1.get_config_path()
 
             assert temp_dir in actual_path1, f"配置文件应该在项目目录中，实际路径: {actual_path1}"
@@ -85,7 +85,7 @@ class TestProjectRootDetection:
             _clear_instances_for_testing()
 
             os.chdir(deep_dir)
-            cm2 = get_config_manager()
+            cm2 = get_config_manager(auto_create=True)
             actual_path2 = cm2.get_config_path()
 
             assert actual_path2 == expected_config_path, f"从深层目录也应该找到项目根目录，期望: {expected_config_path}, 实际: {actual_path2}"
@@ -109,7 +109,7 @@ class TestProjectRootDetection:
             os.chdir(temp_dir)
 
             # 创建配置管理器实例
-            cm = get_config_manager()
+            cm = get_config_manager(auto_create=True)
             actual_path = cm.get_config_path()
 
             # 当前的实现会错误地使用site-packages路径
@@ -150,7 +150,7 @@ class TestProjectRootDetection:
             os.makedirs(inner_work_dir, exist_ok=True)
             os.chdir(inner_work_dir)
 
-            cm = get_config_manager()
+            cm = get_config_manager(auto_create=True)
             actual_path = cm.get_config_path()
 
             # 应该使用最近的项目根目录（内层项目）

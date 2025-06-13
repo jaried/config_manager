@@ -55,8 +55,25 @@ class FileOperations:
             with open(config_path, 'r', encoding='utf-8') as f:
                 lock_file(f)
                 try:
-                    # 加载YAML数据，保留注释结构
-                    loaded_data = self._yaml.load(f) or {}
+                    # 读取文件内容
+                    content = f.read()
+                    
+                    # 处理Windows路径中的反斜杠转义问题
+                    import re
+                    def fix_windows_path(match):
+                        path = match.group(1)
+                        # 将反斜杠替换为正斜杠，避免转义问题
+                        fixed_path = path.replace('\\', '/')
+                        return f'"{fixed_path}"'
+                    
+                    # 修复常见的Windows路径转义问题
+                    # 匹配双引号中的Windows路径（包括绝对路径和相对路径）
+                    content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
+                    content = re.sub(r'"(\\[^"]*)"', fix_windows_path, content)  # 以反斜杠开头的路径
+                    content = re.sub(r'"(\.[\\][^"]*)"', fix_windows_path, content)  # 相对路径如 ".\logs"
+                    
+                    # 加载修复后的YAML数据
+                    loaded_data = self._yaml.load(content) or {}
                     
                     # 保存原始YAML结构和路径，用于后续保存时保留注释
                     self._original_yaml_data = loaded_data
@@ -81,7 +98,9 @@ class FileOperations:
 
             return loaded_data
         except Exception as e:
-            print(f"加载配置失败: {str(e)}")
+            print(f"⚠️  YAML解析失败: {str(e)}")
+            print(f"⚠️  为保护原始配置文件，不会自动创建新配置")
+            print(f"⚠️  请检查配置文件格式，特别是Windows路径中的反斜杠")
             return None
 
     def save_config(self, config_path: str, data: Dict[str, Any], backup_path: str = None) -> bool:

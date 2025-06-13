@@ -88,6 +88,12 @@ class ConfigManagerCore(ConfigNode):
         # 加载配置
         loaded = self._load()
 
+        # 如果加载失败且配置文件存在，说明是解析错误，不应该覆盖
+        if not loaded and os.path.exists(self._config_path):
+            print(f"⚠️  配置文件存在但解析失败: {self._config_path}")
+            print(f"⚠️  为保护原始配置，初始化失败")
+            return False
+
         # 设置首次启动时间（无论配置是否加载成功都要设置）
         self._setup_first_start_time(first_start_time)
 
@@ -130,7 +136,8 @@ class ConfigManagerCore(ConfigNode):
             self._call_chain_tracker
         )
 
-        if loaded:
+        # 修复：None表示加载失败，空字典{}表示成功加载空配置
+        if loaded is not None:
             self._data.clear()
             
             # 检查是否为标准格式（包含__data__节点）
@@ -161,10 +168,16 @@ class ConfigManagerCore(ConfigNode):
 
             if ENABLE_CALL_CHAIN_DISPLAY:
                 print(f"配置加载完成，_data内容: {self._data}")
+            
+            # 标记配置加载成功
+            self._config_loaded_successfully = True
             return True
 
         if ENABLE_CALL_CHAIN_DISPLAY:
             print("配置加载失败")
+        
+        # 标记配置加载失败
+        self._config_loaded_successfully = False
         return False
 
     def save(self):
@@ -256,7 +269,9 @@ class ConfigManagerCore(ConfigNode):
             except Exception as e:
                 print(f"获取自动保存调用链失败: {e}")
 
-        self._autosave_manager.schedule_save(self.save)
+        # 只有在成功加载过配置的情况下才安排自动保存
+        if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
+            self._autosave_manager.schedule_save(self.save)
         return
 
     def _cleanup(self):
@@ -267,9 +282,10 @@ class ConfigManagerCore(ConfigNode):
         if self._autosave_manager:
             self._autosave_manager.cleanup()
 
-        # 执行最后一次保存
+        # 执行最后一次保存（只有在成功加载过配置的情况下才保存）
         try:
-            if hasattr(self, '_data') and self._data:
+            if (hasattr(self, '_data') and self._data and 
+                hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully):
                 self.save()
         except Exception as e:
             print(f"清理时保存配置失败: {str(e)}")
