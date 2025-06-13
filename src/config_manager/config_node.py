@@ -39,13 +39,8 @@ class ConfigNode:
 
         data = super().__getattribute__('_data')
         
-        # 特殊处理debug_mode：优先使用配置文件中的值，如果没有则使用is_debug()
+        # 特殊处理debug_mode：总是动态调用is_debug()，不使用配置文件中的值
         if name == 'debug_mode':
-            # 首先检查配置文件中是否有debug_mode设置
-            if 'debug_mode' in data:
-                return data['debug_mode']
-            
-            # 如果配置文件中没有，则使用is_debug()的值
             try:
                 from is_debug import is_debug
                 return is_debug()
@@ -65,6 +60,11 @@ class ConfigNode:
 
         if '_data' not in self.__dict__:
             super().__setattr__('_data', {})
+
+        # 特殊处理debug_mode：不允许设置，因为它是动态属性
+        if name == 'debug_mode':
+            # 静默忽略debug_mode的设置，因为它应该总是动态获取
+            return
 
         # 使用实例方法而不是类方法来构建值
         if hasattr(self, 'build'):
@@ -92,6 +92,11 @@ class ConfigNode:
 
     def __setitem__(self, key: str, value: Any):
         """通过键设置值"""
+        # 特殊处理debug_mode：不允许设置，因为它是动态属性
+        if key == 'debug_mode':
+            # 静默忽略debug_mode的设置，因为它应该总是动态获取
+            return
+            
         # 使用实例方法而不是类方法来构建值
         if hasattr(self, 'build'):
             built_value = self.build(value)
@@ -185,6 +190,10 @@ class ConfigNode:
         if hasattr(self, '_data'):
             data = super().__getattribute__('_data')
             for key, value in data.items():
+                # 跳过debug_mode，因为它是动态属性，不应该保存到配置文件
+                if key == 'debug_mode':
+                    continue
+                    
                 if isinstance(value, ConfigNode):
                     # 检查是否是同一个对象，避免递归
                     if value is not self:

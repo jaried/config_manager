@@ -14,7 +14,6 @@ __data__:
   app_version: 1.1.0
   project_name: config_manager
   # 路径配置模块新增字段
-  debug_mode: false
   base_dir: 'd:\demo_logs'
   experiment_name: 'experiment_001'
   paths:
@@ -23,6 +22,7 @@ __data__:
     best_checkpoint_dir: 'd:\demo_logs\config_manager\experiment_001\checkpoint\best'
     tsb_logs_dir: 'd:\demo_logs\config_manager\experiment_001\tsb_logs\2025-01-07\100000'
     log_dir: 'd:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000'
+    debug_dir: d:\demo_logs\config_manager\experiment_001\debug
   config_file_path: 
     D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\src\config\config.yaml
   database:
@@ -46,7 +46,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-09T22:34:12.065841'
+  scheduler_start_time: '2025-06-14T00:03:51.147718'
   scheduler_status: running
   server:
     port: '8080'
@@ -64,12 +64,13 @@ __data__:
   paths.best_checkpoint_dir: d:\demo_logs\config_manager\experiment_001\checkpoint\best
   paths.tsb_logs_dir: d:\demo_logs\config_manager\experiment_001\tsb_logs\2025-01-07\100000
   paths.log_dir: d:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000
+  another_key: another_value
+  final_key: final_value
 __type_hints__:
   logging.path: Path
   server.port: int
   server.timeout: float
   # 路径配置模块类型提示
-  debug_mode: bool
   base_dir: Path
   project_name: str
   experiment_name: str

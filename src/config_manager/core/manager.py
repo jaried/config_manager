@@ -313,6 +313,11 @@ class ConfigManagerCore(ConfigNode):
 
     def set(self, key: str, value: Any, autosave: bool = True, type_hint: Type = None):
         """设置配置值并自动保存，支持类型提示"""
+        # 特殊处理debug_mode：不允许设置，因为它是动态属性
+        if key == 'debug_mode':
+            # 静默忽略debug_mode的设置，因为它应该总是动态获取
+            return
+            
         keys = key.split('.')
         current = self
 
