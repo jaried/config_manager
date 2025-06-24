@@ -638,6 +638,13 @@ class ConfigManager(ConfigManagerCore):
             """递归替换对象中的路径"""
             if isinstance(obj, dict):
                 for key, value in obj.items():
+                    # 修复：确保key是字符串类型才进行路径处理
+                    if not isinstance(key, str):
+                        # 非字符串键跳过路径处理，但继续递归
+                        if isinstance(value, (dict, list)):
+                            replace_paths_recursive(value, f"{parent_key}.{key}")
+                        continue
+                        
                     full_key = f"{parent_key}.{key}" if parent_key else key
 
                     if isinstance(value, str):
@@ -680,6 +687,10 @@ class ConfigManager(ConfigManagerCore):
         - _folder, folder: 文件夹路径
         - _location, location: 位置路径
         """
+        # 修复：确保key是字符串类型
+        if not isinstance(key, str):
+            return False
+            
         if not isinstance(value, str) or not value.strip():
             return False
 
@@ -713,6 +724,10 @@ class ConfigManager(ConfigManagerCore):
         2. 防止正则表达式被误识别为路径
         3. 保护特殊配置字段
         """
+        # 修复：确保key是字符串类型
+        if not isinstance(key, str):
+            return False
+            
         if not isinstance(value, str) or not value.strip():
             return False
 

@@ -581,11 +581,8 @@ class ConfigManagerCore(ConfigNode):
                     if not success:
                         print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
 
-                # 然后设置配置值
+                # 然后设置配置值 - 只设置到paths命名空间，避免重复
                 for path_key, path_value in path_configs.items():
-                    # 避免递归调用，直接设置值而不触发路径更新
-                    self._data[path_key] = path_value
-                    # 同时设置到paths命名空间
                     if path_key.startswith('paths.'):
                         nested_key = path_key[6:]  # 去掉'paths.'前缀
                         if 'paths' not in self._data:
@@ -594,6 +591,10 @@ class ConfigManagerCore(ConfigNode):
                             self._data['paths']._data[nested_key] = path_value
                         else:
                             setattr(self._data['paths'], nested_key, path_value)
+                        
+                        # 清理根级别的重复配置
+                        if path_key in self._data:
+                            del self._data[path_key]
             except Exception as e:
                 print(f"路径配置更新失败: {e}")
                 import traceback

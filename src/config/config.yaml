@@ -45,7 +45,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-24T13:02:01.453188'
+  scheduler_start_time: '2025-06-24T13:27:06.840651'
   scheduler_status: running
   server:
     port: '8080'
@@ -58,11 +58,6 @@ __data__:
   test_key_new: test_value_new
   version: 1.0.0
   test_backup_isolation: production_value
-  paths.work_dir: d:\demo_logs\config_manager\experiment_001
-  paths.checkpoint_dir: d:\demo_logs\config_manager\experiment_001\checkpoint
-  paths.best_checkpoint_dir: d:\demo_logs\config_manager\experiment_001\checkpoint\best
-  paths.tsb_logs_dir: d:\demo_logs\config_manager\experiment_001\tsb_logs\2025-01-07\100000
-  paths.log_dir: d:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000
   another_key: another_value
   final_key: final_value
 __type_hints__:
@@ -78,23 +73,3 @@ __type_hints__:
   paths.best_checkpoint_dir: Path
   paths.tsb_logs_dir: Path
   paths.log_dir: Path
-first_start_time: '2025-01-07T10:00:00'
-config_file_path: 
-  D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\src\config\config.yaml
-base_dir: d:\logs
-paths.work_dir: d:\logs\project_name\experiment_name
-paths:
-  work_dir: d:\logs\project_name\experiment_name
-  checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
-  best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
-  debug_dir: d:\logs\project_name\experiment_name\debug
-  tsb_logs_dir: d:\logs\project_name\experiment_name\tsb_logs\2025-01-07\100000
-  log_dir: d:\logs\project_name\experiment_name\logs\2025-01-07\100000
-paths.checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
-paths.best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
-paths.debug_dir: d:\logs\project_name\experiment_name\debug
-paths.tsb_logs_dir: d:\logs\project_name\experiment_name\tsb_logs\2025-01-07\100000
-paths.log_dir: d:\logs\project_name\experiment_name\logs\2025-01-07\100000
-project_name: project_name
-experiment_name: experiment_name
-test_backup_isolation: production_value
