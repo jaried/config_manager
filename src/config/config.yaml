@@ -13,7 +13,6 @@ __data__:
   app_name: 默认路径应用
   app_version: 1.1.0
   project_name: config_manager
-  # 路径配置模块新增字段
   base_dir: 'd:\demo_logs'
   experiment_name: 'experiment_001'
   paths:
@@ -46,7 +45,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-14T07:16:44.620239'
+  scheduler_start_time: '2025-06-24T13:02:01.453188'
   scheduler_status: running
   server:
     port: '8080'
@@ -70,7 +69,6 @@ __type_hints__:
   logging.path: Path
   server.port: int
   server.timeout: float
-  # 路径配置模块类型提示
   base_dir: Path
   project_name: str
   experiment_name: str
@@ -80,3 +78,23 @@ __type_hints__:
   paths.best_checkpoint_dir: Path
   paths.tsb_logs_dir: Path
   paths.log_dir: Path
+first_start_time: '2025-01-07T10:00:00'
+config_file_path: 
+  D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\src\config\config.yaml
+base_dir: d:\logs
+paths.work_dir: d:\logs\project_name\experiment_name
+paths:
+  work_dir: d:\logs\project_name\experiment_name
+  checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
+  best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
+  debug_dir: d:\logs\project_name\experiment_name\debug
+  tsb_logs_dir: d:\logs\project_name\experiment_name\tsb_logs\2025-01-07\100000
+  log_dir: d:\logs\project_name\experiment_name\logs\2025-01-07\100000
+paths.checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
+paths.best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
+paths.debug_dir: d:\logs\project_name\experiment_name\debug
+paths.tsb_logs_dir: d:\logs\project_name\experiment_name\tsb_logs\2025-01-07\100000
+paths.log_dir: d:\logs\project_name\experiment_name\logs\2025-01-07\100000
+project_name: project_name
+experiment_name: experiment_name
+test_backup_isolation: production_value

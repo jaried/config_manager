@@ -20,7 +20,7 @@ class FileOperations:
         self._yaml.sequence_indent = 4
         self._yaml.sequence_dash_offset = 2
         self._yaml.default_flow_style = False
-        
+
         # 存储原始YAML结构以保留注释
         self._original_yaml_data = None
         self._config_path = None
@@ -57,7 +57,7 @@ class FileOperations:
                 try:
                     # 读取文件内容
                     content = f.read()
-                    
+
                     # 处理Windows路径中的反斜杠转义问题
                     import re
                     def fix_windows_path(match):
@@ -65,16 +65,16 @@ class FileOperations:
                         # 将反斜杠替换为正斜杠，避免转义问题
                         fixed_path = path.replace('\\', '/')
                         return f'"{fixed_path}"'
-                    
+
                     # 修复常见的Windows路径转义问题
                     # 匹配双引号中的Windows路径（包括绝对路径和相对路径）
                     content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
                     content = re.sub(r'"(\\[^"]*)"', fix_windows_path, content)  # 以反斜杠开头的路径
                     content = re.sub(r'"(\.[\\][^"]*)"', fix_windows_path, content)  # 相对路径如 ".\logs"
-                    
+
                     # 加载修复后的YAML数据
                     loaded_data = self._yaml.load(content) or {}
-                    
+
                     # 保存原始YAML结构和路径，用于后续保存时保留注释
                     self._original_yaml_data = loaded_data
                     self._config_path = config_path
@@ -144,10 +144,10 @@ class FileOperations:
     def _prepare_data_for_save(self, config_path: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """准备要保存的数据，尽可能保留原始结构和注释"""
         # 如果有原始YAML数据且路径匹配，则更新原始结构
-        if (self._original_yaml_data is not None and 
-            self._config_path == config_path and
-            isinstance(self._original_yaml_data, dict)):
-            
+        if (self._original_yaml_data is not None and
+                self._config_path == config_path and
+                isinstance(self._original_yaml_data, dict)):
+
             # 深度更新原始数据结构
             updated_data = self._deep_update_yaml_data(self._original_yaml_data, data)
             return updated_data

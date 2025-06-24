@@ -18,15 +18,14 @@ class PathResolver:
         """解析配置文件路径"""
         if config_path is not None:
             resolved_path = os.path.abspath(config_path)
-            print(f"配置路径解析: {config_path} -> {resolved_path}")
             return resolved_path
 
         # 修复：智能查找项目根目录，优先向上查找包含src目录的项目根目录
         cwd = os.getcwd()
-        
+
         # 首先尝试智能查找项目根目录
         project_root = PathResolver._find_project_root()
-        
+
         if project_root:
             # 找到项目根目录，使用项目根目录下的src/config
             config_dir = os.path.join(project_root, 'src', 'config')
@@ -39,7 +38,6 @@ class PathResolver:
 
         os.makedirs(config_dir, exist_ok=True)
         resolved_path = os.path.join(config_dir, 'config.yaml')
-        print(f"配置路径解析: {config_path} -> {resolved_path}")
         return resolved_path
 
     @staticmethod
@@ -47,7 +45,7 @@ class PathResolver:
         """查找项目根目录"""
         # 修复：不使用缓存，每次都重新检测，确保在不同目录下能正确检测
         # 这对于测试环境特别重要，因为测试会切换到不同的临时目录
-        
+
         project_root = None
 
         # 策略1：从当前工作目录查找（优先级最高，特别是对测试环境）
@@ -168,18 +166,18 @@ class PathResolver:
             # 检查路径是否包含临时目录标识
             path_lower = path.lower()
             temp_indicators = ['temp', 'tmp', 'test']
-            
+
             # 检查路径中是否包含临时目录标识
             for indicator in temp_indicators:
                 if indicator in path_lower:
                     return True
-            
+
             # 检查是否在系统临时目录下
             import tempfile
             temp_dir = tempfile.gettempdir().lower()
             if path_lower.startswith(temp_dir):
                 return True
-                
+
             return False
         except Exception:
             return False
@@ -213,7 +211,7 @@ class PathResolver:
         """检查src目录下是否有Python代码"""
         if not os.path.exists(src_path) or not os.path.isdir(src_path):
             return False
-            
+
         try:
             for item in os.listdir(src_path):
                 if item.startswith('.'):
@@ -225,5 +223,5 @@ class PathResolver:
                     return True
         except (PermissionError, OSError):
             pass
-        
+
         return False

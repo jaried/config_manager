@@ -53,7 +53,7 @@ class ConfigManager(ConfigManagerCore):
                     success = instance.initialize(
                         config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
                     )
-                    
+
                     if not success:
                         # 初始化失败，不缓存实例，返回None
                         print(f"⚠️  配置管理器初始化失败，返回None")
@@ -113,7 +113,7 @@ class ConfigManager(ConfigManagerCore):
         """设置测试环境"""
         # 1. 检测生产配置，获取project_name
         prod_config_path = None
-        
+
         if original_config_path:
             # 如果明确传入了配置路径，优先使用
             prod_config_path = original_config_path
@@ -129,18 +129,18 @@ class ConfigManager(ConfigManagerCore):
         # 2. 如果没有找到生产配置，尝试更广泛的搜索
         if not prod_config_path or not os.path.exists(prod_config_path):
             print("⚠️  生产配置不存在，尝试更广泛的搜索...")
-            
+
             # 获取当前工作目录
             cwd = os.getcwd()
             print(f"当前工作目录: {cwd}")
-            
+
             # 策略1: 从当前工作目录的不同位置查找配置文件
             possible_config_paths = [
                 os.path.join(cwd, 'src', 'config', 'config.yaml'),
                 os.path.join(cwd, 'config', 'config.yaml'),
                 os.path.join(cwd, 'config.yaml'),
             ]
-            
+
             for path in possible_config_paths:
                 if os.path.exists(path):
                     # 修复: 如果找到的配置文件在tests目录下，跳过
@@ -150,7 +150,7 @@ class ConfigManager(ConfigManagerCore):
                     prod_config_path = path
                     print(f"✓ 找到配置文件: {prod_config_path}")
                     break
-            
+
             # 策略2: 如果还是没找到，尝试向上查找
             if not prod_config_path or not os.path.exists(prod_config_path):
                 print("在当前目录未找到，向上查找...")
@@ -159,14 +159,14 @@ class ConfigManager(ConfigManagerCore):
                     parent_dir = os.path.dirname(current_dir)
                     if parent_dir == current_dir:  # 已到根目录
                         break
-                    
-                    print(f"查找第{level+1}级上级目录: {parent_dir}")
+
+                    print(f"查找第{level + 1}级上级目录: {parent_dir}")
                     test_paths = [
                         os.path.join(parent_dir, 'src', 'config', 'config.yaml'),
                         os.path.join(parent_dir, 'config', 'config.yaml'),
                         os.path.join(parent_dir, 'config.yaml'),
                     ]
-                    
+
                     for path in test_paths:
                         if os.path.exists(path):
                             # 修复: 如果找到的配置文件在tests目录下，跳过
@@ -176,12 +176,12 @@ class ConfigManager(ConfigManagerCore):
                             prod_config_path = path
                             print(f"✓ 在上级目录找到配置文件: {prod_config_path}")
                             break
-                    
+
                     if prod_config_path and os.path.exists(prod_config_path):
                         break
-                    
+
                     current_dir = parent_dir
-            
+
             # 策略3: 如果还是没找到，尝试从调用栈中查找
             if not prod_config_path or not os.path.exists(prod_config_path):
                 print("在上级目录未找到，从调用栈查找...")
@@ -189,21 +189,21 @@ class ConfigManager(ConfigManagerCore):
                     import inspect
                     for frame_info in inspect.stack():
                         filename = frame_info.filename
-                        
+
                         # 跳过config_manager自身的文件
                         if 'config_manager' in filename:
                             continue
-                        
+
                         # 跳过系统文件
-                        if ('site-packages' in filename or 
-                            'lib/python' in filename.lower() or
-                            '<' in filename):
+                        if ('site-packages' in filename or
+                                'lib/python' in filename.lower() or
+                                '<' in filename):
                             continue
-                        
+
                         # 从调用文件的目录开始查找
                         file_dir = os.path.dirname(filename)
                         print(f"从调用文件目录查找: {file_dir}")
-                        
+
                         # 在调用文件的目录及其上级目录中查找
                         search_dir = file_dir
                         for level in range(5):  # 最多向上查找5级
@@ -212,7 +212,7 @@ class ConfigManager(ConfigManagerCore):
                                 os.path.join(search_dir, 'config', 'config.yaml'),
                                 os.path.join(search_dir, 'config.yaml'),
                             ]
-                            
+
                             for path in test_paths:
                                 if os.path.exists(path):
                                     # 修复: 如果找到的配置文件在tests目录下，跳过
@@ -222,21 +222,21 @@ class ConfigManager(ConfigManagerCore):
                                     prod_config_path = path
                                     print(f"✓ 从调用栈找到配置文件: {prod_config_path}")
                                     break
-                            
+
                             if prod_config_path and os.path.exists(prod_config_path):
                                 break
-                            
+
                             parent = os.path.dirname(search_dir)
                             if parent == search_dir:  # 已到根目录
                                 break
                             search_dir = parent
-                        
+
                         if prod_config_path and os.path.exists(prod_config_path):
                             break
-                            
+
                 except Exception as e:
                     print(f"从调用栈查找配置文件失败: {e}")
-            
+
             # 策略4: 最后尝试一些常见的项目结构
             if not prod_config_path or not os.path.exists(prod_config_path):
                 print("尝试常见项目结构...")
@@ -247,7 +247,7 @@ class ConfigManager(ConfigManagerCore):
                     # 当前目录的父目录
                     os.path.join(os.path.dirname(os.path.dirname(cwd)), 'src/config/config.yaml'),
                 ]
-                
+
                 import glob
                 for pattern in common_patterns:
                     matches = glob.glob(pattern)
@@ -299,11 +299,11 @@ class ConfigManager(ConfigManagerCore):
                     yaml = YAML()
                     yaml.preserve_quotes = True
                     yaml.default_flow_style = False
-                    
+
                     # 先尝试读取文件内容并处理Windows路径转义问题
                     with open(main_config_path, 'r', encoding='utf-8') as f:
                         content = f.read()
-                    
+
                     # 处理Windows路径中的反斜杠转义问题
                     # 将 "d:\logs" 这样的路径转换为 "d:/logs" 或使用原始字符串
                     import re
@@ -313,10 +313,10 @@ class ConfigManager(ConfigManagerCore):
                         # 将反斜杠替换为正斜杠，避免转义问题
                         fixed_path = path.replace('\\', '/')
                         return f'"{fixed_path}"'
-                    
+
                     # 修复常见的Windows路径转义问题
                     content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
-                    
+
                     # 解析修复后的YAML内容
                     config_data = yaml.load(content) or {}
 
@@ -336,7 +336,7 @@ class ConfigManager(ConfigManagerCore):
                     try:
                         with open(main_config_path, 'r', encoding='utf-8') as f:
                             content = f.read()
-                        
+
                         # 使用正则表达式提取project_name
                         import re
                         # 匹配 project_name: "value" 或 project_name: value
@@ -367,7 +367,8 @@ class ConfigManager(ConfigManagerCore):
 
         # 6. 复制配置到测试环境，并强制更新project_name
         if prod_config_path and os.path.exists(prod_config_path):
-            cls._copy_production_config_to_test(prod_config_path, test_config_path, final_first_start_time, project_name)
+            cls._copy_production_config_to_test(prod_config_path, test_config_path, final_first_start_time,
+                                                project_name)
             print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
         else:
             # 创建空的测试配置
@@ -452,7 +453,8 @@ class ConfigManager(ConfigManagerCore):
             cls._create_empty_test_config(test_config_path, first_start_time, project_name)
 
     @classmethod
-    def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None, project_name: str = None):
+    def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None,
+                                  project_name: str = None):
         """更新测试配置中的路径信息"""
         try:
             from ruamel.yaml import YAML
@@ -463,7 +465,7 @@ class ConfigManager(ConfigManagerCore):
             # 读取配置文件并处理Windows路径转义问题
             with open(test_config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             # 处理Windows路径中的反斜杠转义问题
             import re
             def fix_windows_path(match):
@@ -471,10 +473,10 @@ class ConfigManager(ConfigManagerCore):
                 # 将反斜杠替换为正斜杠，避免转义问题
                 fixed_path = path.replace('\\', '/')
                 return f'"{fixed_path}"'
-            
+
             # 修复常见的Windows路径转义问题
             content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
-            
+
             # 解析修复后的YAML内容
             config_data = yaml.load(content) or {}
 
@@ -516,7 +518,7 @@ class ConfigManager(ConfigManagerCore):
                     final_project_name = config_data['__data__'].get('project_name')
                 else:
                     final_project_name = config_data.get('project_name')
-                
+
                 if not final_project_name:
                     # 最后从路径中提取
                     final_project_name = "project_name"  # 默认值
@@ -587,13 +589,13 @@ class ConfigManager(ConfigManagerCore):
                     },
                     '__type_hints__': {}
                 }
-                
+
                 from ruamel.yaml import YAML
                 yaml = YAML()
                 with open(test_config_path, 'w', encoding='utf-8') as f:
                     yaml.dump(basic_config, f)
                 print("✓ 已创建基本配置文件")
-                
+
             except Exception as e2:
                 print(f"⚠️  创建基本配置文件也失败: {e2}")
 
@@ -669,10 +671,10 @@ class ConfigManager(ConfigManagerCore):
     @classmethod
     def _is_path_field(cls, key: str, value: str) -> bool:
         """判断字段是否是路径字段
-        
+
         只有以特定路径相关名词结尾的字段才被识别为路径字段：
         - _dir, dir: 目录路径
-        - _path, path: 文件或目录路径  
+        - _path, path: 文件或目录路径
         - _file, file: 文件路径
         - _directory, directory: 目录路径
         - _folder, folder: 文件夹路径
@@ -689,7 +691,7 @@ class ConfigManager(ConfigManagerCore):
         key_lower = key.lower()
         path_suffixes = [
             '_dir', 'dir',
-            '_path', 'path', 
+            '_path', 'path',
             '_file', 'file',
             '_directory', 'directory',
             '_folder', 'folder',
@@ -705,7 +707,7 @@ class ConfigManager(ConfigManagerCore):
     @classmethod
     def _is_protected_field(cls, key: str, value: str) -> bool:
         """判断字段是否是需要保护的字段（不应该被路径替换）
-        
+
         由于路径字段识别已改为只识别特定后缀，保护模式主要用于：
         1. 防止网络URL被误识别为路径
         2. 防止正则表达式被误识别为路径
@@ -732,7 +734,7 @@ class ConfigManager(ConfigManagerCore):
         for keyword in header_keywords:
             if keyword in key_lower:
                 return True
-        
+
         # 常见的HTTP Header字段名
         if key_lower in ['accept', 'content-type', 'user-agent', 'authorization', 'cookie']:
             return True
@@ -774,12 +776,15 @@ class ConfigManager(ConfigManagerCore):
         # 检查URL模式特征
         url_patterns = [
             # API路径模式：以/开头且包含api相关关键词
-            value.startswith('/') and not value.startswith('//') and any(api_keyword in value.lower() for api_keyword in ['/api/', '/v1/', '/v2/', '/rest/', '/graphql']),
+            value.startswith('/') and not value.startswith('//') and any(
+                api_keyword in value.lower() for api_keyword in ['/api/', '/v1/', '/v2/', '/rest/', '/graphql']),
             '*.' in value,  # 通配符域名
             # URL路径格式：包含域名的URL路径（必须包含顶级域名）
-            value.count('/') >= 2 and '.' in value and any(tld in value.lower() for tld in ['.com', '.org', '.net', '.edu', '.gov', '.io', '.co']),
+            value.count('/') >= 2 and '.' in value and any(
+                tld in value.lower() for tld in ['.com', '.org', '.net', '.edu', '.gov', '.io', '.co']),
             # 单独的顶级域名检查（用于域名字符串）
-            any(tld in value.lower() for tld in ['.com', '.org', '.net', '.edu', '.gov', '.io', '.co']) and not value.startswith('/'),
+            any(tld in value.lower() for tld in
+                ['.com', '.org', '.net', '.edu', '.gov', '.io', '.co']) and not value.startswith('/'),
         ]
         return any(url_patterns)
 
@@ -835,7 +840,8 @@ class ConfigManager(ConfigManagerCore):
                     return True
 
         # 检查是否包含常见的路径组件
-        path_components = ['bin', 'lib', 'src', 'config', 'data', 'logs', 'temp', 'cache', 'backup', 'users', 'documents']
+        path_components = ['bin', 'lib', 'src', 'config', 'data', 'logs', 'temp', 'cache', 'backup', 'users',
+                           'documents']
         if any(component in value.lower() for component in path_components):
             return True
 
@@ -876,7 +882,8 @@ class ConfigManager(ConfigManagerCore):
         return os.path.normpath(result)
 
     @classmethod
-    def _create_empty_test_config(cls, test_config_path: str, first_start_time: datetime = None, project_name: str = None):
+    def _create_empty_test_config(cls, test_config_path: str, first_start_time: datetime = None,
+                                  project_name: str = None):
         """创建空的测试配置"""
         # 确保测试目录存在
         os.makedirs(os.path.dirname(test_config_path), exist_ok=True)
@@ -972,9 +979,10 @@ __type_hints__:
   first_start_time: str
 """)
 
+
 def get_config_manager(
         config_path: str = None,
-        watch: bool = False,
+        watch: bool = True,
         auto_create: bool = False,
         autosave_delay: float = None,
         first_start_time: datetime = None,
@@ -999,13 +1007,13 @@ def get_config_manager(
         import tempfile
         temp_dir = tempfile.gettempdir()
         # Windows和Unix的临时目录检测
-        if (temp_dir.lower() in config_path.lower() or 
-            '/tmp/' in config_path or 
-            '\\temp\\' in config_path.lower() or
-            'tmpdir' in config_path.lower()):
+        if (temp_dir.lower() in config_path.lower() or
+                '/tmp/' in config_path or
+                '\\temp\\' in config_path.lower() or
+                'tmpdir' in config_path.lower()):
             auto_create = True
             print(f"✓ 检测到测试环境，自动启用auto_create: {config_path}")
-    
+
     manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
                             test_mode=test_mode)
     return manager

@@ -10,5 +10,15 @@ alwaysApply: true
 config_manger生成的config对象，通过属性访问，不要指定默认值，自然抛错。
 运行环境是windows10，请使用符合环境的脚本。
 
-临时文件禁止存放在项目根目录，必须放在temp/下。
-非测试文件，文件名和函数不要含test。
+临时文件禁止存放在项目根目录，必须放在temp/下，使用完后马上清理。
+
+- **时间获取**：先运行脚本获得当前日期和时间，或者`power shell` `Get-Date`，一次对话只需要获取一次时间：
+  ```bash
+  # PowerShell方式
+  Get-Date
+
+  # Python方式
+  python -c "import datetime; print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))"
+  ```
+
+每次修改代码后，需要全部测试通过，然后编写git commit并提交github

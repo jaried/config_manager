@@ -83,8 +83,6 @@ class ConfigManagerCore(ConfigNode):
         self._watch = watch
         self._auto_create = auto_create
 
-        print(f"配置路径解析: {config_path} -> {self._config_path}")
-
         # 加载配置
         loaded = self._load()
 
@@ -139,14 +137,14 @@ class ConfigManagerCore(ConfigNode):
         # 修复：None表示加载失败，空字典{}表示成功加载空配置
         if loaded is not None:
             self._data.clear()
-            
+
             # 检查是否为标准格式（包含__data__节点）
             if '__data__' in loaded:
                 # 标准格式：使用__data__节点下的数据
                 raw_data = loaded.get('__data__', {})
                 self._type_hints = loaded.get('__type_hints__', {})
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    print(f"检测到标准格式，加载__data__节点: {raw_data}")
+                    print("检测到标准格式，加载__data__节点")
             else:
                 # 原始格式：直接使用整个loaded数据，但排除内部键
                 raw_data = {}
@@ -156,7 +154,7 @@ class ConfigManagerCore(ConfigNode):
                         raw_data[key] = value
                 self._type_hints = {}
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    print(f"检测到原始格式，直接加载配置数据: {raw_data}")
+                    print("检测到原始格式，直接加载配置数据")
 
             # 重建数据结构
             if raw_data:
@@ -167,15 +165,15 @@ class ConfigManagerCore(ConfigNode):
                         self._data[key] = value
 
             if ENABLE_CALL_CHAIN_DISPLAY:
-                print(f"配置加载完成，_data内容: {self._data}")
-            
+                print("配置加载完成")
+
             # 标记配置加载成功
             self._config_loaded_successfully = True
             return True
 
         if ENABLE_CALL_CHAIN_DISPLAY:
             print("配置加载失败")
-        
+
         # 标记配置加载失败
         self._config_loaded_successfully = False
         return False
@@ -199,9 +197,6 @@ class ConfigManagerCore(ConfigNode):
             '__data__': self.to_dict(),
             '__type_hints__': self._type_hints
         }
-
-        if ENABLE_CALL_CHAIN_DISPLAY:
-            print(f"准备保存的数据: {data_to_save}")
 
         saved = self._file_ops.save_config(
             self._config_path,
@@ -284,8 +279,8 @@ class ConfigManagerCore(ConfigNode):
 
         # 执行最后一次保存（只有在成功加载过配置的情况下才保存）
         try:
-            if (hasattr(self, '_data') and self._data and 
-                hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully):
+            if (hasattr(self, '_data') and self._data and
+                    hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully):
                 self.save()
         except Exception as e:
             print(f"清理时保存配置失败: {str(e)}")
@@ -333,7 +328,7 @@ class ConfigManagerCore(ConfigNode):
         if key == 'debug_mode':
             # 静默忽略debug_mode的设置，因为它应该总是动态获取
             return
-            
+
         keys = key.split('.')
         current = self
 
@@ -563,7 +558,7 @@ class ConfigManagerCore(ConfigNode):
     def _should_update_path_config(self, key: str) -> bool:
         """判断是否需要更新路径配置"""
         path_related_keys = [
-            'base_dir', 'project_name', 'experiment_name', 
+            'base_dir', 'project_name', 'experiment_name',
             'first_start_time', 'debug_mode'
         ]
         return key in path_related_keys
@@ -575,17 +570,17 @@ class ConfigManagerCore(ConfigNode):
                 # 清除缓存，确保使用最新配置
                 self._path_config_manager.invalidate_cache()
                 path_configs = self._path_config_manager.generate_all_paths()
-                
+
                 # 首先创建所有目录
                 from .path_configuration import DirectoryCreator
                 directory_creator = DirectoryCreator()
                 creation_results = directory_creator.create_path_structure(path_configs)
-                
+
                 # 记录目录创建结果
                 for key, success in creation_results.items():
                     if not success:
                         print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
-                
+
                 # 然后设置配置值
                 for path_key, path_value in path_configs.items():
                     # 避免递归调用，直接设置值而不触发路径更新
@@ -620,59 +615,59 @@ class ConfigManagerCore(ConfigNode):
         """更新调试模式"""
         if self._path_config_manager:
             self._path_config_manager.update_debug_mode()
-    
+
     def _is_path_configuration(self, key: str, value: Any) -> bool:
         """判断是否为路径配置
-        
+
         Args:
             key: 配置键
             value: 配置值
-            
+
         Returns:
             bool: 是否为路径配置
         """
         # 检查是否为字符串类型
         if not isinstance(value, str):
             return False
-        
+
         # 检查是否为paths命名空间
         if key.startswith('paths.'):
             return True
-        
+
         # 检查字段名是否包含路径关键词
         path_keywords = ['dir', 'path', 'directory', 'folder', 'location', 'root', 'base']
         key_lower = key.lower()
         if any(keyword in key_lower for keyword in path_keywords):
             # 进一步检查值是否像路径
             return self._looks_like_path(value)
-        
+
         return False
-    
+
     def _looks_like_path(self, value: str) -> bool:
         """判断字符串是否像路径
-        
+
         Args:
             value: 字符串值
-            
+
         Returns:
             bool: 是否像路径
         """
         if not value:
             return False
-        
+
         # 检查是否包含路径分隔符
         if '/' in value or '\\' in value:
             return True
-        
+
         # 检查是否为Windows盘符格式
         if len(value) >= 2 and value[1] == ':':
             return True
-        
+
         return False
-    
+
     def _create_directory_for_path(self, key: str, path: str) -> None:
         """为路径配置创建目录
-        
+
         Args:
             key: 配置键
             path: 路径值
@@ -689,24 +684,24 @@ class ConfigManagerCore(ConfigNode):
 
     def get_serializable_data(self):
         """获取可序列化的配置数据，用于多进程环境
-        
+
         Returns:
             SerializableConfigData: 可序列化的配置数据对象
         """
         from ..serializable_config import create_serializable_config
         return create_serializable_config(self)
-    
+
     def create_serializable_snapshot(self):
         """创建可序列化的配置快照
-        
+
         Returns:
             SerializableConfigData: 可序列化的配置快照
         """
         return self.get_serializable_data()
-    
+
     def is_pickle_serializable(self) -> bool:
         """检查配置管理器是否可以被pickle序列化
-        
+
         Returns:
             bool: 是否可序列化（通常返回False，因为包含不可序列化的组件）
         """
