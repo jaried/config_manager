@@ -338,6 +338,16 @@ class ConfigManagerCore(ConfigNode):
             # 静默忽略debug_mode的设置，因为它应该总是动态获取
             return
 
+        # 特殊处理first_start_time：如果只是first_start_time变化，不应该触发自动保存
+        if key == 'first_start_time':
+            # 检查是否只是first_start_time的变化
+            existing_value = self._data.get('first_start_time')
+            if existing_value == value:
+                # 值没有变化，直接返回
+                return
+            # 值有变化，但first_start_time不应该触发自动保存
+            autosave = False
+
         # 特殊处理base_dir：如果是字符串格式，自动转换为多平台配置
         if key == 'base_dir' and isinstance(value, str):
             # 检查是否已经是多平台格式
@@ -576,7 +586,7 @@ class ConfigManagerCore(ConfigNode):
         """判断是否需要更新路径配置"""
         path_related_keys = [
             'base_dir', 'project_name', 'experiment_name',
-            'first_start_time', 'debug_mode'
+            'debug_mode'
         ]
         return key in path_related_keys
 
