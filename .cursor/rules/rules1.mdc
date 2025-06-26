@@ -3,7 +3,18 @@ description:
 globs: 
 alwaysApply: true
 ---
-运行代码前，必须先conda activate base_python3.12
+针对我提出的问题和需求，需要重复我的问题和需求，并给出解决方案。
+
+##架构设计和概要设计
+架构设计和概要设计、配置说明发生变更，也需要及时更新文档。
+
+从pyyaml改为ruamel.yaml
+禁止更新其他项目文档。
+测试文件输出路径必须使用系统环境变量的临时路径。
+
+config_manager生成的config对象，通过属性访问，不要设置默认值。
+
+运行代码前，如果当前conda env是base，需要先conda deactivate然后conda activate base_python3.12
 修改问题前，先阅读相关文档，比如需求、架构设计、概要设计、详细设计。
 修改完代码后，测试通过，再修正对应的需求、架构设计、概要设计、详细设计文档，相关的文档的颗粒度必须符合要求，设计文档不要代码实现。
 使用config_manager和custom_logger模块管理配置文件和logger。

@@ -22,8 +22,8 @@ __data__:
     tsb_logs_dir: 'd:\demo_logs\config_manager\experiment_001\tsb_logs\2025-01-07\100000'
     log_dir: 'd:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000'
     debug_dir: d:\demo_logs\config_manager\experiment_001\debug
-  config_file_path: 
-    D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\src\config\config.yaml
+    tensorboard_dir: d:\demo_logs\config_manager\experiment_001\tensorboard
+  config_file_path: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
   database:
     credentials:
       password: default_password
@@ -45,7 +45,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-24T13:27:06.840651'
+  scheduler_start_time: '2025-06-27T02:57:44.091973'
   scheduler_status: running
   server:
     port: '8080'

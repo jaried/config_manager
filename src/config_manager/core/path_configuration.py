@@ -6,7 +6,10 @@ start_time = datetime.now()
 
 import os
 from pathlib import Path
-from typing import Dict, Tuple, Optional, Any
+from typing import Dict, Tuple, Optional, Any, Union
+
+# 导入跨平台路径管理器
+from .cross_platform_paths import get_cross_platform_manager, get_platform_path
 
 
 class PathConfigurationError(Exception):
@@ -120,9 +123,13 @@ class TimeProcessor:
 class PathGenerator:
     """路径生成器"""
     
+    def __init__(self):
+        """初始化路径生成器"""
+        self._cross_platform_manager = get_cross_platform_manager()
+    
     def generate_work_directory(
         self, 
-        base_dir: str, 
+        base_dir: Union[str, Dict[str, str]], 
         project_name: str, 
         experiment_name: str, 
         debug_mode: bool
@@ -130,7 +137,7 @@ class PathGenerator:
         """生成工作目录路径
         
         Args:
-            base_dir: 基础目录
+            base_dir: 基础目录（字符串或多平台配置字典）
             project_name: 项目名称
             experiment_name: 实验名称
             debug_mode: 是否为调试模式
@@ -138,8 +145,11 @@ class PathGenerator:
         Returns:
             str: 工作目录路径
         """
+        # 获取当前平台的base_dir
+        platform_base_dir = get_platform_path(base_dir, 'base_dir')
+        
         # 标准化路径分隔符
-        base_path = Path(base_dir)
+        base_path = Path(platform_base_dir)
         
         # 构建路径组件
         path_components = [base_path]
@@ -215,30 +225,60 @@ class PathGenerator:
         }
         
         return debug_dirs
+    
+    def generate_tensorboard_directory(self, work_dir: str) -> Dict[str, str]:
+        """生成TensorBoard目录路径
+        
+        Args:
+            work_dir: 工作目录
+            
+        Returns:
+            dict: TensorBoard目录路径字典
+        """
+        work_path = Path(work_dir)
+        
+        tensorboard_dirs = {
+            'paths.tensorboard_dir': str(work_path / 'tensorboard')
+        }
+        
+        return tensorboard_dirs
 
 
 class PathValidator:
     """路径验证器"""
     
     @staticmethod
-    def validate_base_dir(base_dir: str) -> bool:
+    def validate_base_dir(base_dir: Union[str, Dict[str, str]]) -> bool:
         """验证基础目录
         
         Args:
-            base_dir: 基础目录路径
+            base_dir: 基础目录（字符串或多平台配置字典）
             
         Returns:
             bool: 验证结果
         """
-        if not base_dir or not isinstance(base_dir, str):
-            return False
-        
         try:
-            path = Path(base_dir)
-            # 检查路径格式是否有效
-            str(path.resolve())
-            return True
-        except (OSError, ValueError):
+            # 获取当前平台的路径
+            platform_path = get_platform_path(base_dir, 'base_dir')
+            
+            if not platform_path:
+                return False
+            
+            # 检查路径格式
+            path_obj = Path(platform_path)
+            
+            # 检查是否为绝对路径
+            if not path_obj.is_absolute():
+                return False
+            
+            # 检查路径是否有效
+            try:
+                path_obj.resolve()
+                return True
+            except (OSError, RuntimeError):
+                return False
+                
+        except Exception:
             return False
     
     @staticmethod
@@ -251,13 +291,15 @@ class PathValidator:
         Returns:
             bool: 验证结果
         """
-        if not path or not isinstance(path, str):
+        if not path:
             return False
         
         try:
-            Path(path)
+            path_obj = Path(path)
+            # 检查路径是否有效
+            path_obj.resolve()
             return True
-        except (OSError, ValueError):
+        except (OSError, RuntimeError, ValueError):
             return False
     
     @staticmethod
@@ -265,22 +307,30 @@ class PathValidator:
         """验证目录权限
         
         Args:
-            path: 目录路径
+            path: 路径字符串
             
         Returns:
-            bool: 权限验证结果
+            bool: 验证结果
         """
+        if not path:
+            return False
+        
         try:
             path_obj = Path(path)
-            parent_dir = path_obj.parent
             
-            # 如果父目录存在，检查写权限
-            if parent_dir.exists():
-                return os.access(str(parent_dir), os.W_OK)
+            # 如果目录不存在，检查父目录权限
+            if not path_obj.exists():
+                parent = path_obj.parent
+                if parent.exists():
+                    return os.access(parent, os.W_OK)
+                else:
+                    # 递归检查父目录权限
+                    return PathValidator.validate_directory_permissions(str(parent))
             
-            # 如果父目录不存在，递归检查上级目录
-            return PathValidator.validate_directory_permissions(str(parent_dir))
-        except (OSError, ValueError):
+            # 目录存在，检查读写权限
+            return os.access(path_obj, os.R_OK | os.W_OK)
+            
+        except Exception:
             return False
 
 
@@ -301,7 +351,8 @@ class DirectoryCreator:
         try:
             Path(path).mkdir(parents=True, exist_ok=exist_ok)
             return True
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, ValueError) as e:
+            print(f"目录创建失败: {path}, 错误: {e}")
             return False
     
     def create_path_structure(self, paths: Dict[str, str]) -> Dict[str, bool]:
@@ -316,7 +367,7 @@ class DirectoryCreator:
         results = {}
         
         for key, path in paths.items():
-            if path and isinstance(path, str):
+            if path:
                 results[key] = self.create_directory(path)
             else:
                 results[key] = False
@@ -334,34 +385,30 @@ class ConfigUpdater:
             config_manager: 配置管理器实例
         """
         self._config_manager = config_manager
-        self._directory_creator = DirectoryCreator()
     
     def update_path_configurations(self, path_configs: Dict[str, str]) -> None:
-        """更新路径配置并自动创建目录
+        """更新路径配置
         
         Args:
             path_configs: 路径配置字典
         """
-        # 首先创建所有目录
-        creation_results = self._directory_creator.create_path_structure(path_configs)
-        
-        # 记录目录创建结果
-        for key, success in creation_results.items():
-            if not success:
-                print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
-        
-        # 然后设置配置值，使用autosave=False避免递归调用
         for key, value in path_configs.items():
-            self._config_manager.set(key, value, autosave=False)
+            if key.startswith('paths.'):
+                nested_key = key[6:]  # 去掉'paths.'前缀
+                if 'paths' not in self._config_manager._data:
+                    self._config_manager._data['paths'] = ConfigNode()
+                if hasattr(self._config_manager._data['paths'], '_data'):
+                    self._config_manager._data['paths']._data[nested_key] = value
+                else:
+                    setattr(self._config_manager._data['paths'], nested_key, value)
     
     def update_debug_mode(self, debug_mode: bool) -> None:
-        """更新调试模式
+        """更新调试模式配置
         
         Args:
-            debug_mode: 调试模式状态
+            debug_mode: 调试模式标志
         """
-        # ConfigUpdater 不直接管理 debug_mode，这应该由 PathConfigurationManager 处理
-        # 这个方法主要是为了兼容性，实际的 debug_mode 管理在 PathConfigurationManager 中
+        # debug_mode是动态属性，不需要更新到配置中
         pass
 
 
@@ -370,7 +417,12 @@ class PathConfigurationManager:
     
     # 默认配置
     DEFAULT_PATH_CONFIG = {
-        'base_dir': 'd:\\logs',  # Windows默认
+        'base_dir': {
+            'windows': 'd:\\logs',
+            'linux': '/home/tony/logs',
+            'ubuntu': '/home/tony/logs',
+            'macos': '/Users/tony/logs'
+        },
         'project_name': 'project_name',
         'experiment_name': 'experiment_name',
         'first_start_time': None,  # 自动生成
@@ -389,6 +441,7 @@ class PathConfigurationManager:
         self._path_validator = PathValidator()
         self._directory_creator = DirectoryCreator()
         self._config_updater = ConfigUpdater(config_manager)
+        self._cross_platform_manager = get_cross_platform_manager()
         
         # 缓存相关
         self._path_cache = {}
@@ -397,50 +450,47 @@ class PathConfigurationManager:
     def initialize_path_configuration(self) -> None:
         """初始化路径配置"""
         try:
-            # 设置默认值（如果不存在）
+            # 设置默认值
             self._set_default_values()
-            
-            # debug_mode现在是动态属性，不需要存储到配置中
-            # 直接从配置管理器获取（会自动调用is_debug()）
-            try:
-                current_debug_mode = self._config_manager.debug_mode
-            except (AttributeError, ImportError):
-                current_debug_mode = False
             
             # 确保first_start_time存在
             self._ensure_first_start_time()
             
-            # 清除缓存，确保使用最新的调试模式设置
-            self.invalidate_cache()
+            # 处理is_debug导入错误
+            self._handle_is_debug_import_error()
             
-            # 生成路径配置
+            # 更新调试模式
+            self.update_debug_mode()
+            
+            # 生成所有路径
             path_configs = self.generate_all_paths()
             
-            # 验证路径配置
-            if not self.validate_path_configuration():
-                print("⚠️  路径配置验证失败，使用默认配置")
+            # 创建目录结构
+            creation_results = self._directory_creator.create_path_structure(path_configs)
+            
+            # 记录目录创建结果
+            for key, success in creation_results.items():
+                if not success:
+                    print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
             
             # 更新配置
             self._config_updater.update_path_configurations(path_configs)
             
-        except ImportError:
-            # is_debug模块不可用，使用默认值
-            self._handle_is_debug_import_error()
-        except (OSError, PermissionError) as e:
-            # 路径相关错误
-            print(f"⚠️  目录操作失败: {e}")
-        except ValueError as e:
-            # 时间解析错误
-            print(f"⚠️  时间解析失败: {e}")
+            # 移除保存配置的调用，避免在初始化过程中重复保存
+            # self._config_manager.save()
+            
         except Exception as e:
             # 其他错误，不影响主流程
             print(f"⚠️  路径配置初始化部分失败: {e}")
             # 尝试使用最小配置
             try:
+                current_os = self._cross_platform_manager.get_current_os()
+                default_base_dir = self._cross_platform_manager.get_default_path('base_dir')
+                
                 path_configs = {
-                    'paths.work_dir': 'd:\\logs\\default',
-                    'paths.log_dir': 'd:\\logs\\default\\logs',
-                    'paths.data_dir': 'd:\\logs\\default\\data'
+                    'paths.work_dir': f'{default_base_dir}/default',
+                    'paths.log_dir': f'{default_base_dir}/default/logs',
+                    'paths.data_dir': f'{default_base_dir}/default/data'
                 }
                 self._config_updater.update_path_configurations(path_configs)
             except Exception as fallback_e:
@@ -452,17 +502,18 @@ class PathConfigurationManager:
         try:
             self._config_manager.base_dir
         except AttributeError:
-            self._config_manager.set('base_dir', 'd:\\logs')
+            # 使用多平台默认配置
+            self._config_manager.set('base_dir', self.DEFAULT_PATH_CONFIG['base_dir'])
             
         try:
             self._config_manager.project_name
         except AttributeError:
-            self._config_manager.set('project_name', 'project_name')
+            self._config_manager.set('project_name', self.DEFAULT_PATH_CONFIG['project_name'])
         
         try:
             self._config_manager.experiment_name
         except AttributeError:
-            self._config_manager.set('experiment_name', 'experiment_name')
+            self._config_manager.set('experiment_name', self.DEFAULT_PATH_CONFIG['experiment_name'])
     
     def _ensure_first_start_time(self) -> None:
         """确保first_start_time存在"""
@@ -476,25 +527,26 @@ class PathConfigurationManager:
     
     def _handle_is_debug_import_error(self) -> None:
         """处理is_debug模块导入错误"""
-        # debug_mode现在是动态属性，不需要设置
-        # 继续初始化其他路径配置
-        path_configs = self.generate_all_paths()
-        self._config_updater.update_path_configurations(path_configs)
+        try:
+            from is_debug import is_debug
+        except ImportError:
+            print("⚠️  is_debug模块不可用，默认使用生产模式")
     
     def update_debug_mode(self) -> None:
-        """更新调试模式状态"""
-        # debug_mode现在是动态属性，不需要设置
-        # 只需要使缓存失效，重新生成路径
-        self.invalidate_cache()
+        """更新调试模式"""
+        debug_mode = self._debug_detector.detect_debug_mode()
+        # debug_mode是动态属性，不需要更新到配置中
     
     def generate_all_paths(self) -> Dict[str, str]:
-        """生成所有路径配置"""
-        if self._cache_valid and self._path_cache:
+        """生成所有路径配置
+        
+        Returns:
+            dict: 路径配置字典
+        """
+        if self._cache_valid:
             return self._path_cache.copy()
         
         path_configs = self._generate_paths_internal()
-        
-        # 更新缓存
         self._path_cache = path_configs.copy()
         self._cache_valid = True
         
@@ -506,7 +558,7 @@ class PathConfigurationManager:
         try:
             base_dir = self._config_manager.base_dir
         except AttributeError:
-            base_dir = 'd:\\logs'
+            base_dir = self.DEFAULT_PATH_CONFIG['base_dir']
             
         try:
             project_name = self._config_manager.project_name
@@ -539,6 +591,9 @@ class PathConfigurationManager:
         # 生成调试目录
         debug_dirs = self._path_generator.generate_debug_directory(work_dir)
         
+        # 生成TensorBoard目录
+        tensorboard_dirs = self._path_generator.generate_tensorboard_directory(work_dir)
+        
         # 解析时间组件
         if first_start_time:
             try:
@@ -557,6 +612,7 @@ class PathConfigurationManager:
             'paths.work_dir': work_dir,
             **checkpoint_dirs,
             **debug_dirs,
+            **tensorboard_dirs,
             **log_dirs
         }
         
@@ -568,7 +624,7 @@ class PathConfigurationManager:
         try:
             base_dir = self._config_manager.base_dir
         except AttributeError:
-            base_dir = 'd:\\logs'
+            base_dir = self.DEFAULT_PATH_CONFIG['base_dir']
             
         if not self._path_validator.validate_base_dir(base_dir):
             return False
@@ -616,14 +672,33 @@ class PathConfigurationManager:
         Returns:
             dict: 路径配置信息
         """
-        debug_info = self._debug_detector.get_debug_status_info()
-        path_configs = self.generate_all_paths()
+        try:
+            base_dir = self._config_manager.base_dir
+        except AttributeError:
+            base_dir = self.DEFAULT_PATH_CONFIG['base_dir']
+            
+        try:
+            project_name = self._config_manager.project_name
+        except AttributeError:
+            project_name = 'default_project'
+            
+        try:
+            experiment_name = self._config_manager.experiment_name
+        except AttributeError:
+            experiment_name = 'default_experiment'
+            
+        try:
+            debug_mode = self._config_manager.debug_mode
+        except AttributeError:
+            debug_mode = False
         
         return {
-            'debug_info': debug_info,
-            'path_configs': path_configs,
-            'cache_status': {
-                'cache_valid': self._cache_valid,
-                'cache_size': len(self._path_cache)
-            }
+            'current_os': self._cross_platform_manager.get_current_os(),
+            'os_family': self._cross_platform_manager.get_os_family(),
+            'base_dir': base_dir,
+            'project_name': project_name,
+            'experiment_name': experiment_name,
+            'debug_mode': debug_mode,
+            'platform_info': self._cross_platform_manager.get_platform_info(),
+            'generated_paths': self.generate_all_paths()
         } 

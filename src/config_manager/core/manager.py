@@ -7,7 +7,7 @@ import threading
 import atexit
 import uuid
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, Union
 from collections.abc import Iterable, Mapping
 from ..config_node import ConfigNode
 from .path_resolver import PathResolver
@@ -16,6 +16,7 @@ from .autosave_manager import AutosaveManager
 from .watcher import FileWatcher
 from .call_chain import CallChainTracker
 from .path_configuration import PathConfigurationManager
+from .cross_platform_paths import convert_to_multi_platform_config, get_platform_path
 
 
 class ConfigManagerCore(ConfigNode):
@@ -110,6 +111,10 @@ class ConfigManagerCore(ConfigNode):
         # 启动文件监视
         if watch and self._watcher:
             self._watcher.start(self._config_path, self._on_file_changed)
+
+        # 在初始化完成后进行一次保存，确保所有初始化过程中设置的配置都被保存
+        if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
+            self.save()
 
         return True
 
@@ -319,6 +324,10 @@ class ConfigManagerCore(ConfigNode):
                 converted_default = self._convert_type(default, as_type)
                 return converted_default
 
+        # 特殊处理base_dir：如果是多平台格式，返回当前平台的路径
+        if key == 'base_dir' and isinstance(current, dict):
+            current = get_platform_path(current, 'base_dir')
+
         converted_value = self._convert_type(current, as_type)
         return converted_value
 
@@ -328,6 +337,14 @@ class ConfigManagerCore(ConfigNode):
         if key == 'debug_mode':
             # 静默忽略debug_mode的设置，因为它应该总是动态获取
             return
+
+        # 特殊处理base_dir：如果是字符串格式，自动转换为多平台配置
+        if key == 'base_dir' and isinstance(value, str):
+            # 检查是否已经是多平台格式
+            if not isinstance(value, dict):
+                # 转换为多平台格式
+                value = convert_to_multi_platform_config(value, 'base_dir')
+                print(f"自动转换base_dir为多平台格式: {value}")
 
         keys = key.split('.')
         current = self
@@ -538,8 +555,8 @@ class ConfigManagerCore(ConfigNode):
         # 保存到配置中
         self._data['first_start_time'] = self._first_start_time.isoformat()
 
-        # 立即保存配置
-        self.save()
+        # 移除立即保存配置的调用，避免在初始化过程中重复保存
+        # self.save()
 
         return
 
@@ -712,3 +729,11 @@ class ConfigManagerCore(ConfigNode):
             return True
         except Exception:
             return False
+
+    def _convert_to_multi_platform_config(self, value: str) -> str:
+        """将路径转换为多平台格式"""
+        return convert_to_multi_platform_config(value)
+
+    def _get_platform_path(self, key: str) -> str:
+        """获取平台特定路径"""
+        return get_platform_path(key)
