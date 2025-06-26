@@ -93,6 +93,7 @@ class TestProjectRootDetection:
         finally:
             os.chdir(self.original_cwd)
             try:
+                assert temp_dir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir}"
                 shutil.rmtree(temp_dir)
             except:
                 pass
@@ -123,6 +124,7 @@ class TestProjectRootDetection:
         finally:
             os.chdir(self.original_cwd)
             try:
+                assert temp_dir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir}"
                 shutil.rmtree(temp_dir)
             except:
                 pass
@@ -160,6 +162,7 @@ class TestProjectRootDetection:
         finally:
             os.chdir(self.original_cwd)
             try:
+                assert temp_root.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_root}"
                 shutil.rmtree(temp_root)
             except:
                 pass

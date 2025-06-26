@@ -59,6 +59,7 @@ __type_hints__: {{}}
             print(f"✓ 成功保留原配置中的first_start_time: {stored_time_str}")
             
         finally:
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_002_002_override_with_parameter(self):
@@ -97,6 +98,7 @@ __type_hints__: {{}}
             print(f"✓ 成功使用传入参数覆盖first_start_time: {stored_time_str}")
             
         finally:
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_002_003_set_current_time_when_missing(self):
@@ -139,6 +141,7 @@ __type_hints__: {}
             print(f"✓ 成功设置当前时间作为first_start_time: {stored_time_str}")
             
         finally:
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_002_004_raw_yaml_format_preservation(self):
@@ -173,6 +176,7 @@ database:
             print(f"✓ 原始格式配置中的first_start_time保留成功: {stored_time_str}")
             
         finally:
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_002_005_priority_order_verification(self):
@@ -212,6 +216,7 @@ __type_hints__: {{}}
             print("✓ 优先级顺序验证通过：传入参数 > 原配置")
             
         finally:
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_002_006_custom_logger_integration(self):
@@ -256,4 +261,5 @@ __type_hints__: {{}}
             print(f"  - 计算的运行时长: {runtime_seconds:.2f}秒")
             
         finally:
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path) 

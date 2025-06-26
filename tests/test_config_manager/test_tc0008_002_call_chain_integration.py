@@ -12,6 +12,7 @@ import time
 import asyncio
 from io import StringIO
 from contextlib import redirect_stdout
+import shutil
 
 # 添加src到路径，确保能导入配置管理器
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -239,10 +240,10 @@ def test_tc0008_002_003_multiple_config_instances():
             time.sleep(0.5)
 
             # 尝试删除临时目录
-            import shutil
             max_attempts = 5
             for attempt in range(max_attempts):
                 try:
+                    assert tmpdir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {tmpdir}"
                     shutil.rmtree(tmpdir)
                     break
                 except (OSError, PermissionError) as e:
@@ -427,10 +428,10 @@ async def test_tc0008_002_006_async_scheduler_scenario():
             time.sleep(0.5)
 
             # 尝试删除临时目录
-            import shutil
             max_attempts = 5
             for attempt in range(max_attempts):
                 try:
+                    assert tmpdir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {tmpdir}"
                     shutil.rmtree(tmpdir)
                     break
                 except (OSError, PermissionError) as e:

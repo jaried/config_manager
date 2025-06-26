@@ -198,6 +198,10 @@ class ConfigManagerCore(ConfigNode):
             except Exception as e:
                 print(f"获取保存调用链失败: {e}")
 
+        # 设置内部保存标志，避免文件监视器触发重新加载
+        if self._watcher:
+            self._watcher.set_internal_save_flag(True)
+
         data_to_save = {
             '__data__': self.to_dict(),
             '__type_hints__': self._type_hints

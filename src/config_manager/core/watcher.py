@@ -19,6 +19,7 @@ class FileWatcher:
         self._last_mtime = 0
         self._config_path = None
         self._callback = None
+        self._internal_save_flag = False  # 内部保存标志
 
     def start(self, config_path: str, callback: Callable[[], None]):
         """启动文件监视"""
@@ -48,6 +49,11 @@ class FileWatcher:
             self._watcher_thread.join(timeout=1.0)
         return
 
+    def set_internal_save_flag(self, flag: bool):
+        """设置内部保存标志"""
+        self._internal_save_flag = flag
+        return
+
     def _watch_file(self):
         """监视配置文件变化"""
         while not self._stop_watcher.is_set():
@@ -55,8 +61,15 @@ class FileWatcher:
                 if os.path.exists(self._config_path):
                     current_mtime = os.path.getmtime(self._config_path)
                     if current_mtime > self._last_mtime:
-                        self._callback()
-                        self._last_mtime = current_mtime
+                        # 检查是否是内部保存
+                        if self._internal_save_flag:
+                            # 是内部保存，只更新修改时间，不触发回调
+                            self._last_mtime = current_mtime
+                            self._internal_save_flag = False  # 重置标志
+                        else:
+                            # 是外部变化，触发回调
+                            self._callback()
+                            self._last_mtime = current_mtime
                 time.sleep(1)
             except Exception as e:
                 print(f"监视配置出错: {str(e)}")

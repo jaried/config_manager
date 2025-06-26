@@ -101,6 +101,7 @@ def test_tc0008_001_002_config_loading_call_chain():
             # 多次尝试删除，处理Windows文件占用问题  
             for attempt in range(3):
                 try:
+                    assert tmpdir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {tmpdir}"
                     shutil.rmtree(tmpdir, ignore_errors=True)
                     break
                 except OSError:
@@ -186,6 +187,7 @@ def test_tc0008_001_003_nested_call_chain():
             # 多次尝试删除，处理Windows文件占用问题  
             for attempt in range(3):
                 try:
+                    assert tmpdir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {tmpdir}"
                     shutil.rmtree(tmpdir, ignore_errors=True)
                     break
                 except OSError:

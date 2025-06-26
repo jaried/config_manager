@@ -111,38 +111,35 @@ class TestPathGenerator:
     def test_generate_work_directory_debug_mode(self):
         """测试调试模式下的工作目录生成"""
         generator = PathGenerator()
-        
+        temp_base_dir = tempfile.mkdtemp()
         result = generator.generate_work_directory(
-            base_dir='d:\\logs',
+            base_dir=temp_base_dir,
             project_name='test_project',
             experiment_name='exp_001',
             debug_mode=True
         )
-        
-        expected = str(Path('d:\\logs') / 'debug' / 'test_project' / 'exp_001')
+        expected = str(Path(temp_base_dir) / 'debug' / 'test_project' / 'exp_001')
         assert result == expected
     
     def test_generate_work_directory_production_mode(self):
         """测试生产模式下的工作目录生成"""
         generator = PathGenerator()
-        
+        temp_base_dir = tempfile.mkdtemp()
         result = generator.generate_work_directory(
-            base_dir='d:\\logs',
+            base_dir=temp_base_dir,
             project_name='test_project',
             experiment_name='exp_001',
             debug_mode=False
         )
-        
-        expected = str(Path('d:\\logs') / 'test_project' / 'exp_001')
+        expected = str(Path(temp_base_dir) / 'test_project' / 'exp_001')
         assert result == expected
     
     def test_generate_checkpoint_directories(self):
         """测试检查点目录生成"""
         generator = PathGenerator()
-        work_dir = 'd:\\logs\\test_project\\exp_001'
-        
+        temp_base_dir = tempfile.mkdtemp()
+        work_dir = str(Path(temp_base_dir) / 'test_project' / 'exp_001')
         result = generator.generate_checkpoint_directories(work_dir)
-        
         expected = {
             'paths.checkpoint_dir': str(Path(work_dir) / 'checkpoint'),
             'paths.best_checkpoint_dir': str(Path(work_dir) / 'checkpoint' / 'best')
@@ -152,12 +149,11 @@ class TestPathGenerator:
     def test_generate_log_directories(self):
         """测试日志目录生成"""
         generator = PathGenerator()
-        work_dir = 'd:\\logs\\test_project\\exp_001'
+        temp_base_dir = tempfile.mkdtemp()
+        work_dir = str(Path(temp_base_dir) / 'test_project' / 'exp_001')
         date_str = '2025-01-08'
         time_str = '103045'
-        
         result = generator.generate_log_directories(work_dir, date_str, time_str)
-        
         expected = {
             'paths.tsb_logs_dir': str(Path(work_dir) / 'tsb_logs' / date_str / time_str),
             'paths.log_dir': str(Path(work_dir) / 'logs' / date_str / time_str)
@@ -170,7 +166,8 @@ class TestPathValidator:
     
     def test_validate_base_dir_valid_path(self):
         """测试有效基础目录验证"""
-        result = PathValidator.validate_base_dir('d:\\logs')
+        temp_base_dir = tempfile.mkdtemp()
+        result = PathValidator.validate_base_dir(temp_base_dir)
         assert result is True
     
     def test_validate_base_dir_invalid_path(self):
@@ -183,7 +180,9 @@ class TestPathValidator:
     
     def test_validate_path_format_valid(self):
         """测试有效路径格式验证"""
-        result = PathValidator.validate_path_format('d:\\logs\\test')
+        temp_base_dir = tempfile.mkdtemp()
+        test_path = str(Path(temp_base_dir) / 'test')
+        result = PathValidator.validate_path_format(test_path)
         assert result is True
     
     def test_validate_path_format_invalid(self):
@@ -202,9 +201,7 @@ class TestDirectoryCreator:
         """测试成功创建目录"""
         with tempfile.TemporaryDirectory() as temp_dir:
             test_path = os.path.join(temp_dir, 'test_dir')
-            
             result = DirectoryCreator.create_directory(test_path)
-            
             assert result is True
             assert os.path.exists(test_path)
     
@@ -239,18 +236,15 @@ class TestConfigUpdater:
         """测试更新路径配置"""
         mock_config = Mock()
         updater = ConfigUpdater(mock_config)
-        
+        temp_base_dir = tempfile.mkdtemp()
         path_configs = {
-            'paths.work_dir': 'd:\\logs\\test',
-            'paths.checkpoint_dir': 'd:\\logs\\test\\checkpoint'
+            'paths.work_dir': str(Path(temp_base_dir) / 'test'),
+            'paths.checkpoint_dir': str(Path(temp_base_dir) / 'test' / 'checkpoint')
         }
-        
         updater.update_path_configurations(path_configs)
-        
-        # 验证set方法被调用，且使用了autosave=False参数
         assert mock_config.set.call_count == 2
-        mock_config.set.assert_any_call('paths.work_dir', 'd:\\logs\\test', autosave=False)
-        mock_config.set.assert_any_call('paths.checkpoint_dir', 'd:\\logs\\test\\checkpoint', autosave=False)
+        mock_config.set.assert_any_call('paths.work_dir', path_configs['paths.work_dir'], autosave=False)
+        mock_config.set.assert_any_call('paths.checkpoint_dir', path_configs['paths.checkpoint_dir'], autosave=False)
     
     def test_update_debug_mode(self):
         """测试更新调试模式"""

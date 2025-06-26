@@ -30,139 +30,105 @@ class TestCrossPlatformConfigManagerIntegration:
         """测试单一路径自动转换为多平台配置"""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = os.path.join(temp_dir, 'test_auto_conversion.yaml')
-            
-            # 创建配置管理器
+            temp_base_dir = tempfile.mkdtemp()
             config = get_config_manager(
                 config_path=config_path,
                 test_mode=True,
                 first_start_time=self.test_time
             )
-            
-            # 设置单一路径
-            config.set('base_dir', 'd:\\demo_logs')
-            
-            # 验证是否自动转换为多平台格式
+            config.set('base_dir', temp_base_dir)
             base_dir_value = config._data.get('base_dir')
             assert isinstance(base_dir_value, dict), "base_dir应该被转换为字典格式"
-            assert 'windows' in base_dir_value, "应该包含windows路径"
-            assert 'linux' in base_dir_value, "应该包含linux路径"
-            assert 'ubuntu' in base_dir_value, "应该包含ubuntu路径"
-            assert 'macos' in base_dir_value, "应该包含macos路径"
-            
-            # 验证原始路径被正确映射
-            assert base_dir_value['windows'] == 'd:\\demo_logs', "Windows路径应该保持原值"
-            
-            # 验证获取时返回当前平台路径
+            assert 'windows' in base_dir_value
+            assert 'linux' in base_dir_value
+            assert 'ubuntu' in base_dir_value
+            assert 'macos' in base_dir_value
+            assert base_dir_value['windows'] == temp_base_dir
             current_path = config.get('base_dir')
-            assert current_path is not None, "应该能获取到当前平台路径"
-            assert isinstance(current_path, str), "返回的路径应该是字符串"
+            assert current_path is not None
+            assert isinstance(current_path, str)
 
     def test_multi_platform_path_setting(self):
         """测试直接设置多平台路径配置"""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = os.path.join(temp_dir, 'test_multi_platform.yaml')
-            
-            # 创建配置管理器
+            temp_base_dir = tempfile.mkdtemp()
             config = get_config_manager(
                 config_path=config_path,
                 test_mode=True,
                 first_start_time=self.test_time
             )
-            
-            # 直接设置多平台配置
             multi_platform_base_dir = {
-                'windows': 'd:\\multi_logs',
+                'windows': temp_base_dir,
                 'linux': '/home/tony/multi_logs',
                 'ubuntu': '/home/tony/multi_logs',
                 'macos': '/Users/tony/multi_logs'
             }
             config.set('base_dir', multi_platform_base_dir)
-            
-            # 验证配置被正确存储
             stored_value = config._data.get('base_dir')
-            assert isinstance(stored_value, dict), "多平台配置应该保持字典格式"
-            assert stored_value == multi_platform_base_dir, "配置应该完全匹配"
-            
-            # 验证获取时返回当前平台路径
+            assert isinstance(stored_value, dict)
+            assert stored_value == multi_platform_base_dir
             current_path = config.get('base_dir')
-            assert current_path is not None, "应该能获取到当前平台路径"
-            assert current_path in multi_platform_base_dir.values(), "返回的路径应该在配置中"
+            assert current_path is not None
+            assert current_path in multi_platform_base_dir.values()
 
     def test_path_generation_with_cross_platform_base_dir(self):
         """测试基于跨平台base_dir的路径生成"""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = os.path.join(temp_dir, 'test_path_generation.yaml')
-            
-            # 创建配置管理器
+            temp_base_dir = tempfile.mkdtemp()
             config = get_config_manager(
                 config_path=config_path,
                 test_mode=True,
                 first_start_time=self.test_time
             )
-            
-            # 设置多平台base_dir
             multi_platform_base_dir = {
-                'windows': 'd:\\cross_platform_logs',
+                'windows': temp_base_dir,
                 'linux': '/home/tony/cross_platform_logs',
                 'ubuntu': '/home/tony/cross_platform_logs',
                 'macos': '/Users/tony/cross_platform_logs'
             }
             config.set('base_dir', multi_platform_base_dir)
-            
-            # 设置项目配置
             config.set('project_name', 'cross_platform_test')
             config.set('experiment_name', 'test_exp')
-            
-            # 验证路径配置管理器能够正确处理
             try:
-                # 获取路径配置信息
                 path_info = config.get_path_configuration_info()
-                assert 'current_os' in path_info, "应该包含当前操作系统信息"
-                assert 'generated_paths' in path_info, "应该包含生成的路径信息"
-                
-                # 验证生成的路径基于正确的平台路径
+                assert 'current_os' in path_info
+                assert 'generated_paths' in path_info
                 generated_paths = path_info.get('generated_paths', {})
                 if 'paths.work_dir' in generated_paths:
                     work_dir = generated_paths['paths.work_dir']
                     current_os = path_info['current_os']
                     expected_base = multi_platform_base_dir.get(current_os, multi_platform_base_dir['windows'])
-                    assert expected_base in work_dir, f"工作目录应该基于{current_os}的base_dir"
-                
+                    assert expected_base in work_dir
             except Exception as e:
-                # 如果路径配置管理器不可用，至少验证基本功能
                 current_base_dir = config.get('base_dir')
-                assert current_base_dir is not None, "应该能获取到当前平台路径"
-                assert current_base_dir in multi_platform_base_dir.values(), "返回的路径应该在配置中"
+                assert current_base_dir is not None
+                assert current_base_dir in multi_platform_base_dir.values()
 
     def test_backward_compatibility_with_existing_configs(self):
         """测试与现有配置的向后兼容性"""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = os.path.join(temp_dir, 'test_backward_compat.yaml')
-            
-            # 创建配置管理器
+            temp_work_dir = tempfile.mkdtemp()
+            temp_tensorboard_dir = tempfile.mkdtemp()
+            temp_data_dir = tempfile.mkdtemp()
             config = get_config_manager(
                 config_path=config_path,
                 test_mode=True,
                 first_start_time=self.test_time
             )
-            
-            # 测试现有的单一路径配置仍然工作
-            config.set('work_dir', 'd:\\work')
-            config.set('tensorboard_dir', 'd:\\tensorboard')
-            config.set('data_dir', 'd:\\data')
-            
-            # 验证获取值正常
+            config.set('work_dir', temp_work_dir)
+            config.set('tensorboard_dir', temp_tensorboard_dir)
+            config.set('data_dir', temp_data_dir)
             work_dir = config.get('work_dir')
             tensorboard_dir = config.get('tensorboard_dir')
             data_dir = config.get('data_dir')
-            
-            assert work_dir == 'd:\\work', "work_dir应该保持原值"
-            assert tensorboard_dir == 'd:\\tensorboard', "tensorboard_dir应该保持原值"
-            assert data_dir == 'd:\\data', "data_dir应该保持原值"
-            
-            # 验证这些配置没有被转换为多平台格式
+            assert work_dir == temp_work_dir
+            assert tensorboard_dir == temp_tensorboard_dir
+            assert data_dir == temp_data_dir
             work_dir_value = config._data.get('work_dir')
-            assert isinstance(work_dir_value, str), "非base_dir的路径应该保持字符串格式"
+            assert isinstance(work_dir_value, str)
 
     def test_config_persistence_and_reload(self):
         """测试配置持久化和重新加载"""

@@ -142,7 +142,7 @@ __type_hints__: {}
             assert config_manager.log_dir != "/original/log/path"
             
             # 验证替换后的路径包含测试环境路径
-            temp_base = tempfile.gettempdir()
+            temp_base = tempfile.mkdtemp(prefix="test_protected_")
             # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
             # 同时处理双斜杠问题
             normalized_temp_base = os.path.normpath(temp_base).replace('\\', '/').replace('//', '/')
@@ -159,6 +159,7 @@ __type_hints__: {}
             assert config_manager.proxy.https == "https://localhost:3214"
             
         finally:
+            assert config_file.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {config_file}"
             os.unlink(config_file)
 
     def test_tc0012_006_005_is_protected_field_network(self):
@@ -251,7 +252,7 @@ __type_hints__: {}
             assert config_manager.headers.log_path != "/tmp/headers.log"
             
             # 验证替换后的路径包含测试环境路径
-            temp_base = tempfile.gettempdir()
+            temp_base = tempfile.mkdtemp(prefix="test_complex_")
             # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
             # 同时处理双斜杠问题
             normalized_temp_base = os.path.normpath(temp_base).replace('\\', '/').replace('//', '/')
@@ -266,6 +267,7 @@ __type_hints__: {}
         finally:
             # 清理临时文件
             if os.path.exists(config_file):
+                assert config_file.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {config_file}"
                 os.unlink(config_file)
             # 清理ConfigManager实例
             _clear_instances_for_testing() 

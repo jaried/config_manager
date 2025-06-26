@@ -23,7 +23,8 @@ __data__:
     log_dir: 'd:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000'
     debug_dir: d:\demo_logs\config_manager\experiment_001\debug
     tensorboard_dir: d:\demo_logs\config_manager\experiment_001\tensorboard
-  config_file_path: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
+  config_file_path: 
+    D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
   database:
     credentials:
       password: default_password

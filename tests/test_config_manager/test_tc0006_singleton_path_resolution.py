@@ -91,10 +91,12 @@ class TestSingletonPathResolution:
             os.chdir(original_cwd)
             # 清理临时目录
             try:
+                assert temp_dir1.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir1}"
                 shutil.rmtree(temp_dir1)
             except:
                 pass
             try:
+                assert temp_dir2.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir2}"
                 shutil.rmtree(temp_dir2)
             except:
                 pass
@@ -133,6 +135,7 @@ class TestSingletonPathResolution:
         finally:
             # 清理临时目录
             try:
+                assert temp_dir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir}"
                 shutil.rmtree(temp_dir)
             except:
                 pass
@@ -177,10 +180,12 @@ class TestSingletonPathResolution:
         finally:
             # 清理临时目录
             try:
+                assert temp_dir1.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir1}"
                 shutil.rmtree(temp_dir1)
             except:
                 pass
             try:
+                assert temp_dir2.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir2}"
                 shutil.rmtree(temp_dir2)
             except:
                 pass
@@ -226,6 +231,7 @@ class TestSingletonPathResolution:
             
         finally:
             try:
+                assert temp_dir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir}"
                 shutil.rmtree(temp_dir)
             except:
                 pass 

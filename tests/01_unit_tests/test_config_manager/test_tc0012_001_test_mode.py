@@ -39,7 +39,7 @@ class TestTestMode:
         
         # 验证配置文件路径在临时目录中
         config_path = cfg.get_config_file_path()
-        temp_base = tempfile.gettempdir()
+        temp_base = tempfile.mkdtemp(prefix="test_basic_")
         assert temp_base in config_path
         assert 'tests' in config_path  # 修复：Windows路径使用反斜杠，不是'tests/'
         assert config_path.endswith('.yaml')
@@ -116,7 +116,7 @@ class TestTestMode:
         path2 = cfg2.get_config_file_path()
         
         # 验证路径格式
-        temp_base = tempfile.gettempdir()
+        temp_base = tempfile.mkdtemp(prefix="test_path_")
         assert temp_base in path1
         assert temp_base in path2
         assert 'tests' in path1  # 修复：Windows路径使用反斜杠
@@ -199,6 +199,7 @@ __type_hints__: {}
             
         finally:
             # 清理临时文件
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_001_007_test_mode_performance(self):
@@ -410,6 +411,7 @@ __type_hints__: {}
         finally:
             # 清理临时文件
             if os.path.exists(prod_config_path):
+                assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
                 os.unlink(prod_config_path)
 
     def test_tc0012_001_014_test_mode_config_copy_with_time(self):
@@ -461,6 +463,7 @@ __type_hints__: {}
             
         finally:
             # 清理临时文件
+            assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
             os.unlink(prod_config_path)
 
     def test_tc0012_001_015_test_mode_time_format_validation(self):

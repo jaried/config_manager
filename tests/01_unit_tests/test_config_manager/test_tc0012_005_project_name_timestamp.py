@@ -45,7 +45,7 @@ class TestTC0012005ProjectNameTimestamp:
         assert '153045' in test_path, f"测试路径应包含时间153045: {test_path}"
         
         # 验证路径格式：/temp/tests/YYYYMMDD/HHMMSS/project_name/src/config/config.yaml
-        temp_base = tempfile.gettempdir()
+        temp_base = tempfile.mkdtemp(prefix="test_project_")
         expected_pattern = os.path.join(temp_base, 'tests', '20250107', '153045', 'config_manager', 'src', 'config', 'config.yaml')
         assert test_path == expected_pattern, f"路径格式不正确，期望: {expected_pattern}，实际: {test_path}"
         
@@ -126,6 +126,7 @@ __type_hints__: {}
             
         finally:
             # 清理临时文件
+            assert temp_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {temp_config_path}"
             os.unlink(temp_config_path)
 
     def test_tc0012_005_006_timestamp_consistency(self):
@@ -167,7 +168,7 @@ __type_hints__: {}
         work_dir = cfg.get('work_dir', '')
         
         # 验证路径包含project_name
-        temp_base = tempfile.gettempdir()
+        temp_base = tempfile.mkdtemp(prefix="test_work_dir_")
         expected_base = os.path.join(temp_base, 'tests', '20250107', '181520', 'config_manager')
         
         assert base_dir == expected_base, f"base_dir应为{expected_base}，实际: {base_dir}"

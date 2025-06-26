@@ -25,9 +25,9 @@ class TestTestModeAutoDirectory:
         # 创建测试模式配置管理器
         config = get_config_manager(test_mode=True, first_start_time=self.test_time)
         
-        # 获取测试环境的基础目录
-        temp_base = tempfile.gettempdir()
-        test_log_dir = os.path.join(temp_base, 'test_logs', 'custom_test')
+        # 使用tempfile.mkdtemp()创建唯一临时目录
+        temp_base = tempfile.mkdtemp(prefix="test_auto_dir_")
+        test_log_dir = os.path.join(temp_base, 'custom_test')
         
         # 设置paths命名空间下的路径
         config.set('paths.custom_log_dir', test_log_dir)
@@ -38,15 +38,16 @@ class TestTestModeAutoDirectory:
         
         # 清理
         import shutil
-        if os.path.exists(test_log_dir):
-            shutil.rmtree(os.path.dirname(test_log_dir), ignore_errors=True)
+        if os.path.exists(temp_base):
+            assert temp_base.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_base}"
+            shutil.rmtree(temp_base, ignore_errors=True)
     
     def test_test_mode_generated_paths_auto_creation(self):
         """测试test_mode下路径配置管理器生成的路径自动创建"""
         config = get_config_manager(test_mode=True, first_start_time=self.test_time)
         
-        # 设置基础配置，触发路径生成
-        temp_base = tempfile.gettempdir()
+        # 使用tempfile.mkdtemp()创建唯一临时目录
+        temp_base = tempfile.mkdtemp(prefix="test_auto_dir_")
         config.set('base_dir', temp_base)
         config.set('project_name', 'test_auto_dir')
         config.set('experiment_name', 'test_exp')
@@ -69,24 +70,17 @@ class TestTestModeAutoDirectory:
         
         # 清理
         import shutil
-        if work_dir and os.path.exists(work_dir):
-            # 清理到base_dir级别
-            cleanup_path = work_dir
-            while cleanup_path != temp_base and os.path.dirname(cleanup_path) != cleanup_path:
-                parent = os.path.dirname(cleanup_path)
-                if parent == temp_base:
-                    break
-                cleanup_path = parent
-            if cleanup_path != temp_base:
-                shutil.rmtree(cleanup_path, ignore_errors=True)
+        if os.path.exists(temp_base):
+            assert temp_base.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_base}"
+            shutil.rmtree(temp_base, ignore_errors=True)
     
     def test_test_mode_nested_paths_creation(self):
         """测试test_mode下深层嵌套路径的创建"""
         config = get_config_manager(test_mode=True, first_start_time=self.test_time)
         
-        # 创建深层嵌套路径
-        temp_base = tempfile.gettempdir()
-        nested_path = os.path.join(temp_base, 'test_nested', 'level1', 'level2', 'level3', 'logs')
+        # 使用tempfile.mkdtemp()创建唯一临时目录
+        temp_base = tempfile.mkdtemp(prefix="test_nested_")
+        nested_path = os.path.join(temp_base, 'level1', 'level2', 'level3', 'logs')
         
         config.set('paths.deep_nested_dir', nested_path)
         
@@ -96,10 +90,9 @@ class TestTestModeAutoDirectory:
         
         # 验证父目录也存在
         parent_dirs = [
-            os.path.join(temp_base, 'test_nested'),
-            os.path.join(temp_base, 'test_nested', 'level1'),
-            os.path.join(temp_base, 'test_nested', 'level1', 'level2'),
-            os.path.join(temp_base, 'test_nested', 'level1', 'level2', 'level3'),
+            os.path.join(temp_base, 'level1'),
+            os.path.join(temp_base, 'level1', 'level2'),
+            os.path.join(temp_base, 'level1', 'level2', 'level3'),
         ]
         
         for parent_dir in parent_dirs:
@@ -108,22 +101,23 @@ class TestTestModeAutoDirectory:
         
         # 清理
         import shutil
-        test_nested_root = os.path.join(temp_base, 'test_nested')
-        if os.path.exists(test_nested_root):
-            shutil.rmtree(test_nested_root, ignore_errors=True)
+        if os.path.exists(temp_base):
+            assert temp_base.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_base}"
+            shutil.rmtree(temp_base, ignore_errors=True)
     
     def test_test_mode_multiple_path_configs(self):
         """测试test_mode下多个路径配置的批量创建"""
         config = get_config_manager(test_mode=True, first_start_time=self.test_time)
         
-        temp_base = tempfile.gettempdir()
+        # 使用tempfile.mkdtemp()创建唯一临时目录
+        temp_base = tempfile.mkdtemp(prefix="test_multi_")
         
         # 设置多个路径配置
         path_configs = {
-            'paths.data_dir': os.path.join(temp_base, 'test_multi', 'data'),
-            'paths.model_dir': os.path.join(temp_base, 'test_multi', 'models'),
-            'paths.output_dir': os.path.join(temp_base, 'test_multi', 'outputs'),
-            'paths.cache_dir': os.path.join(temp_base, 'test_multi', 'cache'),
+            'paths.data_dir': os.path.join(temp_base, 'data'),
+            'paths.model_dir': os.path.join(temp_base, 'models'),
+            'paths.output_dir': os.path.join(temp_base, 'outputs'),
+            'paths.cache_dir': os.path.join(temp_base, 'cache'),
         }
         
         # 批量设置路径
@@ -137,25 +131,26 @@ class TestTestModeAutoDirectory:
         
         # 清理
         import shutil
-        test_multi_root = os.path.join(temp_base, 'test_multi')
-        if os.path.exists(test_multi_root):
-            shutil.rmtree(test_multi_root, ignore_errors=True)
+        if os.path.exists(temp_base):
+            assert temp_base.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_base}"
+            shutil.rmtree(temp_base, ignore_errors=True)
     
     def test_test_mode_path_update_triggers_creation(self):
         """测试test_mode下路径更新触发目录创建"""
         config = get_config_manager(test_mode=True, first_start_time=self.test_time)
         
-        temp_base = tempfile.gettempdir()
+        # 使用tempfile.mkdtemp()创建唯一临时目录
+        temp_base = tempfile.mkdtemp(prefix="test_update_")
         
         # 初始设置
-        initial_path = os.path.join(temp_base, 'test_update', 'initial')
+        initial_path = os.path.join(temp_base, 'initial')
         config.set('paths.update_test_dir', initial_path)
         
         # 验证初始目录创建
         assert os.path.exists(initial_path), f"初始目录应该被创建: {initial_path}"
         
         # 更新路径
-        updated_path = os.path.join(temp_base, 'test_update', 'updated')
+        updated_path = os.path.join(temp_base, 'updated')
         config.set('paths.update_test_dir', updated_path)
         
         # 验证新目录也被创建
@@ -164,18 +159,19 @@ class TestTestModeAutoDirectory:
         
         # 清理
         import shutil
-        test_update_root = os.path.join(temp_base, 'test_update')
-        if os.path.exists(test_update_root):
-            shutil.rmtree(test_update_root, ignore_errors=True)
+        if os.path.exists(temp_base):
+            assert temp_base.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_base}"
+            shutil.rmtree(temp_base, ignore_errors=True)
     
     def test_test_mode_path_configuration_integration(self):
         """测试test_mode下与路径配置管理器的完整集成"""
         config = get_config_manager(test_mode=True, first_start_time=self.test_time)
         
-        temp_base = tempfile.gettempdir()
+        # 使用tempfile.mkdtemp()创建唯一临时目录
+        temp_base = tempfile.mkdtemp(prefix="test_integration_")
         
         # 设置完整的项目配置
-        config.set('base_dir', os.path.join(temp_base, 'integration_test'))
+        config.set('base_dir', temp_base)
         config.set('project_name', 'test_integration')
         config.set('experiment_name', 'exp_001')
         config.set('debug_mode', True)
@@ -204,9 +200,9 @@ class TestTestModeAutoDirectory:
         
         # 清理
         import shutil
-        integration_test_root = os.path.join(temp_base, 'integration_test')
-        if os.path.exists(integration_test_root):
-            shutil.rmtree(integration_test_root, ignore_errors=True)
+        if os.path.exists(temp_base):
+            assert temp_base.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_base}"
+            shutil.rmtree(temp_base, ignore_errors=True)
     
     def test_test_mode_error_handling(self):
         """测试test_mode下错误处理"""

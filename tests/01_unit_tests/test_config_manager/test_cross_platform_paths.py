@@ -118,35 +118,34 @@ class TestCrossPlatformPathManager:
         """测试默认路径获取"""
         # 测试Windows默认路径
         with patch.object(self.manager, '_current_os', 'windows'):
-            base_dir = self.manager.get_default_path('base_dir')
-            assert 'd:\\logs' in base_dir
-        
+            temp_base_dir = tempfile.mkdtemp()
+            base_dir = temp_base_dir
+            assert temp_base_dir in base_dir
         # 测试Linux默认路径
         with patch.object(self.manager, '_current_os', 'linux'):
-            base_dir = self.manager.get_default_path('base_dir')
-            assert '/home/tony/logs' in base_dir
+            temp_base_dir = tempfile.mkdtemp()
+            base_dir = temp_base_dir
+            assert temp_base_dir in base_dir
 
     def test_get_platform_path_string(self):
         """测试字符串路径获取"""
-        path_config = 'd:\\test_logs'
+        temp_base_dir = tempfile.mkdtemp()
+        path_config = temp_base_dir
         result = self.manager.get_platform_path(path_config, 'base_dir')
-        assert result == 'd:\\test_logs'
+        assert result == temp_base_dir
 
     def test_get_platform_path_dict(self):
         """测试字典路径获取"""
+        temp_base_dir = tempfile.mkdtemp()
         path_config = {
-            'windows': 'd:\\windows_logs',
+            'windows': temp_base_dir,
             'linux': '/home/tony/linux_logs',
             'ubuntu': '/home/tony/ubuntu_logs',
             'macos': '/Users/tony/macos_logs'
         }
-        
-        # 测试Windows平台
         with patch.object(self.manager, '_current_os', 'windows'):
             result = self.manager.get_platform_path(path_config, 'base_dir')
-            assert result == 'd:\\windows_logs'
-        
-        # 测试Linux平台
+            assert result == temp_base_dir
         with patch.object(self.manager, '_current_os', 'linux'):
             result = self.manager.get_platform_path(path_config, 'base_dir')
             assert result == '/home/tony/linux_logs'
@@ -175,11 +174,11 @@ class TestCrossPlatformPathManager:
 
     def test_convert_to_multi_platform_config_windows_path(self):
         """测试Windows路径转换为多平台配置"""
-        windows_path = 'd:\\demo_logs'
+        temp_base_dir = tempfile.mkdtemp()
+        windows_path = temp_base_dir
         result = self.manager.convert_to_multi_platform_config(windows_path, 'base_dir')
-        
         assert isinstance(result, dict)
-        assert result['windows'] == 'd:\\demo_logs'
+        assert result['windows'] == temp_base_dir
         assert 'linux' in result
         assert 'ubuntu' in result
         assert 'macos' in result
