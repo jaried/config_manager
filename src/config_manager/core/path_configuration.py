@@ -1,15 +1,15 @@
 # src/config_manager/core/path_configuration.py
 from __future__ import annotations
 from datetime import datetime
-
-start_time = datetime.now()
-
-import os
+from typing import Dict, Any, Optional, List, Tuple
 from pathlib import Path
-from typing import Dict, Tuple, Optional, Any, Union
+import os
+import re
+from config_manager.config_node import ConfigNode
 
 # 导入跨平台路径管理器
 from .cross_platform_paths import get_cross_platform_manager, get_platform_path
+from ..logger import debug
 
 
 class PathConfigurationError(Exception):
@@ -343,16 +343,16 @@ class DirectoryCreator:
         
         Args:
             path: 目录路径
-            exist_ok: 目录已存在时是否报错
+            exist_ok: 如果目录已存在是否不报错
             
         Returns:
-            bool: 创建结果
+            bool: 创建是否成功
         """
         try:
             Path(path).mkdir(parents=True, exist_ok=exist_ok)
             return True
         except (OSError, PermissionError, ValueError) as e:
-            print(f"目录创建失败: {path}, 错误: {e}")
+            debug("目录创建失败: {}, 错误: {}", path, e)
             return False
     
     def create_path_structure(self, paths: Dict[str, str]) -> Dict[str, bool]:
@@ -394,13 +394,7 @@ class ConfigUpdater:
         """
         for key, value in path_configs.items():
             if key.startswith('paths.'):
-                nested_key = key[6:]  # 去掉'paths.'前缀
-                if 'paths' not in self._config_manager._data:
-                    self._config_manager._data['paths'] = ConfigNode()
-                if hasattr(self._config_manager._data['paths'], '_data'):
-                    self._config_manager._data['paths']._data[nested_key] = value
-                else:
-                    setattr(self._config_manager._data['paths'], nested_key, value)
+                self._config_manager.set(key, value, autosave=False)
     
     def update_debug_mode(self, debug_mode: bool) -> None:
         """更新调试模式配置
@@ -471,7 +465,7 @@ class PathConfigurationManager:
             # 记录目录创建结果
             for key, success in creation_results.items():
                 if not success:
-                    print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
+                    debug("警告: 目录创建失败 {}: {}", key, path_configs.get(key))
             
             # 更新配置
             self._config_updater.update_path_configurations(path_configs)
@@ -481,7 +475,7 @@ class PathConfigurationManager:
             
         except Exception as e:
             # 其他错误，不影响主流程
-            print(f"⚠️  路径配置初始化部分失败: {e}")
+            debug("⚠️  路径配置初始化部分失败: {}", e)
             # 尝试使用最小配置
             try:
                 current_os = self._cross_platform_manager.get_current_os()
@@ -494,7 +488,7 @@ class PathConfigurationManager:
                 }
                 self._config_updater.update_path_configurations(path_configs)
             except Exception as fallback_e:
-                print(f"⚠️  备用路径配置也失败: {fallback_e}")
+                debug("⚠️  备用路径配置也失败: {}", fallback_e)
     
     def _set_default_values(self) -> None:
         """设置默认配置值"""
@@ -530,7 +524,7 @@ class PathConfigurationManager:
         try:
             from is_debug import is_debug
         except ImportError:
-            print("⚠️  is_debug模块不可用，默认使用生产模式")
+            debug("⚠️  is_debug模块不可用，默认使用生产模式")
     
     def update_debug_mode(self) -> None:
         """更新调试模式"""

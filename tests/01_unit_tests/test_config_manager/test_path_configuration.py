@@ -235,16 +235,20 @@ class TestConfigUpdater:
     def test_update_path_configurations(self):
         """测试更新路径配置"""
         mock_config = Mock()
+        # 配置Mock对象的_data属性
+        mock_config._data = {}
+        
         updater = ConfigUpdater(mock_config)
-        temp_base_dir = tempfile.mkdtemp()
-        path_configs = {
-            'paths.work_dir': str(Path(temp_base_dir) / 'test'),
-            'paths.checkpoint_dir': str(Path(temp_base_dir) / 'test' / 'checkpoint')
-        }
-        updater.update_path_configurations(path_configs)
-        assert mock_config.set.call_count == 2
-        mock_config.set.assert_any_call('paths.work_dir', path_configs['paths.work_dir'], autosave=False)
-        mock_config.set.assert_any_call('paths.checkpoint_dir', path_configs['paths.checkpoint_dir'], autosave=False)
+        
+        with tempfile.TemporaryDirectory() as temp_base_dir:
+            path_configs = {
+                'paths.work_dir': str(Path(temp_base_dir) / 'test'),
+                'paths.checkpoint_dir': str(Path(temp_base_dir) / 'test' / 'checkpoint')
+            }
+            updater.update_path_configurations(path_configs)
+            assert mock_config.set.call_count == 2
+            mock_config.set.assert_any_call('paths.work_dir', path_configs['paths.work_dir'], autosave=False)
+            mock_config.set.assert_any_call('paths.checkpoint_dir', path_configs['paths.checkpoint_dir'], autosave=False)
     
     def test_update_debug_mode(self):
         """测试更新调试模式"""
@@ -278,6 +282,8 @@ class TestPathConfigurationManager:
     def test_initialize_path_configuration_success(self):
         """测试成功初始化路径配置"""
         mock_config = self._create_mock_config()
+        # 配置Mock对象的_data属性
+        mock_config._data = {}
         
         with patch.object(DebugDetector, 'detect_debug_mode', return_value=False):
             manager = PathConfigurationManager(mock_config)
@@ -289,6 +295,8 @@ class TestPathConfigurationManager:
     def test_initialize_path_configuration_with_is_debug_error(self):
         """测试is_debug模块不可用时的初始化"""
         mock_config = self._create_mock_config()
+        # 配置Mock对象的_data属性
+        mock_config._data = {}
         
         with patch.object(DebugDetector, 'detect_debug_mode', side_effect=ImportError):
             manager = PathConfigurationManager(mock_config)
@@ -370,9 +378,15 @@ class TestPathConfigurationManager:
             manager = PathConfigurationManager(mock_config)
             info = manager.get_path_info()
             
-            assert 'debug_info' in info
-            assert 'path_configs' in info
-            assert 'cache_status' in info
+            # 检查基本信息
+            assert 'current_os' in info
+            assert 'os_family' in info
+            assert 'base_dir' in info
+            assert 'project_name' in info
+            assert 'experiment_name' in info
+            assert 'debug_mode' in info
+            assert 'platform_info' in info
+            assert 'generated_paths' in info
     
     def test_update_debug_mode(self):
         """测试更新调试模式"""

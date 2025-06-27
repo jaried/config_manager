@@ -39,9 +39,8 @@ class TestTestMode:
         
         # 验证配置文件路径在临时目录中
         config_path = cfg.get_config_file_path()
-        temp_base = tempfile.mkdtemp(prefix="test_basic_")
-        assert temp_base in config_path
-        assert 'tests' in config_path  # 修复：Windows路径使用反斜杠，不是'tests/'
+        assert 'temp' in config_path.lower() or 'tmp' in config_path.lower()
+        assert 'tests' in config_path
         assert config_path.endswith('.yaml')
         
         # 验证配置文件存在
@@ -116,11 +115,10 @@ class TestTestMode:
         path2 = cfg2.get_config_file_path()
         
         # 验证路径格式
-        temp_base = tempfile.mkdtemp(prefix="test_path_")
-        assert temp_base in path1
-        assert temp_base in path2
-        assert 'tests' in path1  # 修复：Windows路径使用反斜杠
-        assert 'tests' in path2  # 修复：Windows路径使用反斜杠
+        assert 'temp' in path1.lower() or 'tmp' in path1.lower()
+        assert 'temp' in path2.lower() or 'tmp' in path2.lower()
+        assert 'tests' in path1
+        assert 'tests' in path2
         
         # 验证路径包含日期和时间
         import re

@@ -17,6 +17,7 @@ from .watcher import FileWatcher
 from .call_chain import CallChainTracker
 from .path_configuration import PathConfigurationManager
 from .cross_platform_paths import convert_to_multi_platform_config, get_platform_path
+from ..logger import debug
 
 
 class ConfigManagerCore(ConfigNode):
@@ -112,9 +113,29 @@ class ConfigManagerCore(ConfigNode):
         if watch and self._watcher:
             self._watcher.start(self._config_path, self._on_file_changed)
 
-        # 在初始化完成后进行一次保存，确保所有初始化过程中设置的配置都被保存
+        # 只在必要时进行保存：
+        # 1. 配置文件不存在且启用了auto_create
+        # 2. 配置文件是原始格式需要转换为标准格式
+        # 3. 初始化过程中添加了新的配置项
+        should_save = False
+        
         if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
-            self.save()
+            # 检查是否需要保存
+            if not os.path.exists(self._config_path) and self._auto_create:
+                # 情况1：配置文件不存在且启用了auto_create
+                should_save = True
+            elif 'first_start_time' in self._data or 'config_file_path' in self._data:
+                # 情况3：初始化过程中添加了新的配置项
+                should_save = True
+            # 情况2：原始格式转换在_load()方法中已经处理
+            
+            if should_save:
+                # 设置内部保存标志，避免文件监视器触发重新加载
+                if self._watcher:
+                    self._watcher.set_internal_save_flag(True)
+                self.save()
+                if self._watcher:
+                    self._watcher.set_internal_save_flag(False)
 
         return True
 
@@ -352,14 +373,6 @@ class ConfigManagerCore(ConfigNode):
             # 值有变化，但first_start_time不应该触发自动保存
             autosave = False
 
-        # 特殊处理base_dir：如果是字符串格式，自动转换为多平台配置
-        if key == 'base_dir' and isinstance(value, str):
-            # 检查是否已经是多平台格式
-            if not isinstance(value, dict):
-                # 转换为多平台格式
-                value = convert_to_multi_platform_config(value, 'base_dir')
-                print(f"自动转换base_dir为多平台格式: {value}")
-
         keys = key.split('.')
         current = self
 
@@ -373,6 +386,14 @@ class ConfigManagerCore(ConfigNode):
 
         if isinstance(value, Path):
             value = str(value)
+
+        # 特殊处理base_dir的多平台配置：先转换，再创建目录
+        if key == 'base_dir' and isinstance(value, str):
+            # 转换为多平台格式
+            value = convert_to_multi_platform_config(value, 'base_dir')
+            print(f"自动转换base_dir为多平台格式: {value}")
+            # 为多平台配置创建目录
+            self._create_directory_for_path(key, value)
 
         # 检查是否为路径配置，如果是则自动创建目录
         if self._is_path_configuration(key, value):
@@ -581,7 +602,7 @@ class ConfigManagerCore(ConfigNode):
             self._path_config_manager.initialize_path_configuration()
         except Exception as e:
             # 路径配置初始化失败，记录错误但不影响主流程
-            print(f"路径配置初始化失败: {e}")
+            debug("路径配置初始化失败: {}", e)
             import traceback
             traceback.print_exc()
             self._path_config_manager = None
@@ -610,7 +631,7 @@ class ConfigManagerCore(ConfigNode):
                 # 记录目录创建结果
                 for key, success in creation_results.items():
                     if not success:
-                        print(f"警告: 目录创建失败 {key}: {path_configs.get(key)}")
+                        debug("警告: 目录创建失败 {}: {}", key, path_configs.get(key))
 
                 # 然后设置配置值 - 只设置到paths命名空间，避免重复
                 for path_key, path_value in path_configs.items():
@@ -627,7 +648,7 @@ class ConfigManagerCore(ConfigNode):
                         if path_key in self._data:
                             del self._data[path_key]
             except Exception as e:
-                print(f"路径配置更新失败: {e}")
+                debug("路径配置更新失败: {}", e)
                 import traceback
                 traceback.print_exc()
 
@@ -697,22 +718,35 @@ class ConfigManagerCore(ConfigNode):
 
         return False
 
-    def _create_directory_for_path(self, key: str, path: str) -> None:
+    def _create_directory_for_path(self, key: str, path: Any) -> None:
         """为路径配置创建目录
 
         Args:
             key: 配置键
-            path: 路径值
+            path: 路径值（可能是字符串或多平台配置）
         """
         try:
             from pathlib import Path
-            Path(path).mkdir(parents=True, exist_ok=True)
+            # 处理多平台配置（ConfigNode或dict）
+            if hasattr(path, 'is_multi_platform_config') and path.is_multi_platform_config():
+                # 为所有平台的路径都创建目录
+                for platform in ['windows', 'linux', 'ubuntu', 'macos']:
+                    platform_path = path.get_platform_path(platform)
+                    if platform_path:
+                        Path(platform_path).mkdir(parents=True, exist_ok=True)
+                        debug("创建多平台配置目录: {} -> {}", platform, platform_path)
+            elif isinstance(path, dict):
+                for platform, platform_path in path.items():
+                    if platform_path:
+                        Path(platform_path).mkdir(parents=True, exist_ok=True)
+                        debug("创建字典格式多平台配置目录: {} -> {}", platform, platform_path)
+            elif isinstance(path, str):
+                Path(path).mkdir(parents=True, exist_ok=True)
+                debug("创建字符串路径目录: {}", path)
         except (OSError, PermissionError, ValueError) as e:
-            # 目录创建失败，记录警告但不中断程序
-            print(f"警告: 无法创建目录 {key}: {path}, 错误: {e}")
+            debug("警告: 无法创建目录 {}: {}, 错误: {}", key, path, e)
         except Exception as e:
-            # 其他未预期的错误
-            print(f"警告: 创建目录时发生未知错误 {key}: {path}, 错误: {e}")
+            debug("警告: 创建目录时发生未知错误 {}: {}, 错误: {}", key, path, e)
 
     def get_serializable_data(self):
         """获取可序列化的配置数据，用于多进程环境

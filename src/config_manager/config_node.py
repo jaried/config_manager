@@ -221,6 +221,22 @@ class ConfigNode:
                 data_dict[key] = value
         return
 
+    def is_multi_platform_config(self) -> bool:
+        """检查是否是多平台配置（包含windows、linux、ubuntu、macos键的字典）"""
+        if not isinstance(self._data, dict):
+            return False
+        
+        # 检查是否包含多平台配置的特征键
+        platform_keys = {'windows', 'linux', 'ubuntu', 'macos'}
+        return any(key in self._data for key in platform_keys)
+
+    def get_platform_path(self, platform: str) -> str:
+        """获取指定平台的路径"""
+        if not self.is_multi_platform_config():
+            return str(self._data) if self._data else ""
+        
+        return self._data.get(platform, "")
+
 
 def unique_list_order_preserved(seq: Iterable) -> List[Any]:
     """返回保持原始顺序的唯一元素列表"""

@@ -142,17 +142,18 @@ __type_hints__: {}
             assert config_manager.log_dir != "/original/log/path"
             
             # 验证替换后的路径包含测试环境路径
-            temp_base = tempfile.mkdtemp(prefix="test_protected_")
             # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
-            # 同时处理双斜杠问题
-            normalized_temp_base = os.path.normpath(temp_base).replace('\\', '/').replace('//', '/')
             normalized_base_dir = str(config_manager.base_dir).replace('\\', '/').replace('//', '/')
             normalized_work_dir = str(config_manager.work_dir).replace('\\', '/').replace('//', '/')
             normalized_log_dir = str(config_manager.log_dir).replace('\\', '/').replace('//', '/')
             
-            assert normalized_temp_base in normalized_base_dir
-            assert normalized_temp_base in normalized_work_dir
-            assert normalized_temp_base in normalized_log_dir
+            # 检查路径包含测试环境特征
+            assert 'temp' in normalized_base_dir.lower() or 'tmp' in normalized_base_dir.lower()
+            assert 'tests' in normalized_base_dir
+            assert 'temp' in normalized_work_dir.lower() or 'tmp' in normalized_work_dir.lower()
+            assert 'tests' in normalized_work_dir
+            assert 'temp' in normalized_log_dir.lower() or 'tmp' in normalized_log_dir.lower()
+            assert 'tests' in normalized_log_dir
             
             # 验证网络URL没有被替换
             assert config_manager.proxy.http == "http://localhost:3213"
@@ -252,17 +253,18 @@ __type_hints__: {}
             assert config_manager.headers.log_path != "/tmp/headers.log"
             
             # 验证替换后的路径包含测试环境路径
-            temp_base = tempfile.mkdtemp(prefix="test_complex_")
             # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
-            # 同时处理双斜杠问题
-            normalized_temp_base = os.path.normpath(temp_base).replace('\\', '/').replace('//', '/')
             normalized_network_log_dir = str(config_manager.network.log_dir).replace('\\', '/').replace('//', '/')
             normalized_validation_config_file = str(config_manager.validation.config_file).replace('\\', '/').replace('//', '/')
             normalized_headers_log_path = str(config_manager.headers.log_path).replace('\\', '/').replace('//', '/')
             
-            assert normalized_temp_base in normalized_network_log_dir
-            assert normalized_temp_base in normalized_validation_config_file
-            assert normalized_temp_base in normalized_headers_log_path
+            # 检查路径包含测试环境特征
+            assert 'temp' in normalized_network_log_dir.lower() or 'tmp' in normalized_network_log_dir.lower()
+            assert 'tests' in normalized_network_log_dir
+            assert 'temp' in normalized_validation_config_file.lower() or 'tmp' in normalized_validation_config_file.lower()
+            assert 'tests' in normalized_validation_config_file
+            assert 'temp' in normalized_headers_log_path.lower() or 'tmp' in normalized_headers_log_path.lower()
+            assert 'tests' in normalized_headers_log_path
             
         finally:
             # 清理临时文件
