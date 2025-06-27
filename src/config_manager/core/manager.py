@@ -43,10 +43,23 @@ class ConfigManagerCore(ConfigNode):
         self._type_hints = {}
         self._first_start_time = None
         self._is_main_program = False  # 新增：标记是否为主程序
+        
+        # 新增：重复初始化检测
+        self._initialized = False
+        self._initialization_lock = threading.Lock()
 
     def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float,
                    first_start_time: datetime = None) -> bool:
         """初始化配置管理器"""
+        # 重复初始化检测
+        with self._initialization_lock:
+            if self._initialized:
+                debug("配置管理器已经初始化过，跳过重复初始化")
+                return True
+            
+            # 标记开始初始化
+            self._initialized = True
+        
         # 检查调用链显示开关
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 

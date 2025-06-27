@@ -205,17 +205,19 @@ class TestSingletonPathResolution:
         
         # 检查是否有自动路径缓存键（格式为 "auto:工作目录"）
         current_cwd = os.getcwd()
+        # 标准化路径分隔符，与缓存键生成逻辑保持一致
+        normalized_cwd = current_cwd.replace('\\', '/')
         auto_keys = [key for key in cache_keys if key.startswith('auto:')]
         
         # 如果没有auto:格式的键，可能是因为在setup中切换了目录，
         # 那么应该有一个包含当前工作目录的键
         if len(auto_keys) == 0:
-            # 检查是否有包含当前工作目录的缓存键
-            cwd_keys = [key for key in cache_keys if current_cwd in key]
-            assert len(cwd_keys) >= 1, f"应该有包含当前工作目录的缓存键，当前工作目录: {current_cwd}，缓存键: {cache_keys}"
+            # 检查是否有包含当前工作目录的缓存键（考虑标准化后的路径）
+            cwd_keys = [key for key in cache_keys if (current_cwd in key or normalized_cwd in key)]
+            assert len(cwd_keys) >= 1, f"应该有包含当前工作目录的缓存键，当前工作目录: {current_cwd}，标准化后: {normalized_cwd}，缓存键: {cache_keys}"
         else:
-            # 验证auto:格式的缓存键包含当前工作目录
-            assert any(current_cwd in key for key in auto_keys), f"auto:缓存键应该包含当前工作目录 {current_cwd}，当前auto键: {auto_keys}"
+            # 验证auto:格式的缓存键包含当前工作目录（考虑标准化后的路径）
+            assert any(current_cwd in key or normalized_cwd in key for key in auto_keys), f"auto:缓存键应该包含当前工作目录 {current_cwd} 或标准化路径 {normalized_cwd}，当前auto键: {auto_keys}"
         
         # 2. 测试显式路径的缓存键格式
         temp_dir = tempfile.mkdtemp(prefix="test_cache_key_")
@@ -225,9 +227,10 @@ class TestSingletonPathResolution:
             cm2 = get_config_manager(config_path=explicit_path)
             cache_keys_after = list(ConfigManager._instances.keys())
             
-            # 应该有显式路径的缓存键
-            explicit_keys = [key for key in cache_keys_after if explicit_path in key]
-            assert len(explicit_keys) >= 1, f"应该有包含显式路径的缓存键，显式路径: {explicit_path}，当前缓存键: {cache_keys_after}"
+            # 应该有显式路径的缓存键（考虑标准化后的路径）
+            normalized_explicit_path = explicit_path.replace('\\', '/')
+            explicit_keys = [key for key in cache_keys_after if (explicit_path in key or normalized_explicit_path in key)]
+            assert len(explicit_keys) >= 1, f"应该有包含显式路径的缓存键，显式路径: {explicit_path}，标准化后: {normalized_explicit_path}，当前缓存键: {cache_keys_after}"
             
         finally:
             try:

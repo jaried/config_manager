@@ -13,6 +13,7 @@ from typing import Any, Dict
 from .config_node import ConfigNode
 from .core.manager import ConfigManagerCore
 from .core.path_resolver import PathResolver
+from config_manager.logger import info
 
 # 全局调用链显示开关 - 手工修改这个值来控制调用链显示
 ENABLE_CALL_CHAIN_DISPLAY = False  # 默认关闭调用链显示
@@ -72,18 +73,19 @@ class ConfigManager(ConfigManagerCore):
 
     @classmethod
     def _generate_cache_key(cls, config_path: str, test_mode: bool = False) -> str:
-        """生成缓存键 - 修复版本：基于当前工作目录和配置路径"""
+        """生成缓存键 - 改进版本：更稳定的缓存键生成"""
         try:
-            # 修复：不在缓存键生成时调用路径解析，避免循环依赖
-            cwd = os.getcwd()
-
             if config_path is not None:
-                # 显式路径：使用绝对路径
+                # 显式路径：使用绝对路径，但标准化路径分隔符
                 abs_path = os.path.abspath(config_path)
-                cache_key = f"explicit:{abs_path}"
+                # 标准化路径分隔符，确保跨平台一致性
+                normalized_path = abs_path.replace('\\', '/')
+                cache_key = f"explicit:{normalized_path}"
             else:
-                # 自动路径：基于当前工作目录
-                cache_key = f"auto:{cwd}"
+                # 自动路径：基于当前工作目录，但使用更稳定的标识
+                cwd = os.getcwd()
+                normalized_cwd = cwd.replace('\\', '/')
+                cache_key = f"auto:{normalized_cwd}"
 
             # 测试模式添加特殊标识，确保测试实例独立
             if test_mode:
@@ -1049,6 +1051,27 @@ def _clear_instances_for_testing():
     import gc
     gc.collect()
     return
+
+
+def debug_instances():
+    """调试方法：显示当前所有实例信息"""
+    with ConfigManager._thread_lock:
+        print(f"=== ConfigManager实例调试信息 ===")
+        print(f"当前实例数量: {len(ConfigManager._instances)}")
+        for i, (cache_key, instance) in enumerate(ConfigManager._instances.items()):
+            print(f"实例 {i+1}:")
+            print(f"  缓存键: {cache_key}")
+            print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
+            print(f"  已初始化: {getattr(instance, '_initialized', 'N/A')}")
+            print(f"  主程序: {getattr(instance, '_is_main_program', 'N/A')}")
+            print(f"  实例ID: {id(instance)}")
+            print()
+
+
+def get_instance_count():
+    """获取当前实例数量"""
+    with ConfigManager._thread_lock:
+        return len(ConfigManager._instances)
 
 
 if __name__ == '__main__':
