@@ -1,7 +1,7 @@
 # src/config_manager/core/path_configuration.py
 from __future__ import annotations
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List, Tuple, Union
 from pathlib import Path
 import os
 import re
@@ -134,37 +134,25 @@ class PathGenerator:
         experiment_name: str, 
         debug_mode: bool
     ) -> str:
-        """生成工作目录路径
+        """生成工作目录，确保跨平台兼容性"""
         
-        Args:
-            base_dir: 基础目录（字符串或多平台配置字典）
-            project_name: 项目名称
-            experiment_name: 实验名称
-            debug_mode: 是否为调试模式
+        # 处理多平台基础目录
+        if isinstance(base_dir, dict):
+            current_os = get_cross_platform_manager().get_current_os()
+            base_path = base_dir.get(current_os, base_dir.get('linux'))
+        else:
+            base_path = base_dir
             
-        Returns:
-            str: 工作目录路径
-        """
-        # 获取当前平台的base_dir
-        platform_base_dir = get_platform_path(base_dir, 'base_dir')
-        
-        # 标准化路径分隔符
-        base_path = Path(platform_base_dir)
-        
-        # 构建路径组件
-        path_components = [base_path]
-        
-        # 调试模式添加debug标识
+        # 标准化基础路径
+        base_path = os.path.normpath(base_path)
+
+        # 组合路径
         if debug_mode:
-            path_components.append('debug')
-        
-        # 添加项目名称和实验名称
-        path_components.extend([project_name, experiment_name])
-        
-        # 生成最终路径
-        work_dir = Path(*path_components)
-        
-        return str(work_dir)
+            work_dir = os.path.join(base_path, 'debug', project_name, experiment_name)
+        else:
+            work_dir = os.path.join(base_path, project_name, experiment_name)
+            
+        return work_dir
     
     def generate_checkpoint_directories(self, work_dir: str) -> Dict[str, str]:
         """生成检查点目录路径
@@ -492,6 +480,10 @@ class PathConfigurationManager:
     
     def _set_default_values(self) -> None:
         """设置默认配置值"""
+        # test_mode下不设置默认值
+        if self._config_manager.is_test_mode():
+            return
+            
         # 为必需的配置项设置默认值，如果它们不存在
         try:
             self._config_manager.base_dir
@@ -548,31 +540,51 @@ class PathConfigurationManager:
     
     def _generate_paths_internal(self) -> Dict[str, str]:
         """内部路径生成方法"""
-        # 安全获取基础配置，使用get方法提供默认值
-        try:
-            base_dir = self._config_manager.base_dir
-        except AttributeError:
-            base_dir = self.DEFAULT_PATH_CONFIG['base_dir']
-            
-        try:
-            project_name = self._config_manager.project_name
-        except AttributeError:
-            project_name = 'default_project'
-            
-        try:
-            experiment_name = self._config_manager.experiment_name
-        except AttributeError:
-            experiment_name = 'default_experiment'
-            
-        try:
-            debug_mode = self._config_manager.debug_mode
-        except AttributeError:
+        # test_mode下使用安全的默认值
+        if self._config_manager.is_test_mode():
+            try:
+                base_dir = self._config_manager.base_dir
+            except AttributeError:
+                base_dir = '/tmp/tests'
+            try:
+                project_name = self._config_manager.project_name
+            except AttributeError:
+                project_name = 'test_project'
+            try:
+                experiment_name = self._config_manager.experiment_name
+            except AttributeError:
+                experiment_name = 'test_experiment'
             debug_mode = False
+            try:
+                first_start_time = self._config_manager.first_start_time
+            except AttributeError:
+                first_start_time = datetime.now().isoformat()
+        else:
+            # 安全获取基础配置，使用get方法提供默认值
+            try:
+                base_dir = self._config_manager.base_dir
+            except AttributeError:
+                base_dir = self.DEFAULT_PATH_CONFIG['base_dir']
             
-        try:
-            first_start_time = self._config_manager.first_start_time
-        except AttributeError:
-            first_start_time = datetime.now().isoformat()
+            try:
+                project_name = self._config_manager.project_name
+            except AttributeError:
+                project_name = 'default_project'
+            
+            try:
+                experiment_name = self._config_manager.experiment_name
+            except AttributeError:
+                experiment_name = 'default_experiment'
+            
+            try:
+                debug_mode = self._config_manager.debug_mode
+            except AttributeError:
+                debug_mode = False
+            
+            try:
+                first_start_time = self._config_manager.first_start_time
+            except AttributeError:
+                first_start_time = datetime.now().isoformat()
         
         # 生成工作目录
         work_dir = self._path_generator.generate_work_directory(

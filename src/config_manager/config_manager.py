@@ -262,119 +262,35 @@ class ConfigManager(ConfigManagerCore):
                         if filtered_matches:
                             # 选择第一个匹配的文件
                             prod_config_path = filtered_matches[0]
-                            print(f"✓ 通过模式匹配找到配置文件: {prod_config_path}")
+                            print(f"✓ 从常见项目结构找到配置文件: {prod_config_path}")
                         else:
                             print("⚠️  模式匹配找到的都是tests目录下的配置文件，已跳过")
                         break
 
-        # 3. 从生产配置中读取project_name和first_start_time
-        project_name = "project_name"  # 默认值
-        config_first_start_time = None
-
-        # 优先从主配置文件读取project_name（不是测试配置文件）
-        main_config_path = None
+        project_name = None
         if prod_config_path and os.path.exists(prod_config_path):
-            # 如果传入的是测试配置文件路径，尝试找到对应的主配置文件
-            if 'tests' in prod_config_path:
-                # 从测试路径推导主配置路径
-                # 例如: /project/tests/src/config/config.yaml -> /project/src/config/config.yaml
-                main_config_path = prod_config_path.replace('/tests/', '/').replace('\\tests\\', '\\')
-                if not os.path.exists(main_config_path):
-                    # 如果推导的路径不存在，尝试其他方式
-                    project_root = os.path.dirname(prod_config_path)
-                    # 向上查找直到找到包含src目录的根目录
-                    for _ in range(10):  # 最多向上查找10级
-                        parent = os.path.dirname(project_root)
-                        if parent == project_root:  # 已到根目录
-                            break
-                        if os.path.exists(os.path.join(parent, 'src', 'config', 'config.yaml')):
-                            main_config_path = os.path.join(parent, 'src', 'config', 'config.yaml')
-                            break
-                        project_root = parent
-            else:
-                main_config_path = prod_config_path
-
-            # 从主配置文件读取project_name
-            if main_config_path and os.path.exists(main_config_path):
-                try:
-                    from ruamel.yaml import YAML
-                    yaml = YAML()
-                    yaml.preserve_quotes = True
-                    yaml.default_flow_style = False
-
-                    # 先尝试读取文件内容并处理Windows路径转义问题
-                    with open(main_config_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
-
-                    # 处理Windows路径中的反斜杠转义问题
-                    # 将 "d:\logs" 这样的路径转换为 "d:/logs" 或使用原始字符串
-                    import re
-                    # 匹配双引号中的Windows路径并修复转义问题
-                    def fix_windows_path(match):
-                        path = match.group(1)
-                        # 将反斜杠替换为正斜杠，避免转义问题
-                        fixed_path = path.replace('\\', '/')
-                        return f'"{fixed_path}"'
-
-                    # 修复常见的Windows路径转义问题
-                    content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
-
-                    # 解析修复后的YAML内容
-                    config_data = yaml.load(content) or {}
-
-                    # 获取project_name
-                    if '__data__' in config_data:
-                        project_name = config_data['__data__'].get('project_name', 'project_name')
-                        config_first_start_time = config_data['__data__'].get('first_start_time')
-                    else:
-                        project_name = config_data.get('project_name', 'project_name')
-                        config_first_start_time = config_data.get('first_start_time')
-
-                    print(f"✓ 从主配置文件读取project_name: {project_name} (文件: {main_config_path})")
-
-                except Exception as e:
-                    print(f"⚠️  读取主配置失败，使用默认project_name: {e}")
-                    # 如果YAML解析失败，尝试简单的文本解析来提取project_name
-                    try:
-                        with open(main_config_path, 'r', encoding='utf-8') as f:
-                            content = f.read()
-
-                        # 使用正则表达式提取project_name
-                        import re
-                        # 匹配 project_name: "value" 或 project_name: value
-                        match = re.search(r'project_name:\s*["\']?([^"\'\n\r]+)["\']?', content)
-                        if match:
-                            project_name = match.group(1).strip()
-                            print(f"✓ 通过文本解析提取project_name: {project_name}")
-                        else:
-                            print("⚠️  无法从配置文件中提取project_name，使用默认值")
-                    except Exception as e2:
-                        print(f"⚠️  文本解析也失败: {e2}")
-            else:
-                print(f"⚠️  主配置文件不存在: {main_config_path}")
-        else:
-            print("⚠️  没有找到任何配置文件，将创建空配置")
-
-        # 4. 确定使用的first_start_time（优先级：传入参数 > 配置文件 > 当前时间）
-        final_first_start_time = first_start_time or config_first_start_time
-        if isinstance(final_first_start_time, str):
             try:
-                from datetime import datetime
-                final_first_start_time = datetime.fromisoformat(final_first_start_time.replace('Z', '+00:00'))
-            except:
-                final_first_start_time = None
+                with open(prod_config_path, 'r', encoding='utf-8') as f:
+                    # 使用安全的YAML加载
+                    from ruamel.yaml import YAML
+                    yaml = YAML(typ='safe')
+                    config_data = yaml.load(f)
+                    if config_data and 'project_name' in config_data:
+                        project_name = config_data['project_name']
+                        print(f"✓ 从主配置文件读取project_name: {project_name} (文件: {prod_config_path})")
+            except Exception as e:
+                print(f"读取project_name失败: {e}")
 
-        # 5. 生成测试环境路径（基于first_start_time和project_name）
-        test_base_dir, test_config_path = cls._generate_test_environment_path(final_first_start_time, project_name)
+        # 2. 生成测试环境路径
+        test_base_dir, test_config_path = cls._generate_test_environment_path(first_start_time)
 
-        # 6. 复制配置到测试环境，并强制更新project_name
+        # 3. 复制并修改配置
         if prod_config_path and os.path.exists(prod_config_path):
-            cls._copy_production_config_to_test(prod_config_path, test_config_path, final_first_start_time,
-                                                project_name)
+            cls._copy_production_config_to_test(prod_config_path, test_config_path, first_start_time, project_name)
             print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
         else:
             # 创建空的测试配置
-            cls._create_empty_test_config(test_config_path, final_first_start_time, project_name)
+            cls._create_empty_test_config(test_config_path, first_start_time, project_name)
             print(f"✓ 已创建空的测试配置: {test_config_path}")
 
         # 7. 设置测试环境变量（可选）
@@ -384,27 +300,31 @@ class ConfigManager(ConfigManagerCore):
         return test_config_path
 
     @classmethod
-    def _generate_test_environment_path(cls, first_start_time: datetime = None, project_name: str = None) -> tuple[
+    def _generate_test_environment_path(cls, first_start_time: datetime = None) -> tuple[
         str, str]:
-        """生成测试环境路径（基于first_start_time和project_name）"""
-        temp_base = tempfile.gettempdir()
-
-        # 使用first_start_time或当前时间生成路径
-        if first_start_time:
-            base_time = first_start_time
+        """生成测试环境的路径"""
+        # 如果没有提供first_start_time，则生成当前时间
+        if first_start_time is None:
+            first_start_time = datetime.now()
+            print(f"✓ 使用当前时间作为first_start_time: {first_start_time}")
         else:
-            base_time = datetime.now()
+            print(f"✓ 使用传入的first_start_time: {first_start_time}")
 
-        # 使用project_name或默认值
-        if not project_name:
-            project_name = "project_name"
+        # 使用更简洁的日期和时间格式
+        date_str = first_start_time.strftime("%Y%m%d")
+        time_str = first_start_time.strftime("%H%M%S")
 
-        date_str = base_time.strftime('%Y%m%d')
-        time_str = base_time.strftime('%H%M%S')
-
-        test_base_dir = os.path.join(temp_base, 'tests', date_str, time_str, project_name)
+        # 生成唯一的测试目录
+        # temp_dir = tempfile.gettempdir()
+        # test_base_dir = os.path.join(temp_dir, 'tests', date_str, time_str, project_name)
+        
+        # 修复：测试基础目录不应包含项目名称
+        temp_dir = tempfile.gettempdir()
+        test_base_dir = os.path.join(temp_dir, 'tests', date_str, time_str)
+        
         test_config_path = os.path.join(test_base_dir, 'src', 'config', 'config.yaml')
-
+        
+        print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_dir}")
         return test_base_dir, test_config_path
 
     @classmethod
@@ -651,7 +571,7 @@ class ConfigManager(ConfigManagerCore):
 
                     if isinstance(value, str):
                         # 检查是否是路径字段，但跳过已经是测试路径的字段
-                        if cls._is_path_field(key, value) and temp_base not in value:
+                        if cls._is_path_field(key, value) and test_base_dir not in value:
                             # 优先使用特殊映射
                             if key in special_path_mappings:
                                 new_path = special_path_mappings[key]
@@ -669,7 +589,7 @@ class ConfigManager(ConfigManagerCore):
                 for i, item in enumerate(obj):
                     if isinstance(item, (dict, list)):
                         replace_paths_recursive(item, f"{parent_key}[{i}]")
-                    elif isinstance(item, str) and cls._is_path_like(item) and temp_base not in item:
+                    elif isinstance(item, str) and cls._is_path_like(item) and test_base_dir not in item:
                         # 列表中的路径字符串，跳过已经是测试路径的
                         new_path = cls._convert_to_test_path(item, test_base_dir, temp_base)
                         if new_path != item:
@@ -871,7 +791,8 @@ class ConfigManager(ConfigManagerCore):
             return original_path
 
         # 如果已经是测试路径，不需要转换
-        if temp_base in original_path:
+        # 更精确的检查：只有当路径真正在测试环境目录下时才跳过转换
+        if test_base_dir in original_path:
             return original_path
 
         # 处理相对路径
@@ -995,6 +916,19 @@ __type_hints__:
   version: str
   first_start_time: str
 """)
+
+    def is_test_mode(self) -> bool:
+        """判断是否为测试模式"""
+        if hasattr(self, '_config_path') and self._config_path and ('/tmp/' in self._config_path or '\\temp\\' in self._config_path.lower() or 'pytest' in self._config_path.lower()):
+            return True
+        return False
+
+    def get_raw_yaml_content(self) -> str:
+        """获取原始YAML文件内容"""
+        if self._config_path and os.path.exists(self._config_path):
+            with open(self._config_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        raise FileNotFoundError(f"配置文件不存在: {self._config_path}")
 
 
 def get_config_manager(

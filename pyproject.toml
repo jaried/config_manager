@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,11 +12,11 @@ authors = [
 requires-python = ">=3.7"
 dependencies = [
     "ruamel.yaml",
-    "pytest"
+    "is_debug @ file:../is_debug"
 ]
 
 [project.urls]
-Homepage = "https://github.com/jaried/config_manager"
+Homepage = "https://github.com/tony-z-arthur/config_manager"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,12 +1,18 @@
 # tests/conftest.py
 from __future__ import annotations
 from datetime import datetime
+import pytest
+import sys
+from pathlib import Path
+
+# 将 is_debug 项目的 src 目录添加到 Python 路径中
+# 这是为了确保测试可以直接导入 is_debug 模块，而无需安装
+IS_DEBUG_SRC_PATH = Path(__file__).parent.parent / "is_debug" / "src"
+sys.path.insert(0, str(IS_DEBUG_SRC_PATH))
 
 start_time = datetime.now()
 
 import os
-import sys
-import pytest
 
 # 添加项目根目录到Python路径
 project_root = os.path.dirname(os.path.dirname(__file__))
