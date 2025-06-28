@@ -737,6 +737,9 @@ __type_hints__:
 
     def set(self, key: str, value: Any, autosave: bool = True, type_hint: Type = None):
         """设置配置值并自动保存，支持类型提示"""
+        # 导入ConfigNode避免UnboundLocalError
+        from .config_node import ConfigNode
+        
         # 特殊处理debug_mode：不允许设置，因为它是动态属性
         if key == 'debug_mode':
             # 静默忽略debug_mode的设置，因为它应该总是动态获取
@@ -760,7 +763,6 @@ __type_hints__:
             try:
                 from .core.cross_platform_paths import convert_to_multi_platform_config
                 multi_cfg = convert_to_multi_platform_config(value, 'base_dir')
-                from .config_node import ConfigNode
                 value = ConfigNode(multi_cfg)
             except Exception:
                 # 如果转换失败则保持原值

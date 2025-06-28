@@ -185,7 +185,16 @@ class ConfigNode:
 
     def to_dict(self) -> Dict:
         """转换为普通字典，避免递归"""
+        return self._to_dict_recursive(set())
+
+    def _to_dict_recursive(self, visited: set) -> Dict:
+        """递归转换为字典，使用visited集合避免循环引用"""
+        if id(self) in visited:
+            return "<circular-reference>"
+        
+        visited.add(id(self))
         result = {}
+        
         # 直接访问_data避免递归
         if hasattr(self, '_data'):
             data = super().__getattribute__('_data')
@@ -195,13 +204,11 @@ class ConfigNode:
                     continue
                     
                 if isinstance(value, ConfigNode):
-                    # 检查是否是同一个对象，避免递归
-                    if value is not self:
-                        result[key] = value.to_dict()
-                    else:
-                        result[key] = "<self-reference>"
+                    result[key] = value._to_dict_recursive(visited)
                 else:
                     result[key] = value
+        
+        visited.remove(id(self))
         return result
 
     def from_dict(self, data: Dict):

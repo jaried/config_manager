@@ -231,13 +231,15 @@ class TestTestModeAutoDirectory:
         config1 = get_config_manager(test_mode=True, first_start_time=self.test_time)
         config1.setup_project_paths()
         
+        # 保存config1的路径，因为清理实例后config1会失效
+        work_dir1 = Path(config1.paths.work_dir)
+        
         _clear_instances_for_testing()
         
         # 使用不同的时间以确保路径不同
         config2 = get_config_manager(test_mode=True, first_start_time=datetime(2025, 1, 8, 15, 30, 1))
         config2.setup_project_paths()
 
-        work_dir1 = Path(config1.paths.work_dir)
         work_dir2 = Path(config2.paths.work_dir)
 
         assert not work_dir1.exists()
