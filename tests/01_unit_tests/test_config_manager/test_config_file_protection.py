@@ -10,7 +10,7 @@ from pathlib import Path
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestConfigFileProtection:
     """测试配置文件保护功能"""
     
@@ -91,7 +91,7 @@ __type_hints__: {}'''
             auto_create=False
         )
             
-        assert config2.project_name == 'TestProject'
+        assert config2.get('project_name') == 'TestProject'
     
     def test_complex_windows_paths_handling(self, tmp_path):
         """测试复杂Windows路径的处理"""

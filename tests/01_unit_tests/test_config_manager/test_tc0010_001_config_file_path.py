@@ -33,7 +33,7 @@ def cleanup_instances():
     return
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestConfigFilePath:
     """测试配置文件路径功能"""
 

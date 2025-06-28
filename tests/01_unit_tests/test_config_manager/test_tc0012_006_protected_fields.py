@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 from src.config_manager.config_manager import ConfigManager, _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestTC0012006ProtectedFields:
     """测试配置字段保护功能，确保特殊字段不被路径替换"""
 
@@ -190,26 +190,20 @@ __type_hints__: {}
         assert ConfigManager._is_protected_field("validation_rule", r"\d{4}-\d{2}-\d{2}")
 
     def test_tc0012_006_008_is_path_like_excludes_urls(self):
-        """测试路径识别正确排除URL"""
-        # 应该被排除的URL
-        assert not ConfigManager._is_path_like("http://localhost:3213")
-        assert not ConfigManager._is_path_like("https://example.com/api/v1")
-        assert not ConfigManager._is_path_like("ftp://files.example.com")
-        
-        # 应该被排除的MIME类型
-        assert not ConfigManager._is_path_like("text/html")
-        assert not ConfigManager._is_path_like("application/json")
-        assert not ConfigManager._is_path_like("image/png")
-        
-        # 应该被排除的正则表达式
-        assert not ConfigManager._is_path_like(r"^https?://[^/]+/chapter/\d+$")
-        assert not ConfigManager._is_path_like(r"\.jpg$")
-        
-        # 真正的路径应该被识别
-        assert ConfigManager._is_path_like("/home/user/documents")
-        assert ConfigManager._is_path_like("C:\\Users\\Documents")
-        assert ConfigManager._is_path_like("./config/settings.yaml")
-        assert ConfigManager._is_path_like("../data/input.txt")
+        # 只测试_dir结尾的key
+        assert not ConfigManager._is_path_like("http://localhost:3213", key="url_dir")
+        assert not ConfigManager._is_path_like("https://example.com/api/v1", key="url_dir")
+        assert not ConfigManager._is_path_like("ftp://files.example.com", key="url_dir")
+        assert not ConfigManager._is_path_like("text/html", key="mime_dir")
+        assert not ConfigManager._is_path_like("application/json", key="mime_dir")
+        assert not ConfigManager._is_path_like("image/png", key="mime_dir")
+        assert not ConfigManager._is_path_like(r"^https?://[^/]+/chapter/\d+$", key="regex_dir")
+        assert not ConfigManager._is_path_like(r"\.jpg$", key="regex_dir")
+        # 只有_dir结尾的key才会被判定为路径
+        assert ConfigManager._is_path_like("/home/user/documents", key="data_dir")
+        assert ConfigManager._is_path_like("C:\\Users\\Documents", key="data_dir")
+        assert ConfigManager._is_path_like("./config/settings.yaml", key="config_dir")
+        assert ConfigManager._is_path_like("../data/input.txt", key="input_dir")
 
     def test_tc0012_006_009_complex_config_protection(self):
         """测试复杂配置结构中的字段保护"""

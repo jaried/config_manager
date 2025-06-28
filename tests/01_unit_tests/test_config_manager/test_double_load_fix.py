@@ -11,7 +11,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 # 添加src到路径
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+# 项目根目录由conftest.py自动配置
 
 from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
 
@@ -24,7 +24,7 @@ def create_mock_yaml_file(config_path, data):
         yaml.dump(data, f)
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestDoubleLoadFix:
     """测试配置重复加载修复"""
 
@@ -34,7 +34,7 @@ class TestDoubleLoadFix:
         _clear_instances_for_testing()
         yield
         _clear_instances_for_testing()
-
+            
     def test_external_modification_reloads_on_access(self, tmp_path):
         """
         测试当文件在外部被修改时，下一次访问配置是否能触发重新加载并获取新值。

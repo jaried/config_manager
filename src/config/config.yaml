@@ -16,16 +16,16 @@ __data__:
   base_dir: 'd:\demo_logs'
   experiment_name: 'experiment_001'
   paths:
-    work_dir: 'd:\demo_logs/config_manager/experiment_001'
-    checkpoint_dir: 'd:\demo_logs/config_manager/experiment_001/checkpoint'
-    best_checkpoint_dir: 'd:\demo_logs/config_manager/experiment_001/checkpoint/best'
-    tsb_logs_dir: 'd:\demo_logs/config_manager/experiment_001/tsb_logs/2025-01-07/100000'
-    log_dir: 'd:\demo_logs/config_manager/experiment_001/logs/2025-01-07/100000'
-    debug_dir: d:\demo_logs/config_manager/experiment_001/debug
-    tensorboard_dir: d:\demo_logs/config_manager/experiment_001/tensorboard
+    work_dir: 'd:\demo_logs\config_manager\experiment_001'
+    checkpoint_dir: 'd:\demo_logs\config_manager\experiment_001\checkpoint'
+    best_checkpoint_dir: 'd:\demo_logs\config_manager\experiment_001\checkpoint\best'
+    tsb_logs_dir: 'd:\demo_logs\config_manager\experiment_001\tsb_logs\2025-01-07\100000'
+    log_dir: 'd:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000'
+    debug_dir: d:\demo_logs\config_manager\experiment_001\debug
+    tensorboard_dir: d:\demo_logs\config_manager\experiment_001\tensorboard
     data_dir: /home/tony/logs/default/data
   config_file_path: 
-    /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+    D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
   database:
     credentials:
       password: default_password
@@ -47,7 +47,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-28T11:54:36.245850'
+  scheduler_start_time: '2025-06-29T02:28:51.872235'
   scheduler_status: running
   server:
     port: '8080'
@@ -62,6 +62,7 @@ __data__:
   test_backup_isolation: production_value
   another_key: another_value
   final_key: final_value
+  nested: {}
 __type_hints__:
   logging.path: Path
   server.port: int

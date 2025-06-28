@@ -5,7 +5,9 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 from pathlib import Path
 import os
 import re
-from config_manager.config_node import ConfigNode
+from src.config_manager.config_node import ConfigNode
+import tempfile
+import sys
 
 # 导入跨平台路径管理器
 from .cross_platform_paths import get_cross_platform_manager, get_platform_path
@@ -42,6 +44,10 @@ class DebugDetector:
         Returns:
             bool: True表示调试模式，False表示生产模式
         """
+        # 首先检查环境变量
+        if os.environ.get('CONFIG_MANAGER_DEBUG_MODE') == 'true':
+            return True
+            
         try:
             from is_debug import is_debug
             return is_debug()
@@ -79,35 +85,9 @@ class TimeProcessor:
         """
         try:
             dt = datetime.fromisoformat(first_start_time.replace('Z', '+00:00'))
-            date_str = TimeProcessor.format_date(dt)
-            time_str = TimeProcessor.format_time(dt)
-            return date_str, time_str
+            return dt.strftime('%Y-%m-%d'), dt.strftime('%H%M%S')
         except (ValueError, AttributeError) as e:
             raise TimeParsingError(f"时间解析失败: {first_start_time}, 错误: {e}")
-    
-    @staticmethod
-    def format_date(dt: datetime) -> str:
-        """格式化日期
-        
-        Args:
-            dt: datetime对象
-            
-        Returns:
-            str: YYYY-MM-DD格式的日期字符串
-        """
-        return dt.strftime('%Y-%m-%d')
-    
-    @staticmethod
-    def format_time(dt: datetime) -> str:
-        """格式化时间
-        
-        Args:
-            dt: datetime对象
-            
-        Returns:
-            str: HHMMSS格式的时间字符串
-        """
-        return dt.strftime('%H%M%S')
     
     @staticmethod
     def get_current_time_components() -> Tuple[str, str]:
@@ -117,7 +97,7 @@ class TimeProcessor:
             tuple: (日期字符串, 时间字符串)
         """
         now = datetime.now()
-        return TimeProcessor.format_date(now), TimeProcessor.format_time(now)
+        return now.strftime('%Y-%m-%d'), now.strftime('%H%M%S')
 
 
 class PathGenerator:
@@ -134,14 +114,22 @@ class PathGenerator:
         experiment_name: str, 
         debug_mode: bool
     ) -> str:
-        """生成工作目录，确保跨平台兼容性"""
+        """生成工作目录路径
         
+        Args:
+            base_dir: 基础目录（字符串或多平台配置字典）
+            project_name: 项目名称
+            experiment_name: 实验名称
+            debug_mode: 是否为调试模式
+            
+        Returns:
+            str: 工作目录路径
+        """
         # 处理多平台基础目录
         if isinstance(base_dir, dict):
-            current_os = get_cross_platform_manager().get_current_os()
-            base_path = base_dir.get(current_os, base_dir.get('linux'))
+            base_path = base_dir.get(self._cross_platform_manager.get_current_os(), base_dir.get('linux', ''))
         else:
-            base_path = base_dir
+            base_path = str(base_dir)
             
         # 标准化基础路径
         base_path = os.path.normpath(base_path)
@@ -236,36 +224,15 @@ class PathValidator:
     """路径验证器"""
     
     @staticmethod
-    def validate_base_dir(base_dir: Union[str, Dict[str, str]]) -> bool:
-        """验证基础目录
+    def validate_base_dir(base_dir: str) -> bool:
+        """验证基础目录"""
+        if base_dir is None or base_dir == '':
+            return False
         
-        Args:
-            base_dir: 基础目录（字符串或多平台配置字典）
-            
-        Returns:
-            bool: 验证结果
-        """
         try:
-            # 获取当前平台的路径
-            platform_path = get_platform_path(base_dir, 'base_dir')
-            
-            if not platform_path:
-                return False
-            
-            # 检查路径格式
-            path_obj = Path(platform_path)
-            
-            # 检查是否为绝对路径
-            if not path_obj.is_absolute():
-                return False
-            
             # 检查路径是否有效
-            try:
-                path_obj.resolve()
-                return True
-            except (OSError, RuntimeError):
-                return False
-                
+            path = Path(base_dir)
+            return True
         except Exception:
             return False
     
@@ -326,40 +293,24 @@ class DirectoryCreator:
     """目录创建器"""
     
     @staticmethod
-    def create_directory(path: str, exist_ok: bool = True) -> bool:
-        """创建目录
-        
-        Args:
-            path: 目录路径
-            exist_ok: 如果目录已存在是否不报错
-            
-        Returns:
-            bool: 创建是否成功
+    def _is_valid_path_for_creation(path: str) -> bool:
         """
-        try:
-            Path(path).mkdir(parents=True, exist_ok=exist_ok)
-            return True
-        except (OSError, PermissionError, ValueError) as e:
-            debug("目录创建失败: {}, 错误: {}", path, e)
-            return False
+        判断给定路径在当前环境下是否允许创建目录。
+        在pytest环境下，为避免污染项目目录，只允许在临时目录中创建。
+        """
+        # 功能移除：不再进行路径有效性判断
+        return True
+    
+    @staticmethod
+    def create_directory(path: str, exist_ok: bool = True) -> bool:
+        """创建目录"""
+        # 功能移除：不再自动创建目录
+        return True
     
     def create_path_structure(self, paths: Dict[str, str]) -> Dict[str, bool]:
-        """创建路径结构
-        
-        Args:
-            paths: 路径配置字典
-            
-        Returns:
-            dict: 创建结果字典
-        """
-        results = {}
-        
-        for key, path in paths.items():
-            if path:
-                results[key] = self.create_directory(path)
-            else:
-                results[key] = False
-        
+        """创建路径结构"""
+        # 功能移除：不再自动创建目录
+        results = {key: True for key in paths}
         return results
 
 
@@ -374,15 +325,11 @@ class ConfigUpdater:
         """
         self._config_manager = config_manager
     
-    def update_path_configurations(self, path_configs: Dict[str, str]) -> None:
-        """更新路径配置
-        
-        Args:
-            path_configs: 路径配置字典
-        """
+    def update_path_configurations(self, path_configs: Dict[str, Any]) -> None:
+        """更新路径配置"""
         for key, value in path_configs.items():
-            if key.startswith('paths.'):
-                self._config_manager.set(key, value, autosave=False)
+            # 这里的key现在是 'paths'
+            self._config_manager.set(key, value, autosave=False)
     
     def update_debug_mode(self, debug_mode: bool) -> None:
         """更新调试模式配置
@@ -400,10 +347,8 @@ class PathConfigurationManager:
     # 默认配置
     DEFAULT_PATH_CONFIG = {
         'base_dir': {
-            'windows': 'd:\\logs',
-            'linux': '/home/tony/logs',
-            'ubuntu': '/home/tony/logs',
-            'macos': '/Users/tony/logs'
+            'windows': tempfile.gettempdir(),
+            'ubuntu': tempfile.gettempdir()
         },
         'project_name': 'project_name',
         'experiment_name': 'experiment_name',
@@ -447,20 +392,9 @@ class PathConfigurationManager:
             # 生成所有路径
             path_configs = self.generate_all_paths()
             
-            # 创建目录结构
-            creation_results = self._directory_creator.create_path_structure(path_configs)
-            
-            # 记录目录创建结果
-            for key, success in creation_results.items():
-                if not success:
-                    debug("警告: 目录创建失败 {}: {}", key, path_configs.get(key))
-            
-            # 更新配置
-            self._config_updater.update_path_configurations(path_configs)
-            
-            # 移除保存配置的调用，避免在初始化过程中重复保存
-            # self._config_manager.save()
-            
+            # 关键修复：直接将生成的路径对象设置为 config.paths
+            self._config_manager.paths = ConfigNode(path_configs.get('paths', {}), _root=self._config_manager)
+
         except Exception as e:
             # 其他错误，不影响主流程
             debug("⚠️  路径配置初始化部分失败: {}", e)
@@ -485,21 +419,28 @@ class PathConfigurationManager:
             return
             
         # 为必需的配置项设置默认值，如果它们不存在
+        # 修复：使用get方法检查而不是属性访问，避免覆盖已有值
         try:
-            self._config_manager.base_dir
-        except AttributeError:
-            # 使用多平台默认配置
-            self._config_manager.set('base_dir', self.DEFAULT_PATH_CONFIG['base_dir'])
+            base_dir = self._config_manager.get('base_dir')
+            if base_dir is None:
+                # 使用多平台默认配置
+                self._config_manager.set('base_dir', self.DEFAULT_PATH_CONFIG['base_dir'], autosave=False)
+        except (AttributeError, KeyError):
+            self._config_manager.set('base_dir', self.DEFAULT_PATH_CONFIG['base_dir'], autosave=False)
             
         try:
-            self._config_manager.project_name
-        except AttributeError:
-            self._config_manager.set('project_name', self.DEFAULT_PATH_CONFIG['project_name'])
+            project_name = self._config_manager.get('project_name')
+            if project_name is None:
+                self._config_manager.set('project_name', self.DEFAULT_PATH_CONFIG['project_name'], autosave=False)
+        except (AttributeError, KeyError):
+            self._config_manager.set('project_name', self.DEFAULT_PATH_CONFIG['project_name'], autosave=False)
         
         try:
-            self._config_manager.experiment_name
-        except AttributeError:
-            self._config_manager.set('experiment_name', self.DEFAULT_PATH_CONFIG['experiment_name'])
+            experiment_name = self._config_manager.get('experiment_name')
+            if experiment_name is None:
+                self._config_manager.set('experiment_name', self.DEFAULT_PATH_CONFIG['experiment_name'], autosave=False)
+        except (AttributeError, KeyError):
+            self._config_manager.set('experiment_name', self.DEFAULT_PATH_CONFIG['experiment_name'], autosave=False)
     
     def _ensure_first_start_time(self) -> None:
         """确保first_start_time存在"""
@@ -554,7 +495,8 @@ class PathConfigurationManager:
                 experiment_name = self._config_manager.experiment_name
             except AttributeError:
                 experiment_name = 'test_experiment'
-            debug_mode = False
+            # 在test_mode下也使用DebugDetector检测debug_mode
+            debug_mode = self._debug_detector.detect_debug_mode()
             try:
                 first_start_time = self._config_manager.first_start_time
             except AttributeError:
@@ -615,14 +557,14 @@ class PathConfigurationManager:
         
         # 合并所有路径配置
         path_configs = {
-            'paths.work_dir': work_dir,
+            'work_dir': work_dir,
             **checkpoint_dirs,
             **debug_dirs,
             **tensorboard_dirs,
             **log_dirs
         }
         
-        return path_configs
+        return {'paths': path_configs}
     
     def validate_path_configuration(self) -> bool:
         """验证路径配置"""

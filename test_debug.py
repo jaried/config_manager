@@ -1,32 +1,55 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
 import os
-import traceback
+import tempfile
+import sys
 
-# 添加src目录到Python路径
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# 添加项目根目录到Python路径
+sys.path.insert(0, os.path.abspath('.'))
 
-try:
-    print("1. 开始导入...")
-    from config_manager import get_config_manager
-    print("2. 导入成功")
-    
-    print("3. 开始创建ConfigManager...")
-    # 直接创建ConfigManager实例，跳过get_config_manager函数
-    from config_manager.config_manager import ConfigManager
-    
-    print("4. 创建实例...")
-    cfg = ConfigManager('test.yaml', auto_create=True)
-    print("5. 实例创建成功")
-    
-    print("6. 测试基本操作...")
-    cfg.test_value = "hello"
-    print("7. 设置值成功")
-    
-    print("✓ 所有测试通过")
-    
-except Exception as e:
-    print(f"✗ 错误: {e}")
-    traceback.print_exc() 
+from src.config_manager import get_config_manager
+
+def test_get_method():
+    """测试get方法"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        config_path = os.path.join(temp_dir, 'test_debug.yaml')
+        
+        # 创建配置管理器，启用文件监视器
+        config = get_config_manager(config_path=config_path, watch=True)
+        print(f"Config created: {config is not None}")
+        
+        # 设置base_dir
+        test_path = os.path.join(temp_dir, 'test_logs')
+        print(f"Setting base_dir to: {test_path}")
+        config.set('base_dir', test_path)
+        
+        # 检查set后的状态
+        print(f"After set - base_dir exists: {'base_dir' in config._data}")
+        if 'base_dir' in config._data:
+            print(f"After set - base_dir value: {config._data['base_dir']}")
+            print(f"After set - base_dir type: {type(config._data['base_dir'])}")
+        
+        # 手动保存配置
+        print("Manually saving config...")
+        config.save()
+        
+        # 检查保存的文件内容
+        if os.path.exists(config_path):
+            print("Saved file content:")
+            with open(config_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                print(content)
+        
+        # 获取base_dir
+        current_path = config.get('base_dir')
+        print(f"Got base_dir after save: {current_path}")
+        
+        # 创建新的配置管理器实例，模拟重新加载
+        print("Creating new config manager instance...")
+        config2 = get_config_manager(config_path=config_path, watch=False)
+        reloaded_path = config2.get('base_dir')
+        print(f"Got base_dir after reload: {reloaded_path}")
+
+if __name__ == "__main__":
+    test_get_method() 

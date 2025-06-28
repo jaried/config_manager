@@ -12,7 +12,7 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     install_requires=[
-        'pyyaml',
+        'ruamel.yaml',
     ],
     author='Tony Xiao',
     author_email='tony.xiao@gmail.com',

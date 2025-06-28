@@ -7,15 +7,14 @@ import os
 import sys
 from ruamel.yaml import YAML
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
-# 添加src到路径，确保可以找到config_manager模块
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')))
+# 移除硬编码的路径设置，因为它现在由 conftest.py 处理
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')))
 
 from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
 class TestRawYamlSupport:
     """测试原始YAML格式支持"""
 
@@ -120,8 +119,10 @@ class TestRawYamlSupport:
         config_path = self._create_temp_yaml('')
         config = get_config_manager(config_path=config_path, watch=False)
         assert config.to_dict() is not None
-        config.new_data = "test"
-        assert config.new_data == "test"
+        
+        # 使用set方法而不是直接属性赋值来避免ConfigManager特殊处理
+        config.set('new_data', "test", autosave=False)
+        assert config.get('new_data') == "test"
 
     def test_get_raw_yaml_content(self, tmp_path):
         """测试获取原始YAML文件内容"""

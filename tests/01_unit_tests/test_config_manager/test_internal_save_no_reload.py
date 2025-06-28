@@ -14,7 +14,7 @@ from unittest.mock import Mock, patch
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestInternalSaveNoReload:
     """测试内部保存不会触发重新加载功能"""
     

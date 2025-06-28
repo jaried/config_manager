@@ -1,6 +1,7 @@
 # src/config_manager/config_manager.py
 from __future__ import annotations
 from datetime import datetime
+from typing import Union, Type
 
 start_time = datetime.now()
 
@@ -302,30 +303,78 @@ class ConfigManager(ConfigManagerCore):
     @classmethod
     def _generate_test_environment_path(cls, first_start_time: datetime = None) -> tuple[
         str, str]:
-        """生成测试环境的路径"""
-        # 如果没有提供first_start_time，则生成当前时间
+        """生成测试环境路径"""
+        from datetime import datetime
+        
+        # 确定使用的时间
         if first_start_time is None:
             first_start_time = datetime.now()
-            print(f"✓ 使用当前时间作为first_start_time: {first_start_time}")
-        else:
-            print(f"✓ 使用传入的first_start_time: {first_start_time}")
+        elif isinstance(first_start_time, str):
+            # 如果是字符串，尝试解析为datetime对象
+            try:
+                # 修复字符串替换问题
+                time_str = first_start_time.replace('Z', '+00:00')
+                first_start_time = datetime.fromisoformat(time_str)
+            except:
+                first_start_time = datetime.now()
+        elif not isinstance(first_start_time, datetime):
+            first_start_time = datetime.now()
 
         # 使用更简洁的日期和时间格式
         date_str = first_start_time.strftime("%Y%m%d")
         time_str = first_start_time.strftime("%H%M%S")
 
-        # 生成唯一的测试目录
-        # temp_dir = tempfile.gettempdir()
-        # test_base_dir = os.path.join(temp_dir, 'tests', date_str, time_str, project_name)
-        
-        # 修复：测试基础目录不应包含项目名称
+        # 优先使用pytest的tmp_path，如果不可用则使用系统临时目录
         temp_dir = tempfile.gettempdir()
-        test_base_dir = os.path.join(temp_dir, 'tests', date_str, time_str)
+        
+        # 检查是否在pytest环境中
+        pytest_tmp_path = cls._detect_pytest_tmp_path()
+        if pytest_tmp_path:
+            test_base_dir = pytest_tmp_path
+            print(f"✓ 检测到pytest环境，使用pytest tmp_path: {test_base_dir}")
+        else:
+            # 生成唯一的测试目录
+            test_base_dir = os.path.join(temp_dir, 'tests', date_str, time_str)
+            print(f"✓ 使用系统临时目录: {test_base_dir}")
         
         test_config_path = os.path.join(test_base_dir, 'src', 'config', 'config.yaml')
         
         print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_dir}")
         return test_base_dir, test_config_path
+
+    @classmethod
+    def _detect_pytest_tmp_path(cls) -> Union[str, None]:
+        """检测pytest的tmp_path"""
+        try:
+            # 检查是否在pytest环境中
+            import pytest
+            import inspect
+            
+            # 获取当前调用栈
+            frame = inspect.currentframe()
+            while frame:
+                # 检查是否有pytest相关的局部变量
+                if 'tmp_path' in frame.f_locals:
+                    tmp_path = frame.f_locals['tmp_path']
+                    if hasattr(tmp_path, '__str__'):
+                        return str(tmp_path)
+                elif 'tmp_path_factory' in frame.f_locals:
+                    # 如果有tmp_path_factory，尝试创建临时路径
+                    tmp_path_factory = frame.f_locals['tmp_path_factory']
+                    if hasattr(tmp_path_factory, 'mktemp'):
+                        return str(tmp_path_factory.mktemp('config_manager_test'))
+                
+                frame = frame.f_back
+                
+        except Exception:
+            pass
+        
+        # 检查环境变量
+        pytest_tmp_path = os.environ.get('PYTEST_TMP_PATH')
+        if pytest_tmp_path and os.path.exists(pytest_tmp_path):
+            return pytest_tmp_path
+            
+        return None
 
     @classmethod
     def _detect_production_config(cls) -> str:
@@ -365,11 +414,18 @@ class ConfigManager(ConfigManagerCore):
         os.makedirs(os.path.dirname(test_config_path), exist_ok=True)
 
         if os.path.exists(prod_config_path):
-            # 复制配置文件
-            shutil.copy2(prod_config_path, test_config_path)
+            # 检查源路径和目标路径是否相同
+            if os.path.abspath(prod_config_path) == os.path.abspath(test_config_path):
+                print(f"✓ 源路径和目标路径相同，跳过复制: {prod_config_path}")
+                # 直接更新现有配置
+                cls._update_test_config_paths(test_config_path, first_start_time, project_name)
+            else:
+                # 复制配置文件
+                shutil.copy2(prod_config_path, test_config_path)
+                print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
 
-            # 修改测试配置中的路径信息
-            cls._update_test_config_paths(test_config_path, first_start_time, project_name)
+                # 修改测试配置中的路径信息
+                cls._update_test_config_paths(test_config_path, first_start_time, project_name)
         else:
             # 如果生产配置不存在，创建空的测试配置
             cls._create_empty_test_config(test_config_path, first_start_time, project_name)
@@ -432,67 +488,31 @@ class ConfigManager(ConfigManagerCore):
             # 无论如何都要执行路径替换
             print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_base}")
 
-            # 确定使用的project_name（优先级：传入参数 > 原配置 > 从路径提取 > 默认值）
-            final_project_name = project_name  # 优先使用传入的project_name
-            if not final_project_name:
-                # 如果没有传入project_name，尝试从原配置读取
-                if '__data__' in config_data:
-                    final_project_name = config_data['__data__'].get('project_name')
-                else:
-                    final_project_name = config_data.get('project_name')
+            # 确定使用的project_name（优先级：传入参数 > 原配置 > 默认值 'project_name'）
+            final_project_name = project_name or config_data.get('project_name', 'project_name')
 
-                if not final_project_name:
-                    # 最后从路径中提取
-                    final_project_name = "project_name"  # 默认值
-                    try:
-                        # 路径格式: /temp/tests/YYYYMMDD/HHMMSS/project_name/src/config/config.yaml
-                        path_parts = test_config_path.replace('\\', '/').split('/')
-                        if len(path_parts) >= 3:
-                            # 找到project_name部分（在src之前的最后一个部分）
-                            for i, part in enumerate(path_parts):
-                                if part == 'src' and i > 0:
-                                    final_project_name = path_parts[i - 1]
-                                    break
-                    except:
-                        pass  # 使用默认值
-
-            # 如果传入了project_name，强制更新配置中的project_name
+            # 如果传入了project_name，强制更新
             if project_name:
-                print(f"✓ 强制更新配置中的project_name: {project_name}")
+                config_data['project_name'] = project_name
+            
+            # 关键简化：只强制覆盖 base_dir
+            config_data['base_dir'] = test_base_dir
 
-            # 更新路径信息和时间信息
-            if '__data__' in config_data:
-                # 标准格式
-                config_data['__data__']['config_file_path'] = test_config_path
-                if time_to_use is not None:  # 只在需要时更新first_start_time
-                    config_data['__data__']['first_start_time'] = time_to_use.isoformat()
+            # 更新时间信息
+            if time_to_use is not None:
+                config_data['first_start_time'] = time_to_use.isoformat()
+            
+            config_data['config_file_path'] = test_config_path
 
-                # 强制更新project_name（如果传入了参数）
-                if project_name:
-                    config_data['__data__']['project_name'] = project_name
-                elif 'project_name' not in config_data['__data__']:
-                    config_data['__data__']['project_name'] = final_project_name
+            # 将清理后的数据转换为标准格式
+            data_to_save = {
+                '__data__': config_data,
+                '__type_hints__': config_data.get('__type_hints__', {})
+            }
 
-                # 动态替换所有路径字段
-                cls._replace_all_paths_in_config(config_data['__data__'], test_base_dir, temp_base)
-            else:
-                # 原始格式
-                config_data['config_file_path'] = test_config_path
-                if time_to_use is not None:  # 只在需要时更新first_start_time
-                    config_data['first_start_time'] = time_to_use.isoformat()
-
-                # 强制更新project_name（如果传入了参数）
-                if project_name:
-                    config_data['project_name'] = project_name
-                elif 'project_name' not in config_data:
-                    config_data['project_name'] = final_project_name
-
-                # 动态替换所有路径字段
-                cls._replace_all_paths_in_config(config_data, test_base_dir, temp_base)
-
-            # 保存更新后的配置，确保路径使用正斜杠
+            # 保存更新后的配置
             with open(test_config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(config_data, f)
+                yaml.dump(data_to_save, f)
 
         except Exception as e:
             print(f"⚠️  更新测试配置路径失败: {e}")
@@ -505,7 +525,7 @@ class ConfigManager(ConfigManagerCore):
                         'first_start_time': (first_start_time or datetime.now()).isoformat(),
                         'project_name': project_name or 'project_name',
                         'experiment_name': 'default',
-                        'base_dir': 'd:/logs',
+                        'base_dir': tempfile.gettempdir(),
                         'app_name': f'{project_name or "project_name"}系统',
                         'version': '1.0.0'
                     },
@@ -520,304 +540,6 @@ class ConfigManager(ConfigManagerCore):
 
             except Exception as e2:
                 print(f"⚠️  创建基本配置文件也失败: {e2}")
-
-    @classmethod
-    def _replace_all_paths_in_config(cls, config_data: dict, test_base_dir: str, temp_base: str):
-        """递归替换配置中的所有路径字段"""
-        # 常见的路径字段名称模式
-        path_field_patterns = [
-            'dir', 'path', 'directory', 'folder', 'location', 'root', 'base',
-            'work_dir', 'base_dir', 'log_dir', 'data_dir', 'output_dir', 'temp_dir',
-            'cache_dir', 'backup_dir', 'download_dir', 'upload_dir', 'storage_dir'
-        ]
-
-        # 需要特殊处理的路径字段映射
-        special_path_mappings = {
-            'base_dir': os.path.normpath(test_base_dir),
-            'work_dir': os.path.normpath(test_base_dir),
-            'log_dir': os.path.normpath(os.path.join(test_base_dir, 'logs')),
-            'data_dir': os.path.normpath(os.path.join(test_base_dir, 'data')),
-            'output_dir': os.path.normpath(os.path.join(test_base_dir, 'output')),
-            'temp_dir': os.path.normpath(os.path.join(test_base_dir, 'temp')),
-            'cache_dir': os.path.normpath(os.path.join(test_base_dir, 'cache')),
-            'backup_dir': os.path.normpath(os.path.join(test_base_dir, 'backup')),
-            'download_dir': os.path.normpath(os.path.join(test_base_dir, 'downloads')),
-            'upload_dir': os.path.normpath(os.path.join(test_base_dir, 'uploads')),
-            'storage_dir': os.path.normpath(os.path.join(test_base_dir, 'storage'))
-        }
-
-        # 首先确保关键路径字段存在，并强制替换特殊路径字段
-        for key, default_path in special_path_mappings.items():
-            if key not in config_data:
-                config_data[key] = default_path
-            else:
-                # 对于已存在的特殊路径字段，如果不是测试路径，则强制替换
-                current_value = config_data[key]
-                if isinstance(current_value, str) and temp_base not in current_value:
-                    config_data[key] = default_path
-
-        def replace_paths_recursive(obj, parent_key=''):
-            """递归替换对象中的路径"""
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    # 修复：确保key是字符串类型才进行路径处理
-                    if not isinstance(key, str):
-                        # 非字符串键跳过路径处理，但继续递归
-                        if isinstance(value, (dict, list)):
-                            replace_paths_recursive(value, f"{parent_key}.{key}")
-                        continue
-                        
-                    full_key = f"{parent_key}.{key}" if parent_key else key
-
-                    if isinstance(value, str):
-                        # 检查是否是路径字段，但跳过已经是测试路径的字段
-                        if cls._is_path_field(key, value) and test_base_dir not in value:
-                            # 优先使用特殊映射
-                            if key in special_path_mappings:
-                                new_path = special_path_mappings[key]
-                                if new_path != value:  # 只在值不同时才替换
-                                    obj[key] = new_path
-                            else:
-                                # 通用路径替换：将绝对路径替换为测试环境路径
-                                new_path = cls._convert_to_test_path(value, test_base_dir, temp_base)
-                                if new_path != value:
-                                    obj[key] = new_path
-                    elif isinstance(value, (dict, list)):
-                        # 递归处理嵌套结构
-                        replace_paths_recursive(value, full_key)
-            elif isinstance(obj, list):
-                for i, item in enumerate(obj):
-                    if isinstance(item, (dict, list)):
-                        replace_paths_recursive(item, f"{parent_key}[{i}]")
-                    elif isinstance(item, str) and cls._is_path_like(item) and test_base_dir not in item:
-                        # 列表中的路径字符串，跳过已经是测试路径的
-                        new_path = cls._convert_to_test_path(item, test_base_dir, temp_base)
-                        if new_path != item:
-                            obj[i] = new_path
-
-        replace_paths_recursive(config_data)
-
-    @classmethod
-    def _is_path_field(cls, key: str, value: str) -> bool:
-        """判断字段是否是路径字段
-
-        只有以特定路径相关名词结尾的字段才被识别为路径字段：
-        - _dir, dir: 目录路径
-        - _path, path: 文件或目录路径
-        - _file, file: 文件路径
-        - _directory, directory: 目录路径
-        - _folder, folder: 文件夹路径
-        - _location, location: 位置路径
-        """
-        # 修复：确保key是字符串类型
-        if not isinstance(key, str):
-            return False
-            
-        if not isinstance(value, str) or not value.strip():
-            return False
-
-        # 首先检查是否是需要保护的字段类型
-        if cls._is_protected_field(key, value):
-            return False
-
-        # 检查字段名是否以路径相关名词结尾
-        key_lower = key.lower()
-        path_suffixes = [
-            '_dir', 'dir',
-            '_path', 'path',
-            '_file', 'file',
-            '_directory', 'directory',
-            '_folder', 'folder',
-            '_location', 'location'
-        ]
-
-        for suffix in path_suffixes:
-            if key_lower.endswith(suffix):
-                return True
-
-        return False
-
-    @classmethod
-    def _is_protected_field(cls, key: str, value: str) -> bool:
-        """判断字段是否是需要保护的字段（不应该被路径替换）
-
-        由于路径字段识别已改为只识别特定后缀，保护模式主要用于：
-        1. 防止网络URL被误识别为路径
-        2. 防止正则表达式被误识别为路径
-        3. 保护特殊配置字段
-        """
-        # 修复：确保key是字符串类型
-        if not isinstance(key, str):
-            return False
-            
-        if not isinstance(value, str) or not value.strip():
-            return False
-
-        key_lower = key.lower()
-        value_lower = value.lower()
-
-        # 1. HTTP/HTTPS URL保护（最重要的保护）
-        if value.startswith(('http://', 'https://', 'ftp://', 'ws://', 'wss://')):
-            return True
-
-        # 2. 网络相关字段保护
-        network_keywords = ['proxy', 'url', 'endpoint', 'api', 'host', 'server']
-        for keyword in network_keywords:
-            if keyword in key_lower:
-                return True
-
-        # 3. HTTP Headers保护
-        header_keywords = ['header', 'accept', 'content-type', 'user-agent', 'user_agent', 'cookie', 'authorization']
-        for keyword in header_keywords:
-            if keyword in key_lower:
-                return True
-
-        # 常见的HTTP Header字段名
-        if key_lower in ['accept', 'content-type', 'user-agent', 'authorization', 'cookie']:
-            return True
-
-        # 4. 正则表达式保护
-        if cls._is_regex_pattern(value):
-            return True
-
-        # 5. MIME类型保护
-        if '/' in value and any(mime in value_lower for mime in [
-            'text/', 'application/', 'image/', 'video/', 'audio/', 'multipart/', 'message/'
-        ]):
-            return True
-
-        # 6. URL模式保护
-        if cls._is_url_pattern(value):
-            return True
-
-        return False
-
-    @classmethod
-    def _is_regex_pattern(cls, value: str) -> bool:
-        """判断是否是正则表达式模式"""
-        # 检查正则表达式特征
-        regex_indicators = [
-            value.startswith('^') or value.endswith('$'),  # 锚点
-            '\\' in value and any(char in value for char in ['d', 'w', 's', 'n', 't']),  # 转义字符
-            '[' in value and ']' in value,  # 字符类
-            '(' in value and ')' in value,  # 分组
-            '+' in value or '*' in value or '?' in value,  # 量词
-            '|' in value,  # 或操作符
-            '{' in value and '}' in value,  # 重复次数
-        ]
-        return any(regex_indicators)
-
-    @classmethod
-    def _is_url_pattern(cls, value: str) -> bool:
-        """判断是否是URL模式"""
-        # 检查URL模式特征
-        url_patterns = [
-            # API路径模式：以/开头且包含api相关关键词
-            value.startswith('/') and not value.startswith('//') and any(
-                api_keyword in value.lower() for api_keyword in ['/api/', '/v1/', '/v2/', '/rest/', '/graphql']),
-            '*.' in value,  # 通配符域名
-            # URL路径格式：包含域名的URL路径（必须包含顶级域名）
-            value.count('/') >= 2 and '.' in value and any(
-                tld in value.lower() for tld in ['.com', '.org', '.net', '.edu', '.gov', '.io', '.co']),
-            # 单独的顶级域名检查（用于域名字符串）
-            any(tld in value.lower() for tld in
-                ['.com', '.org', '.net', '.edu', '.gov', '.io', '.co']) and not value.startswith('/'),
-        ]
-        return any(url_patterns)
-
-    @classmethod
-    def _is_path_like(cls, value: str) -> bool:
-        """判断字符串是否看起来像文件路径"""
-        if not value or len(value) < 2:
-            return False
-
-        # 排除网络URL
-        if value.startswith(('http://', 'https://', 'ftp://', 'ws://', 'wss://', 'file://')):
-            return False
-
-        # 排除MIME类型
-        if '/' in value and any(mime in value.lower() for mime in [
-            'text/', 'application/', 'image/', 'video/', 'audio/', 'multipart/', 'message/'
-        ]):
-            return False
-
-        # 首先检查Windows盘符格式（在正则表达式检查之前）
-        if len(value) >= 2 and value[1] == ':' and value[0].isalpha():
-            return True
-
-        # 排除明显的正则表达式（但已经排除了Windows路径）
-        if cls._is_regex_pattern(value):
-            return False
-
-        # 检查是否以常见文件路径前缀开始
-        file_path_prefixes = ['~/', './', '../', '/tmp/', '/var/', '/usr/', '/opt/', '/home/', '/etc/']
-        for prefix in file_path_prefixes:
-            if value.startswith(prefix):
-                return True
-
-        # 检查是否包含路径分隔符且看起来像文件路径
-        if ('/' in value or '\\' in value):
-            # 进一步验证是否真的是文件路径
-            # 排除看起来像URL路径的情况
-            if value.startswith('/') and not value.startswith('//'):
-                # 可能是绝对路径，但要排除API路径
-                if any(api_indicator in value.lower() for api_indicator in ['/api/', '/v1/', '/v2/', '/rest/']):
-                    return False
-                return True
-
-            # Windows路径或相对路径
-            if '\\' in value or value.startswith('./') or value.startswith('../'):
-                return True
-
-            # 包含文件扩展名的路径
-            if '.' in value and not value.startswith('.'):
-                # 检查是否有常见的文件扩展名
-                common_extensions = ['.txt', '.log', '.yaml', '.yml', '.json', '.xml', '.ini', '.conf', '.cfg']
-                if any(ext in value.lower() for ext in common_extensions):
-                    return True
-
-        # 检查是否包含常见的路径组件
-        path_components = ['bin', 'lib', 'src', 'config', 'data', 'logs', 'temp', 'cache', 'backup', 'users',
-                           'documents']
-        if any(component in value.lower() for component in path_components):
-            return True
-
-        return False
-
-    @classmethod
-    def _convert_to_test_path(cls, original_path: str, test_base_dir: str, temp_base: str) -> str:
-        """将原始路径转换为测试环境路径"""
-        if not original_path or not cls._is_path_like(original_path):
-            return original_path
-
-        # 如果已经是测试路径，不需要转换
-        # 更精确的检查：只有当路径真正在测试环境目录下时才跳过转换
-        if test_base_dir in original_path:
-            return original_path
-
-        # 处理相对路径
-        if original_path.startswith('./') or original_path.startswith('../'):
-            # 相对路径转换为测试环境下的相对路径
-            result = os.path.join(test_base_dir, original_path.lstrip('./'))
-            return os.path.normpath(result)
-
-        # 处理绝对路径
-        if os.path.isabs(original_path):
-            # 提取路径的最后几个部分，在测试环境中重建
-            # 使用 os.path.normpath 来正确处理路径分隔符
-            normalized_path = os.path.normpath(original_path)
-            path_parts = normalized_path.split(os.sep)
-            # 取最后1-2个有意义的部分
-            meaningful_parts = [part for part in path_parts[-2:] if part and part != '..']
-            if meaningful_parts:
-                result = os.path.join(test_base_dir, *meaningful_parts)
-                return os.path.normpath(result)
-            else:
-                return os.path.normpath(test_base_dir)
-
-        # 其他情况，直接在测试环境下创建
-        result = os.path.join(test_base_dir, original_path)
-        return os.path.normpath(result)
 
     @classmethod
     def _create_empty_test_config(cls, test_config_path: str, first_start_time: datetime = None,
@@ -835,6 +557,10 @@ class ConfigManager(ConfigManagerCore):
         # 确定使用的project_name
         final_project_name = project_name if project_name else "project_name"
 
+        # 使用系统临时路径作为base_dir
+        temp_base_dir = tempfile.gettempdir()
+        project_base_dir = os.path.join(temp_base_dir, final_project_name, 'default')
+
         # 创建包含必要字段的空配置
         empty_config = {
             '__data__': {
@@ -842,24 +568,24 @@ class ConfigManager(ConfigManagerCore):
                 'first_start_time': time_to_use.isoformat(),
                 'project_name': final_project_name,
                 'experiment_name': 'default',  # 添加默认的experiment_name
-                'base_dir': 'd:/logs',  # 添加默认的base_dir
+                'base_dir': temp_base_dir,  # 使用系统临时路径
                 'app_name': f'{final_project_name}系统',  # 添加默认的app_name
                 'version': '1.0.0',  # 添加默认版本
                 # 添加一些基本的路径配置，避免路径配置更新时出错
                 'paths': {
-                    'work_dir': f'd:/logs/{final_project_name}/default',
-                    'log_dir': f'd:/logs/{final_project_name}/default/logs',
-                    'checkpoint_dir': f'd:/logs/{final_project_name}/default/checkpoint',
-                    'best_checkpoint_dir': f'd:/logs/{final_project_name}/default/checkpoint/best',
-                    'debug_dir': f'd:/logs/{final_project_name}/default/debug',
-                    'data_dir': f'd:/logs/{final_project_name}/default/data',
-                    'output_dir': f'd:/logs/{final_project_name}/default/output',
-                    'temp_dir': f'd:/logs/{final_project_name}/default/temp',
-                    'cache_dir': f'd:/logs/{final_project_name}/default/cache',
-                    'backup_dir': f'd:/logs/{final_project_name}/default/backup',
-                    'download_dir': f'd:/logs/{final_project_name}/default/downloads',
-                    'upload_dir': f'd:/logs/{final_project_name}/default/uploads',
-                    'storage_dir': f'd:/logs/{final_project_name}/default/storage'
+                    'work_dir': project_base_dir,
+                    'log_dir': os.path.join(project_base_dir, 'logs'),
+                    'checkpoint_dir': os.path.join(project_base_dir, 'checkpoint'),
+                    'best_checkpoint_dir': os.path.join(project_base_dir, 'checkpoint', 'best'),
+                    'debug_dir': os.path.join(project_base_dir, 'debug'),
+                    'data_dir': os.path.join(project_base_dir, 'data'),
+                    'output_dir': os.path.join(project_base_dir, 'output'),
+                    'temp_dir': os.path.join(project_base_dir, 'temp'),
+                    'cache_dir': os.path.join(project_base_dir, 'cache'),
+                    'backup_dir': os.path.join(project_base_dir, 'backup'),
+                    'download_dir': os.path.join(project_base_dir, 'downloads'),
+                    'upload_dir': os.path.join(project_base_dir, 'uploads'),
+                    'storage_dir': os.path.join(project_base_dir, 'storage')
                 }
             },
             '__type_hints__': {
@@ -891,23 +617,23 @@ class ConfigManager(ConfigManagerCore):
   first_start_time: {time_str}
   project_name: {final_project_name}
   experiment_name: default
-  base_dir: d:/logs
+  base_dir: {temp_base_dir}
   app_name: {final_project_name}系统
   version: 1.0.0
   paths:
-    work_dir: d:/logs/{final_project_name}/default
-    log_dir: d:/logs/{final_project_name}/default/logs
-    checkpoint_dir: d:/logs/{final_project_name}/default/checkpoint
-    best_checkpoint_dir: d:/logs/{final_project_name}/default/checkpoint/best
-    debug_dir: d:/logs/{final_project_name}/default/debug
-    data_dir: d:/logs/{final_project_name}/default/data
-    output_dir: d:/logs/{final_project_name}/default/output
-    temp_dir: d:/logs/{final_project_name}/default/temp
-    cache_dir: d:/logs/{final_project_name}/default/cache
-    backup_dir: d:/logs/{final_project_name}/default/backup
-    download_dir: d:/logs/{final_project_name}/default/downloads
-    upload_dir: d:/logs/{final_project_name}/default/uploads
-    storage_dir: d:/logs/{final_project_name}/default/storage
+    work_dir: {project_base_dir}
+    log_dir: {os.path.join(project_base_dir, 'logs')}
+    checkpoint_dir: {os.path.join(project_base_dir, 'checkpoint')}
+    best_checkpoint_dir: {os.path.join(project_base_dir, 'checkpoint', 'best')}
+    debug_dir: {os.path.join(project_base_dir, 'debug')}
+    data_dir: {os.path.join(project_base_dir, 'data')}
+    output_dir: {os.path.join(project_base_dir, 'output')}
+    temp_dir: {os.path.join(project_base_dir, 'temp')}
+    cache_dir: {os.path.join(project_base_dir, 'cache')}
+    backup_dir: {os.path.join(project_base_dir, 'backup')}
+    download_dir: {os.path.join(project_base_dir, 'downloads')}
+    upload_dir: {os.path.join(project_base_dir, 'uploads')}
+    storage_dir: {os.path.join(project_base_dir, 'storage')}
 __type_hints__:
   project_name: str
   experiment_name: str
@@ -927,8 +653,150 @@ __type_hints__:
         """获取原始YAML文件内容"""
         if self._config_path and os.path.exists(self._config_path):
             with open(self._config_path, 'r', encoding='utf-8') as f:
-                return f.read()
+                content = f.read()
+                
+            # 如果内容是标准格式（包含__data__），尝试提取原始内容
+            try:
+                from ruamel.yaml import YAML
+                yaml = YAML()
+                yaml.preserve_quotes = True
+                yaml.default_flow_style = False
+                
+                parsed_content = yaml.load(content)
+                if isinstance(parsed_content, dict) and '__data__' in parsed_content:
+                    # 是标准格式，提取__data__部分作为原始内容
+                    original_data = parsed_content['__data__']
+                    # 过滤掉ConfigManager自动添加的字段
+                    filtered_data = {}
+                    for key, value in original_data.items():
+                        if key not in ['config_file_path', 'first_start_time', 'paths']:
+                            filtered_data[key] = value
+                    
+                    # 如果有用户数据，重新生成为YAML格式
+                    if filtered_data:
+                        from io import StringIO
+                        output = StringIO()
+                        yaml.dump(filtered_data, output)
+                        return output.getvalue()
+                    else:
+                        # 没有用户数据，返回空
+                        return ""
+                else:
+                    # 是原始格式，直接返回内容
+                    return content
+            except Exception:
+                # 解析失败，直接返回原始内容
+                return content
+                
         raise FileNotFoundError(f"配置文件不存在: {self._config_path}")
+
+    def _resolve_template_variables(self, value: str, context: dict = None) -> str:
+        """解析模板变量"""
+        if not isinstance(value, str) or '{{' not in value or '}}' not in value:
+            return value
+        
+        if context is None:
+            context = self._data
+        
+        import re
+        
+        def replace_var(match):
+            var_path = match.group(1).strip()
+            try:
+                # 解析变量路径，支持嵌套访问
+                current = context
+                for part in var_path.split('.'):
+                    if isinstance(current, dict) and part in current:
+                        current = current[part]
+                    elif hasattr(current, '_data') and part in current._data:
+                        current = current._data[part]
+                    else:
+                        return match.group(0)  # 保持原样
+                
+                return str(current) if current is not None else match.group(0)
+            except Exception:
+                return match.group(0)  # 保持原样
+        
+        # 替换模板变量
+        result = re.sub(r'\{\{([^}]+)\}\}', replace_var, value)
+        return result
+    
+    def _resolve_all_templates(self, data: dict) -> dict:
+        """递归解析所有模板变量"""
+        if isinstance(data, dict):
+            result = {}
+            for key, value in data.items():
+                if isinstance(value, str):
+                    result[key] = self._resolve_template_variables(value, data)
+                elif isinstance(value, dict):
+                    result[key] = self._resolve_all_templates(value)
+                else:
+                    result[key] = value
+            return result
+        return data
+
+    def set(self, key: str, value: Any, autosave: bool = True, type_hint: Type = None):
+        """设置配置值并自动保存，支持类型提示"""
+        # 特殊处理debug_mode：不允许设置，因为它是动态属性
+        if key == 'debug_mode':
+            # 静默忽略debug_mode的设置，因为它应该总是动态获取
+            return
+
+        # 特殊处理first_start_time：如果只是first_start_time变化，不应该触发自动保存
+        if key == 'first_start_time':
+            # 检查是否只是first_start_time的变化
+            existing_value = self._data.get('first_start_time')
+            if existing_value == value:
+                # 值没有变化，直接返回
+                return
+            # 值有变化，但first_start_time不应该触发自动保存
+            autosave = False
+
+        # ===== 新增逻辑开始 =====
+        final_key = key.split('.')[-1]
+
+        # 1. 对 base_dir 做单路径 -> 多平台配置转换
+        if final_key == 'base_dir' and isinstance(value, str):
+            try:
+                from .core.cross_platform_paths import convert_to_multi_platform_config
+                multi_cfg = convert_to_multi_platform_config(value, 'base_dir')
+                from .config_node import ConfigNode
+                value = ConfigNode(multi_cfg)
+            except Exception:
+                # 如果转换失败则保持原值
+                pass
+
+        # ===== 新增逻辑结束 =====
+
+        keys = key.split('.')
+        current = self
+
+        for k in keys[:-1]:
+            if k not in current or not isinstance(current[k], ConfigNode):
+                current[k] = ConfigNode()
+            current = current[k]
+
+        current[keys[-1]] = value
+
+        # 设置类型提示
+        if type_hint:
+            self.set_type_hint(key, type_hint)
+
+        # ===== 新增逻辑：paths.* 字段自动创建目录 =====
+        try:
+            if key.startswith('paths.') and isinstance(value, str):
+                from .core.path_configuration import DirectoryCreator
+                DirectoryCreator.create_directory(value, exist_ok=True)
+        except Exception:
+            # 目录创建失败时不影响主流程
+            pass
+        # ===== 新增逻辑结束 =====
+
+        # 安排自动保存
+        if autosave:
+            self._schedule_autosave()
+
+
 
 
 def get_config_manager(
@@ -967,6 +835,11 @@ def get_config_manager(
 
     manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
                             test_mode=test_mode)
+
+    if manager:
+        # 在返回前，自动设置项目路径
+        manager.setup_project_paths()
+
     return manager
 
 

@@ -7,7 +7,7 @@ import pytest
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestTC0012005ProjectNameTimestamp:
     """测试project_name和first_start_time的正确使用"""
 

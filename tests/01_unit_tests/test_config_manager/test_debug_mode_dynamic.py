@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 
 # Add project root to Python path
-sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+# 项目根目录由conftest.py自动配置
 
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
@@ -21,7 +21,7 @@ def clear_instances_fixture():
     yield
     _clear_instances_for_testing()
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestDebugModeDynamic:
     """测试debug_mode属性的动态行为"""
 
@@ -72,7 +72,7 @@ class TestDebugModeDynamic:
         assert config.debug_mode == original_debug_mode
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestDebugModeIntegration:
     """测试debug_mode与路径配置的集成"""
     

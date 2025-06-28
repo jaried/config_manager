@@ -62,15 +62,16 @@ class FileOperations:
                     import re
                     def fix_windows_path(match):
                         path = match.group(1)
-                        # 将反斜杠替换为正斜杠，避免转义问题
-                        fixed_path = path.replace('\\', '/')
+                        # 将双反斜杠替换为单斜杠，避免转义问题
+                        # 先处理双反斜杠（\\\\），再处理单反斜杠（\\）
+                        fixed_path = path.replace('\\\\', '/').replace('\\', '/')
                         return f'"{fixed_path}"'
 
                     # 修复常见的Windows路径转义问题
                     # 匹配双引号中的Windows路径（包括绝对路径和相对路径）
-                    content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
-                    content = re.sub(r'"(\\[^"]*)"', fix_windows_path, content)  # 以反斜杠开头的路径
-                    content = re.sub(r'"(\.[\\][^"]*)"', fix_windows_path, content)  # 相对路径如 ".\logs"
+                    content = re.sub(r'"([a-zA-Z]:[\\\\][^"]*)"', fix_windows_path, content)
+                    content = re.sub(r'"([\\\\][^"]*)"', fix_windows_path, content)  # 以反斜杠开头的路径
+                    content = re.sub(r'"(\.[\\\\][^"]*)"', fix_windows_path, content)  # 相对路径如 ".\\logs"
 
                     # 加载修复后的YAML数据
                     loaded_data = self._yaml.load(content) or {}

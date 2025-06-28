@@ -119,38 +119,20 @@ class ConfigManagerCore(ConfigNode):
         # 注册清理函数
         atexit.register(self._cleanup)
 
-        # 初始化路径配置
-        self._initialize_path_configuration()
-
         # 启动文件监视
         if watch and self._watcher:
             self._watcher.start(self._config_path, self._on_file_changed)
 
-        # 只在必要时进行保存：
-        # 1. 配置文件不存在且启用了auto_create
-        # 2. 配置文件是原始格式需要转换为标准格式
-        # 3. 初始化过程中添加了新的配置项
-        should_save = False
-        
-        if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
-            # 检查是否需要保存
-            if not os.path.exists(self._config_path) and self._auto_create:
-                # 情况1：配置文件不存在且启用了auto_create
-                should_save = True
-            elif 'first_start_time' in self._data or 'config_file_path' in self._data:
-                # 情况3：初始化过程中添加了新的配置项
-                should_save = True
-            # 情况2：原始格式转换在_load()方法中已经处理
-            
-            if should_save:
-                # 设置内部保存标志，避免文件监视器触发重新加载
-                if self._watcher:
-                    self._watcher.set_internal_save_flag(True)
-                self.save()
-                if self._watcher:
-                    self._watcher.set_internal_save_flag(False)
-
         return True
+
+    def setup_project_paths(self) -> None:
+        """
+        根据核心配置（base_dir, project_name等）生成并设置所有派生路径。
+        这是一个明确的步骤，应在配置加载后由用户调用。
+        """
+        if not hasattr(self, '_path_config_manager') or self._path_config_manager is None:
+            self._path_config_manager = PathConfigurationManager(self)
+        self._path_config_manager.initialize_path_configuration()
 
     def _load(self):
         """加载配置文件"""
@@ -386,46 +368,24 @@ class ConfigManagerCore(ConfigNode):
             # 值有变化，但first_start_time不应该触发自动保存
             autosave = False
 
+        if key == 'base_dir' and isinstance(value, str):
+            try:
+                value = ConfigNode(convert_to_multi_platform_config(value, 'base_dir'), _root=self)
+            except Exception as e:
+                debug(f"将 base_dir 转换为多平台配置失败: {e}, 将其保留为字符串。")
+
         keys = key.split('.')
         current = self
-
         for k in keys[:-1]:
-            if not hasattr(current, k):
-                setattr(current, k, ConfigNode())
-            current = getattr(current, k)
-
-        if type_hint is not None:
-            self._type_hints[key] = type_hint.__name__
-
-        if isinstance(value, Path):
-            value = str(value)
-
-        # 特殊处理base_dir的多平台配置：先转换，再创建目录
-        if key == 'base_dir' and isinstance(value, str):
-            # 转换为多平台格式
-            value = convert_to_multi_platform_config(value, 'base_dir')
-            print(f"自动转换base_dir为多平台格式: {value}")
-            # 为多平台配置创建目录
-            self._create_directory_for_path(key, value)
-
-        # 检查是否为路径配置，如果是则自动创建目录
-        if self._is_path_configuration(key, value):
-            self._create_directory_for_path(key, value)
-
-        # 设置值
-        final_key = keys[-1]
-        if isinstance(value, dict):
-            setattr(current, final_key, ConfigNode(value))
-        else:
-            if hasattr(current, '_data'):
-                current._data[final_key] = value
-            else:
-                setattr(current, final_key, value)
-
-        # 检查是否需要更新路径配置
-        if self._should_update_path_config(key):
-            self._update_path_configuration()
-
+            if k not in current or not isinstance(current[k], ConfigNode):
+                current[k] = ConfigNode(_root=self)
+            current = current[k]
+        
+        current[keys[-1]] = value
+        
+        if type_hint:
+            self.set_type_hint(key, type_hint)
+        
         if autosave:
             self._schedule_autosave()
         return
@@ -610,15 +570,8 @@ class ConfigManagerCore(ConfigNode):
 
     def _initialize_path_configuration(self) -> None:
         """初始化路径配置"""
-        try:
-            self._path_config_manager = PathConfigurationManager(self)
-            self._path_config_manager.initialize_path_configuration()
-        except Exception as e:
-            # 路径配置初始化失败，记录错误但不影响主流程
-            debug("路径配置初始化失败: {}", e)
-            import traceback
-            traceback.print_exc()
-            self._path_config_manager = None
+        # 此方法的内容已移至 setup_project_paths
+        pass
 
     def _should_update_path_config(self, key: str) -> bool:
         """判断是否需要更新路径配置"""

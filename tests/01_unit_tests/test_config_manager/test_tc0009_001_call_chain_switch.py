@@ -13,10 +13,7 @@ from contextlib import redirect_stdout
 from unittest.mock import patch
 
 # 添加src到路径
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-src_path = os.path.join(project_root, 'src')
-if src_path not in sys.path:
-    sys.path.insert(0, src_path)
+# 项目根目录由conftest.py自动配置
 
 from config_manager import get_config_manager
 from config_manager.config_manager import _clear_instances_for_testing
@@ -30,7 +27,7 @@ def cleanup_instances():
     return
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestCallChainSwitch:
     """测试调用链显示开关功能"""
 

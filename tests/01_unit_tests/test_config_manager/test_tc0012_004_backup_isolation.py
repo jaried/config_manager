@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestTC0012004BackupIsolation:
     """测试test_mode下的备份隔离功能"""
 

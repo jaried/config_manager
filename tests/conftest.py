@@ -5,10 +5,19 @@ import pytest
 import sys
 from pathlib import Path
 
-# 将 is_debug 项目的 src 目录添加到 Python 路径中
-# 这是为了确保测试可以直接导入 is_debug 模块，而无需安装
-IS_DEBUG_SRC_PATH = Path(__file__).parent.parent / "is_debug" / "src"
-sys.path.insert(0, str(IS_DEBUG_SRC_PATH))
+def find_project_root(current_path: str | Path) -> Path | None:
+    """从给定路径开始向上查找项目根目录（包含pyproject.toml的目录）。"""
+    path = Path(current_path).resolve()
+    while path.parent != path:
+        if (path / "pyproject.toml").exists():
+            return path
+        path = path.parent
+    return None
+
+# 将项目根目录添加到Python路径，以便所有测试都能导入src模块
+PROJECT_ROOT = find_project_root(__file__)
+if PROJECT_ROOT and str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 start_time = datetime.now()
 

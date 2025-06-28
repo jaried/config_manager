@@ -10,7 +10,7 @@ from config_manager import get_config_manager, TestEnvironmentManager
 from config_manager.config_manager import _clear_instances_for_testing
 
 
-@pytest.mark.skip(reason="I give up!")
+
 class TestTestMode:
     """测试test_mode功能"""
 
