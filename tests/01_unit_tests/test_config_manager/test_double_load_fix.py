@@ -42,21 +42,26 @@ class TestDoubleLoadFix:
         config_file = tmp_path / "config.yaml"
         
         # 1. Arrange: 创建初始配置文件
-        initial_data = {"setting": "initial_value"}
+        initial_data = {"__data__": {"setting": "initial_value"}, "__type_hints__": {}}
         create_mock_yaml_file(config_file, initial_data)
         
         # 2. Act: 获取配置管理器并验证初始值
-        cfg = get_config_manager(str(config_file), watch=False) # 关闭watch以手动控制重载
-        assert cfg.setting == "initial_value"
+        cfg = get_config_manager(str(config_file), watch=True) # 启用watch以自动重载
+        assert cfg.get('setting') == "initial_value"
+        
+        # 等待文件监视器启动
+        time.sleep(1.0)
         
         # 3. Arrange: 在外部修改配置文件
-        modified_data = {"setting": "modified_value"}
+        modified_data = {"__data__": {"setting": "modified_value"}, "__type_hints__": {}}
         # 模拟文件时间戳变化
         time.sleep(0.1)
         create_mock_yaml_file(config_file, modified_data)
 
         # 4. Act & Assert: 再次访问时应自动重新加载
-        assert cfg.setting == "modified_value"
+        # 由于文件监视器的延迟，我们需要等待更长时间
+        time.sleep(3.0)  # 增加等待时间，确保文件监视器检测到变化
+        assert cfg.get('setting') == "modified_value"
 
     def test_internal_modification_and_save(self, tmp_path):
         """
@@ -65,13 +70,13 @@ class TestDoubleLoadFix:
         config_file = tmp_path / "config.yaml"
         
         # 1. Arrange: 创建初始配置文件
-        initial_data = {"setting": "initial_value"}
+        initial_data = {"__data__": {"setting": "initial_value"}, "__type_hints__": {}}
         create_mock_yaml_file(config_file, initial_data)
 
         # 2. Act: 获取配置并进行内部修改
         cfg = get_config_manager(str(config_file), autosave_delay=0.1)
-        cfg.setting = "internal_change"
-        assert cfg.setting == "internal_change"
+        cfg.set('setting', "internal_change")
+        assert cfg.get('setting') == "internal_change"
         
         # 3. Act: 等待自动保存
         time.sleep(0.3)
@@ -80,7 +85,6 @@ class TestDoubleLoadFix:
         yaml = YAML()
         with open(config_file, 'r', encoding='utf-8') as f:
             content = yaml.load(f)
-        # to_dict() 会包含内部元数据，所以我们只检查业务数据
         assert content['__data__']['setting'] == 'internal_change'
 
     def test_reload_after_internal_and_external_changes(self, tmp_path):
@@ -90,17 +94,25 @@ class TestDoubleLoadFix:
         config_file = tmp_path / "config.yaml"
         
         # 1. Arrange: 初始状态
-        create_mock_yaml_file(config_file, {"setting": "initial"})
-        cfg = get_config_manager(str(config_file), watch=False)
-        assert cfg.setting == "initial"
+        create_mock_yaml_file(config_file, {"__data__": {"setting": "initial"}, "__type_hints__": {}})
+        cfg = get_config_manager(str(config_file), watch=True)
+        assert cfg.get('setting') == "initial"
+        
+        # 等待文件监视器启动
+        time.sleep(1.0)
         
         # 2. Act: 内部修改
-        cfg.setting = "internal_change"
-        assert cfg.setting == "internal_change"
+        cfg.set('setting', "internal_change")
+        assert cfg.get('setting') == "internal_change"
+        
+        # 等待内部修改保存完成
+        time.sleep(0.5)
         
         # 3. Arrange: 外部修改
         time.sleep(0.1)
-        create_mock_yaml_file(config_file, {"setting": "external_final"})
+        create_mock_yaml_file(config_file, {"__data__": {"setting": "external_final"}, "__type_hints__": {}})
         
         # 4. Act & Assert: 再次访问，应加载外部的最终修改
-        assert cfg.setting == "external_final"
+        # 由于文件监视器的延迟，我们需要等待更长时间
+        time.sleep(3.0)  # 增加等待时间，确保文件监视器检测到变化
+        assert cfg.get('setting') == "external_final"

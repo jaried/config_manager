@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 from pathlib import Path
 import os
 import re
-from src.config_manager.config_node import ConfigNode
+from ..config_node import ConfigNode
 import tempfile
 import sys
 
@@ -127,7 +127,14 @@ class PathGenerator:
         """
         # 处理多平台基础目录
         if isinstance(base_dir, dict):
-            base_path = base_dir.get(self._cross_platform_manager.get_current_os(), base_dir.get('linux', ''))
+            current_os = self._cross_platform_manager.get_current_os()
+            base_path = base_dir.get(current_os, '')
+            if not base_path:
+                # 如果没有当前平台的路径，尝试使用ubuntu作为fallback
+                base_path = base_dir.get('ubuntu', '')
+            if not base_path:
+                # 如果还是没有，使用第一个可用的路径
+                base_path = next(iter(base_dir.values()), '')
         else:
             base_path = str(base_dir)
             
@@ -293,24 +300,19 @@ class DirectoryCreator:
     """目录创建器"""
     
     @staticmethod
-    def _is_valid_path_for_creation(path: str) -> bool:
-        """
-        判断给定路径在当前环境下是否允许创建目录。
-        在pytest环境下，为避免污染项目目录，只允许在临时目录中创建。
-        """
-        # 功能移除：不再进行路径有效性判断
-        return True
-    
-    @staticmethod
     def create_directory(path: str, exist_ok: bool = True) -> bool:
-        """创建目录"""
-        # 功能移除：不再自动创建目录
-        return True
-    
+        """创建目录，仅允许被setup_project_paths调用"""
+        try:
+            os.makedirs(path, exist_ok=exist_ok)
+            return True
+        except Exception as e:
+            raise DirectoryCreationError(f"目录创建失败: {path}, {e}")
+
     def create_path_structure(self, paths: Dict[str, str]) -> Dict[str, bool]:
-        """创建路径结构"""
-        # 功能移除：不再自动创建目录
-        results = {key: True for key in paths}
+        """批量创建路径结构，仅允许被setup_project_paths调用"""
+        results = {}
+        for key, path in paths.items():
+            results[key] = self.create_directory(path)
         return results
 
 
@@ -481,7 +483,7 @@ class PathConfigurationManager:
     
     def _generate_paths_internal(self) -> Dict[str, str]:
         """内部路径生成方法"""
-        # test_mode下使用安全的默认值
+        # 安全获取基础配置，使用get方法提供默认值
         if self._config_manager.is_test_mode():
             try:
                 base_dir = self._config_manager.base_dir
@@ -528,6 +530,20 @@ class PathConfigurationManager:
             except AttributeError:
                 first_start_time = datetime.now().isoformat()
         
+        # 处理base_dir，确保它是字符串
+        if hasattr(base_dir, 'get_platform_path'):
+            # 如果是ConfigNode对象，获取当前平台的路径
+            current_os = self._cross_platform_manager.get_current_os()
+            base_dir = base_dir.get_platform_path(current_os)
+        elif isinstance(base_dir, dict):
+            # 如果是字典，获取当前平台的路径
+            current_os = self._cross_platform_manager.get_current_os()
+            base_dir = base_dir.get(current_os, '')
+            if not base_dir:
+                base_dir = base_dir.get('ubuntu', '')
+            if not base_dir:
+                base_dir = next(iter(base_dir.values()), '')
+        
         # 生成工作目录
         work_dir = self._path_generator.generate_work_directory(
             base_dir, project_name, experiment_name, debug_mode
@@ -558,10 +574,10 @@ class PathConfigurationManager:
         # 合并所有路径配置
         path_configs = {
             'work_dir': work_dir,
-            **checkpoint_dirs,
-            **debug_dirs,
-            **tensorboard_dirs,
-            **log_dirs
+            **{k.replace('paths.', ''): v for k, v in checkpoint_dirs.items()},
+            **{k.replace('paths.', ''): v for k, v in debug_dirs.items()},
+            **{k.replace('paths.', ''): v for k, v in tensorboard_dirs.items()},
+            **{k.replace('paths.', ''): v for k, v in log_dirs.items()}
         }
         
         return {'paths': path_configs}
@@ -580,7 +596,9 @@ class PathConfigurationManager:
         # 验证生成的路径
         try:
             path_configs = self.generate_all_paths()
-            for path in path_configs.values():
+            if 'paths' not in path_configs:
+                return False
+            for path in path_configs['paths'].values():
                 if not self._path_validator.validate_path_format(path):
                     return False
         except Exception as e:
@@ -649,4 +667,33 @@ class PathConfigurationManager:
             'debug_mode': debug_mode,
             'platform_info': self._cross_platform_manager.get_platform_info(),
             'generated_paths': self.generate_all_paths()
-        } 
+        }
+    
+    def setup_project_paths(self) -> None:
+        """生成所有路径并自动创建目录，仅对'_dir'结尾的字段自动创建目录"""
+        def _create_dirs_for_fields(node, visited=None):
+            if visited is None:
+                visited = set()
+            node_id = id(node)
+            if node_id in visited:
+                return
+            visited.add(node_id)
+            if isinstance(node, dict):
+                items = node.items()
+            elif hasattr(node, '_data') and isinstance(node._data, dict):
+                items = node._data.items()
+            else:
+                return
+            for key, value in items:
+                if isinstance(key, str) and key.endswith('_dir') and isinstance(value, str) and value:
+                    try:
+                        os.makedirs(value, exist_ok=True)
+                    except Exception as e:
+                        raise DirectoryCreationError(f"目录创建失败: {value}, {e}")
+                elif isinstance(value, dict):
+                    _create_dirs_for_fields(value, visited)
+                elif hasattr(value, '_data') and isinstance(value._data, dict):
+                    _create_dirs_for_fields(value, visited)
+        # 递归入口直接指向config.paths._data
+        if hasattr(self._config_manager, 'paths') and hasattr(self._config_manager.paths, '_data'):
+            _create_dirs_for_fields(self._config_manager.paths._data) 

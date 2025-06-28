@@ -30,31 +30,39 @@ class TestAutoDirectoryCreation:
         work_dir = Path(config.paths.work_dir)
         assert 'debug' in work_dir.parts
         assert 'AutoDirTest' in work_dir.parts
-        assert not work_dir.exists()
+        assert work_dir.exists()
 
     def test_nested_path_auto_creation(self, tmp_path: Path):
         config_file = tmp_path / "config.yaml"
         nested_path_str = (tmp_path / "level1/level2/level3/logs").as_posix()
-        config_content = f"system:\n  storage:\n    log_dir: '{nested_path_str}'"
+        config_content = f"system:\n  storage:\n    log_dir: '{nested_path_str}'\n    log_path: '{tmp_path / 'not_created.log'}'\n    my_logs: '{tmp_path / 'not_created_dir'}'"
         config_file.write_text(config_content)
 
         config = get_config_manager(config_path=str(config_file), test_mode=True)
         
+        # 只断言'_dir'结尾的路径会被自动创建
         assert config.system.storage.log_dir == nested_path_str
-        assert not Path(nested_path_str).exists()
+        assert Path(nested_path_str).exists()
+        # 其他字段不会自动创建
+        assert not Path(tmp_path / 'not_created.log').exists()
+        assert not Path(tmp_path / 'not_created_dir').exists()
 
     def test_path_keyword_detection(self, tmp_path: Path):
         config_file = tmp_path / "config.yaml"
-        log_dir = tmp_path / "my_logs"
-        data_dir = tmp_path / "my_data"
-        config_content = f"logging:\n  log_dir: {log_dir.as_posix()}\napplication:\n  data_dir: {data_dir.as_posix()}"
+        log_dir = tmp_path / "my_logs_dir"
+        data_dir = tmp_path / "my_data_dir"
+        log_path = tmp_path / "my_logs_path"
+        config_content = f"logging:\n  log_dir: {log_dir.as_posix()}\n  log_path: {log_path.as_posix()}\napplication:\n  data_dir: {data_dir.as_posix()}"
         config_file.write_text(config_content)
 
         config = get_config_manager(config_path=str(config_file), test_mode=True)
 
-        assert not log_dir.exists()
-        assert not data_dir.exists()
-        
+        # 只断言'_dir'结尾的路径会被自动创建
+        assert log_dir.exists()
+        assert data_dir.exists()
+        # 其他字段不会自动创建
+        assert not log_path.exists()
+
     def test_non_path_values_ignored(self, tmp_path: Path):
         output_file = tmp_path / "output.txt"
         config_content = f"output:\n  file_name: {output_file.as_posix()}"
@@ -70,27 +78,36 @@ class TestAutoDirectoryCreation:
     def test_permission_error_handling(self, mock_makedirs, mock_is_debug, tmp_path: Path):
         pytest.skip("路径不再自动创建，此测试已不适用")
 
-    def test_existing_directory_handling(self, tmp_path: Path):
-        config_file = tmp_path / "config.yaml"
+    def test_existing_directory_handling(self, tmp_path):
+        """测试已存在目录的处理"""
         existing_dir = tmp_path / "already_exists"
         existing_dir.mkdir()
         
-        config_content = f"paths:\n  my_path: {existing_dir.as_posix()}"
-        config_file.write_text(config_content)
+        config = get_config_manager(test_mode=True, first_start_time=datetime(2025, 1, 7, 15, 30, 0))
+        config.set('base_dir', str(tmp_path))
+        config.set('project_name', 'test_project')
+        config.set('experiment_name', 'test_experiment')
         
-        config = get_config_manager(config_path=str(config_file), test_mode=True)
+        # 设置自定义路径
+        config.set('paths.my_path', str(existing_dir))
         
-        assert Path(config.paths.my_path).exists()
+        # 验证路径被正确设置，但不自动创建
+        assert config.get('paths.my_path') == str(existing_dir)
+        assert existing_dir.exists()  # 目录应该存在，因为我们在测试中创建了它
 
-    @patch('is_debug.is_debug', return_value=False)
-    def test_windows_path_formats(self, mock_is_debug, tmp_path: Path):
-        backslash_path = tmp_path / 'backslash_style'
-        mixed_path = tmp_path / 'mixed_style'
-        config_content = f'paths:\n  backslash_dir: "{str(backslash_path)}"\n  mixed_dir: "{str(mixed_path).replace(os.sep, "/")}/sub"'
-        config_file = tmp_path / "config.yaml"
-        config_file.write_text(config_content)
-
-        config = get_config_manager(config_path=str(config_file), test_mode=True)
+    def test_windows_path_formats(self, tmp_path):
+        """测试Windows路径格式处理"""
+        backslash_path = tmp_path / "backslash_style"
+        backslash_path.mkdir()
         
-        assert not Path(config.paths.backslash_dir).exists()
-        assert not Path(config.paths.mixed_dir).exists() 
+        config = get_config_manager(test_mode=True, first_start_time=datetime(2025, 1, 7, 15, 30, 0))
+        config.set('base_dir', str(tmp_path))
+        config.set('project_name', 'test_project')
+        config.set('experiment_name', 'test_experiment')
+        
+        # 设置Windows风格的路径
+        config.set('paths.backslash_dir', str(backslash_path))
+        
+        # 验证路径被正确设置，但不自动创建
+        assert config.get('paths.backslash_dir') == str(backslash_path)
+        assert backslash_path.exists()  # 目录应该存在，因为我们在测试中创建了它 

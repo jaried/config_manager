@@ -137,24 +137,20 @@ __type_hints__: {}
             # 执行
             config_manager = ConfigManager(config_path=config_file, test_mode=True)
             
-            # 验证真正的路径字段被替换了
+            # 根据任务6，test_mode现在只修改base_dir
             assert config_manager.base_dir != "/original/base/path"
-            assert config_manager.work_dir != "/original/work/path"
-            assert config_manager.log_dir != "/original/log/path"
             
             # 验证替换后的路径包含测试环境路径
             # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
             normalized_base_dir = str(config_manager.base_dir).replace('\\', '/').replace('//', '/')
-            normalized_work_dir = str(config_manager.work_dir).replace('\\', '/').replace('//', '/')
-            normalized_log_dir = str(config_manager.log_dir).replace('\\', '/').replace('//', '/')
             
             # 检查路径包含测试环境特征
             assert 'temp' in normalized_base_dir.lower() or 'tmp' in normalized_base_dir.lower()
             assert 'tests' in normalized_base_dir
-            assert 'temp' in normalized_work_dir.lower() or 'tmp' in normalized_work_dir.lower()
-            assert 'tests' in normalized_work_dir
-            assert 'temp' in normalized_log_dir.lower() or 'tmp' in normalized_log_dir.lower()
-            assert 'tests' in normalized_log_dir
+            
+            # work_dir和log_dir不再被test_mode自动替换，保持原值
+            assert config_manager.work_dir == "/original/work/path"
+            assert config_manager.log_dir == "/original/log/path"
             
             # 验证网络URL没有被替换
             assert config_manager.proxy.http == "http://localhost:3213"
@@ -166,44 +162,19 @@ __type_hints__: {}
 
     def test_tc0012_006_005_is_protected_field_network(self):
         """测试网络相关字段保护识别"""
-        # 网络URL
-        assert ConfigManager._is_protected_field("proxy_http", "http://localhost:3213")
-        assert ConfigManager._is_protected_field("proxy_url", "https://example.com")
-        assert ConfigManager._is_protected_field("api_endpoint", "http://api.example.com/v1")
-        
-        # 网络相关字段名
-        assert ConfigManager._is_protected_field("proxy", "localhost:3213")
-        assert ConfigManager._is_protected_field("server_url", "example.com")
-        assert ConfigManager._is_protected_field("host", "127.0.0.1")
+        pytest.skip("_is_protected_field方法已被移除（任务6：简化test_mode逻辑）")
 
     def test_tc0012_006_006_is_protected_field_headers(self):
         """测试HTTP Headers字段保护识别"""
-        assert ConfigManager._is_protected_field("Accept", "text/html,application/xhtml+xml")
-        assert ConfigManager._is_protected_field("Content-Type", "application/json")
-        assert ConfigManager._is_protected_field("User-Agent", "Mozilla/5.0")
-        assert ConfigManager._is_protected_field("header_accept", "text/plain")
+        pytest.skip("_is_protected_field方法已被移除（任务6：简化test_mode逻辑）")
 
     def test_tc0012_006_007_is_protected_field_regex(self):
         """测试正则表达式字段保护识别"""
-        assert ConfigManager._is_protected_field("pattern", r"^https?://[^/]+/chapter/\d+$")
-        assert ConfigManager._is_protected_field("regex", r"\.jpg$")
-        assert ConfigManager._is_protected_field("validation_rule", r"\d{4}-\d{2}-\d{2}")
+        pytest.skip("_is_protected_field方法已被移除（任务6：简化test_mode逻辑）")
 
     def test_tc0012_006_008_is_path_like_excludes_urls(self):
-        # 只测试_dir结尾的key
-        assert not ConfigManager._is_path_like("http://localhost:3213", key="url_dir")
-        assert not ConfigManager._is_path_like("https://example.com/api/v1", key="url_dir")
-        assert not ConfigManager._is_path_like("ftp://files.example.com", key="url_dir")
-        assert not ConfigManager._is_path_like("text/html", key="mime_dir")
-        assert not ConfigManager._is_path_like("application/json", key="mime_dir")
-        assert not ConfigManager._is_path_like("image/png", key="mime_dir")
-        assert not ConfigManager._is_path_like(r"^https?://[^/]+/chapter/\d+$", key="regex_dir")
-        assert not ConfigManager._is_path_like(r"\.jpg$", key="regex_dir")
-        # 只有_dir结尾的key才会被判定为路径
-        assert ConfigManager._is_path_like("/home/user/documents", key="data_dir")
-        assert ConfigManager._is_path_like("C:\\Users\\Documents", key="data_dir")
-        assert ConfigManager._is_path_like("./config/settings.yaml", key="config_dir")
-        assert ConfigManager._is_path_like("../data/input.txt", key="input_dir")
+        """测试路径识别排除URL"""
+        pytest.skip("_is_path_like方法已被移除（任务6：简化test_mode逻辑）")
 
     def test_tc0012_006_009_complex_config_protection(self):
         """测试复杂配置结构中的字段保护"""
@@ -242,24 +213,10 @@ __type_hints__: {}
             assert config_manager.validation.url_pattern == r"^https://[^/]+/api/v\d+/"
             assert config_manager.headers.User_Agent == "Mozilla/5.0 (compatible; Bot/1.0)"
             
-            # 验证需要替换的路径字段被正确替换
-            assert config_manager.network.log_dir != "/var/log/network"
-            assert config_manager.validation.config_file != "/etc/validation/rules.yaml"
-            assert config_manager.headers.log_path != "/tmp/headers.log"
-            
-            # 验证替换后的路径包含测试环境路径
-            # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
-            normalized_network_log_dir = str(config_manager.network.log_dir).replace('\\', '/').replace('//', '/')
-            normalized_validation_config_file = str(config_manager.validation.config_file).replace('\\', '/').replace('//', '/')
-            normalized_headers_log_path = str(config_manager.headers.log_path).replace('\\', '/').replace('//', '/')
-            
-            # 检查路径包含测试环境特征
-            assert 'temp' in normalized_network_log_dir.lower() or 'tmp' in normalized_network_log_dir.lower()
-            assert 'tests' in normalized_network_log_dir
-            assert 'temp' in normalized_validation_config_file.lower() or 'tmp' in normalized_validation_config_file.lower()
-            assert 'tests' in normalized_validation_config_file
-            assert 'temp' in normalized_headers_log_path.lower() or 'tmp' in normalized_headers_log_path.lower()
-            assert 'tests' in normalized_headers_log_path
+            # 根据任务6，test_mode现在只修改base_dir，其他路径不再自动替换
+            assert config_manager.network.log_dir == "/var/log/network"
+            assert config_manager.validation.config_file == "/etc/validation/rules.yaml"
+            assert config_manager.headers.log_path == "/tmp/headers.log"
             
         finally:
             # 清理临时文件

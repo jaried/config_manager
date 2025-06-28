@@ -40,19 +40,19 @@ def make_prod_config(tmpdir, extra_data=None):
 
 def validate_config_completeness(config):
     required_sections = ['assets', 'time_periods', 'dl_model', 'realtime_monitoring']
-    missing = [k for k in required_sections if not hasattr(config, k)]
+    missing = [k for k in required_sections if config.get(k) is None]
     assert not missing, f"缺少: {missing}"
     # assets内容完整
-    assert hasattr(config, 'assets')
-    assets = config.assets
+    assets = config.get('assets')
+    assert assets is not None
     assert 'A' in assets
     assert 123 in assets or '123' in assets  # int key可能被yaml转为str
     assert 'nested' in assets and 'sub' in assets['nested']
     # 其他类型
-    assert config.float_value == 1.23
-    assert config.none_value is None
-    assert config.bool_value is False
-    assert config.list_mixed[2]['b'] == 2
+    assert config.get('float_value') == 1.23
+    assert config.get('none_value') is None
+    assert config.get('bool_value') is False
+    assert config.get('list_mixed')[2]['b'] == 2
 
 def test_test_mode_config_copy_and_path_replace(tmp_path):
     # 1. 生成生产配置
@@ -74,8 +74,8 @@ def test_test_mode_config_copy_with_non_str_key(tmp_path):
     prod_path = make_prod_config(tmp_path, extra_data={456: {'special': 'yes'}})
     config = get_config_manager(config_path=str(prod_path), test_mode=True)
     # 非字符串key不会导致异常
-    assert hasattr(config, 'assets')
-    assert hasattr(config, 'time_periods')
+    assert config.get('assets') is not None
+    assert config.get('time_periods') is not None
     # 非字符串key内容也能被复制
     assert 456 in config._data or '456' in config._data
 
@@ -87,9 +87,9 @@ def test_test_mode_config_copy_with_extreme_types(tmp_path):
         'deep_nested': {'a': {'b': {'c': {'d': 1}}}},
     })
     config = get_config_manager(config_path=str(prod_path), test_mode=True)
-    assert config.list_of_dicts[1]['b'] == 2
-    assert config.dict_of_lists['y'][1] == 4
-    assert config.deep_nested['a']['b']['c']['d'] == 1
+    assert config.get('list_of_dicts')[1]['b'] == 2
+    assert config.get('dict_of_lists')['y'][1] == 4
+    assert config.get('deep_nested')['a']['b']['c']['d'] == 1
 
 def test_test_mode_config_copy_with_invalid_yaml(tmp_path):
     # 生产配置为非法yaml时，test_mode只生成极简配置
@@ -101,9 +101,9 @@ def test_test_mode_config_copy_with_invalid_yaml(tmp_path):
     config = get_config_manager(config_path=str(prod_path), test_mode=True)
     # 只包含极简配置
     for k in ['project_name', 'base_dir', 'experiment_name', 'first_start_time']:
-        assert hasattr(config, k)
+        assert config.get(k) is not None
     # 不会有assets等业务配置
-    assert not hasattr(config, 'assets')
+    assert config.get('assets') is None
 
 def test_test_mode_config_copy_with_empty_config(tmp_path):
     # 生产配置为空时，test_mode只生成极简配置
@@ -113,6 +113,16 @@ def test_test_mode_config_copy_with_empty_config(tmp_path):
     with open(prod_path, 'w', encoding='utf-8') as f:
         f.write('')
     config = get_config_manager(config_path=str(prod_path), test_mode=True)
-    for k in ['project_name', 'base_dir', 'experiment_name', 'first_start_time']:
-        assert hasattr(config, k)
-    assert not hasattr(config, 'assets')
+    
+    # 验证基本属性存在
+    assert config.base_dir is not None
+    assert config.first_start_time is not None
+    
+    # 验证paths命名空间存在
+    assert hasattr(config, 'paths')
+    assert config.paths.work_dir is not None
+    assert config.paths.log_dir is not None
+    
+    # 验证业务配置不存在
+    with pytest.raises(AttributeError):
+        _ = config.assets

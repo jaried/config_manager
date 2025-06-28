@@ -4,22 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "config_manager"
-version = "1.0.0"
-description = "A robust configuration manager with auto-save feature"
+version = "0.1.0"
+description = "A configuration manager for Python projects"
 authors = [
     {name = "Tony Xiao", email = "tony.xiao@gmail.com"}
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.12"
 dependencies = [
-    "ruamel.yaml",
-    "is_debug @ file:../is_debug"
+    "ruamel.yaml>=0.17.0",
+    "is-debug>=1.0.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/tony-z-arthur/config_manager"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-dir]
-"" = "src"
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["config_manager"]

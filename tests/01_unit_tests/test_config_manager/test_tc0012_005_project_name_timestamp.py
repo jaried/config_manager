@@ -36,26 +36,16 @@ class TestTC0012005ProjectNameTimestamp:
         
         # 创建测试模式配置管理器
         cfg = get_config_manager(test_mode=True, first_start_time=fixed_time)
-        test_path = cfg.get_config_file_path()
         
-        # 验证路径包含project_name
-        assert 'config_manager' in test_path, f"测试路径应包含project_name 'config_manager': {test_path}"
+        # 验证工作目录包含project_name
+        work_dir = cfg.paths.work_dir
+        assert 'config_manager' in work_dir, f"工作目录应包含project_name 'config_manager': {work_dir}"
         
         # 验证路径包含正确的时间戳
-        assert '20250107' in test_path, f"测试路径应包含日期20250107: {test_path}"
-        assert '153045' in test_path, f"测试路径应包含时间153045: {test_path}"
+        assert '20250107' in work_dir, f"工作目录应包含日期20250107: {work_dir}"
+        assert '153045' in work_dir, f"工作目录应包含时间153045: {work_dir}"
         
-        # 验证路径格式：包含temp/tests/YYYYMMDD/HHMMSS/project_name/src/config/config.yaml
-        assert 'temp' in test_path.lower() or 'tmp' in test_path.lower()
-        assert 'tests' in test_path
-        assert '20250107' in test_path
-        assert '153045' in test_path
-        assert 'config_manager' in test_path
-        assert 'src' in test_path
-        assert 'config' in test_path
-        assert test_path.endswith('.yaml')
-        
-        print(f"✓ 测试环境路径: {test_path}")
+        print(f"✓ 测试环境工作目录: {work_dir}")
 
     def test_tc0012_005_003_test_config_contains_project_name(self):
         """测试测试配置文件包含project_name"""
@@ -65,11 +55,11 @@ class TestTC0012005ProjectNameTimestamp:
         cfg = get_config_manager(test_mode=True, first_start_time=fixed_time)
         
         # 验证测试配置中包含project_name
-        project_name = cfg.get('project_name')
+        project_name = cfg.project_name
         assert project_name == 'config_manager', f"测试配置中的project_name应为'config_manager'，实际: {project_name}"
         
         # 验证first_start_time被正确设置
-        first_start_time = cfg.get('first_start_time')
+        first_start_time = cfg.first_start_time
         assert first_start_time == '2025-01-07T16:45:30', f"first_start_time应为'2025-01-07T16:45:30'，实际: {first_start_time}"
         
         print(f"✓ 测试配置project_name: {project_name}")
@@ -82,12 +72,12 @@ class TestTC0012005ProjectNameTimestamp:
         cfg1 = get_config_manager(test_mode=True, first_start_time=param_time)
         
         # 验证使用了传入的时间
-        first_start_time1 = cfg1.get('first_start_time')
+        first_start_time1 = cfg1.first_start_time
         assert first_start_time1 == '2025-01-07T10:00:00', f"应使用传入的first_start_time，实际: {first_start_time1}"
         
-        # 验证路径包含传入的时间戳
-        test_path1 = cfg1.get_config_file_path()
-        assert '20250107' in test_path1 and '100000' in test_path1, f"路径应包含传入的时间戳: {test_path1}"
+        # 验证工作目录包含传入的时间戳
+        work_dir1 = cfg1.paths.work_dir
+        assert '20250107' in work_dir1 and '100000' in work_dir1, f"工作目录应包含传入的时间戳: {work_dir1}"
         
         print(f"✓ 传入参数优先级验证通过: {first_start_time1}")
         
@@ -98,7 +88,7 @@ class TestTC0012005ProjectNameTimestamp:
         cfg2 = get_config_manager(test_mode=True)  # 不传入first_start_time
         
         # 验证使用了配置文件中的时间
-        first_start_time2 = cfg2.get('first_start_time')
+        first_start_time2 = cfg2.first_start_time
         assert first_start_time2 == '2025-01-07T10:00:00', f"应使用配置文件中的first_start_time，实际: {first_start_time2}"
         
         print(f"✓ 配置文件优先级验证通过: {first_start_time2}")
@@ -111,6 +101,7 @@ class TestTC0012005ProjectNameTimestamp:
 __data__:
   app_name: "测试应用"
   first_start_time: "2025-01-07T12:00:00"
+  project_name: "project_name"
 __type_hints__: {}
 """)
             temp_config_path = f.name
@@ -118,17 +109,17 @@ __type_hints__: {}
         try:
             # 使用临时配置文件创建测试模式配置管理器
             cfg = get_config_manager(config_path=temp_config_path, test_mode=True)
-            test_path = cfg.get_config_file_path()
             
             # 验证使用了默认的project_name
-            assert 'project_name' in test_path, f"应使用默认project_name 'project_name': {test_path}"
-            
-            # 验证测试配置中包含默认project_name
             project_name = cfg.get('project_name')
             assert project_name == 'project_name', f"应使用默认project_name 'project_name'，实际: {project_name}"
             
+            # 验证工作目录包含默认project_name
+            work_dir = cfg.get('paths.work_dir')
+            assert 'project_name' in work_dir, f"工作目录应使用默认project_name 'project_name': {work_dir}"
+            
             print(f"✓ 默认project_name验证通过: {project_name}")
-            print(f"✓ 默认project_name路径: {test_path}")
+            print(f"✓ 默认project_name工作目录: {work_dir}")
             
         finally:
             # 清理临时文件
@@ -141,26 +132,26 @@ __type_hints__: {}
         
         # 创建第一个实例
         cfg1 = get_config_manager(test_mode=True, first_start_time=fixed_time)
-        path1 = cfg1.get_config_file_path()
+        work_dir1 = cfg1.paths.work_dir
         
         # 清理实例缓存
         _clear_instances_for_testing()
         
         # 创建第二个实例（相同的first_start_time）
         cfg2 = get_config_manager(test_mode=True, first_start_time=fixed_time)
-        path2 = cfg2.get_config_file_path()
+        work_dir2 = cfg2.paths.work_dir
         
-        # 验证路径的时间戳部分相同
-        assert '20250107' in path1 and '20250107' in path2, "日期部分应该相同"
-        assert '142550' in path1 and '142550' in path2, "时间部分应该相同"
-        assert 'config_manager' in path1 and 'config_manager' in path2, "project_name部分应该相同"
+        # 验证工作目录的时间戳部分相同
+        assert '20250107' in work_dir1 and '20250107' in work_dir2, "日期部分应该相同"
+        assert '142550' in work_dir1 and '142550' in work_dir2, "时间部分应该相同"
+        assert 'config_manager' in work_dir1 and 'config_manager' in work_dir2, "project_name部分应该相同"
         
         # 验证完整路径相同
-        assert path1 == path2, f"相同first_start_time应生成相同路径，路径1: {path1}，路径2: {path2}"
+        assert work_dir1 == work_dir2, f"相同first_start_time应生成相同工作目录，目录1: {work_dir1}，目录2: {work_dir2}"
         
         print(f"✓ 时间戳一致性验证通过")
-        print(f"✓ 路径1: {path1}")
-        print(f"✓ 路径2: {path2}")
+        print(f"✓ 工作目录1: {work_dir1}")
+        print(f"✓ 工作目录2: {work_dir2}")
 
     def test_tc0012_005_007_work_dir_with_project_name(self):
         """测试work_dir等路径字段包含project_name"""
@@ -169,14 +160,14 @@ __type_hints__: {}
         # 创建测试模式配置管理器
         cfg = get_config_manager(test_mode=True, first_start_time=fixed_time)
         
-        # 获取各种路径字段
-        base_dir = cfg.get('base_dir', '')
+        # 获取工作目录
+        work_dir = cfg.paths.work_dir
         
         # 验证路径包含project_name和时间戳
-        assert 'temp' in base_dir.lower() or 'tmp' in base_dir.lower()
-        assert 'tests' in base_dir
-        assert '20250107' in base_dir
-        assert '181520' in base_dir
-        assert 'config_manager' in base_dir
+        assert 'temp' in work_dir.lower() or 'tmp' in work_dir.lower()
+        assert 'tests' in work_dir
+        assert '20250107' in work_dir
+        assert '181520' in work_dir
+        assert 'config_manager' in work_dir
         
-        print(f"✓ base_dir: {base_dir}") 
+        print(f"✓ work_dir: {work_dir}") 

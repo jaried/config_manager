@@ -36,7 +36,7 @@ class PathResolver:
             # 没有找到项目根目录，使用当前工作目录下的config目录
             config_dir = os.path.join(cwd, 'config')
 
-        os.makedirs(config_dir, exist_ok=True)
+        # 不再自动创建目录，目录创建由config对象生成前统一处理
         resolved_path = os.path.join(config_dir, 'config.yaml')
         return resolved_path
 

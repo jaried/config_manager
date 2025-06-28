@@ -15,6 +15,7 @@ from .config_node import ConfigNode
 from .core.manager import ConfigManagerCore
 from .core.path_resolver import PathResolver
 from config_manager.logger import info
+from .core.cross_platform_paths import convert_to_multi_platform_config
 
 # 全局调用链显示开关 - 手工修改这个值来控制调用链显示
 ENABLE_CALL_CHAIN_DISPLAY = False  # 默认关闭调用链显示
@@ -456,14 +457,20 @@ class ConfigManager(ConfigManagerCore):
             content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
 
             # 解析修复后的YAML内容
-            config_data = yaml.load(content) or {}
+            loaded_data = yaml.load(content) or {}
+
+            # 判断是否为标准格式（包含__data__节点）
+            if '__data__' in loaded_data:
+                # 标准格式：提取__data__中的内容
+                config_data = loaded_data['__data__']
+                type_hints = loaded_data.get('__type_hints__', {})
+            else:
+                # 原始格式：直接使用
+                config_data = loaded_data
+                type_hints = {}
 
             # 获取原配置中的first_start_time
-            original_first_start_time = None
-            if '__data__' in config_data:
-                original_first_start_time = config_data['__data__'].get('first_start_time')
-            else:
-                original_first_start_time = config_data.get('first_start_time')
+            original_first_start_time = config_data.get('first_start_time')
 
             # 确定最终使用的时间（优先级：传入参数 > 原配置 > 当前时间）
             time_to_use = None
@@ -507,7 +514,7 @@ class ConfigManager(ConfigManagerCore):
             # 将清理后的数据转换为标准格式
             data_to_save = {
                 '__data__': config_data,
-                '__type_hints__': config_data.get('__type_hints__', {})
+                '__type_hints__': type_hints
             }
 
             # 保存更新后的配置
@@ -736,63 +743,24 @@ __type_hints__:
         return data
 
     def set(self, key: str, value: Any, autosave: bool = True, type_hint: Type = None):
-        """设置配置值并自动保存，支持类型提示"""
-        # 导入ConfigNode避免UnboundLocalError
-        from .config_node import ConfigNode
-        
-        # 特殊处理debug_mode：不允许设置，因为它是动态属性
-        if key == 'debug_mode':
-            # 静默忽略debug_mode的设置，因为它应该总是动态获取
-            return
+        """设置配置值
 
-        # 特殊处理first_start_time：如果只是first_start_time变化，不应该触发自动保存
-        if key == 'first_start_time':
-            # 检查是否只是first_start_time的变化
-            existing_value = self._data.get('first_start_time')
-            if existing_value == value:
-                # 值没有变化，直接返回
-                return
-            # 值有变化，但first_start_time不应该触发自动保存
-            autosave = False
+        Args:
+            key: 配置键
+            value: 配置值
+            autosave: 是否自动保存
+            type_hint: 类型提示
+        """
+        # 如果是base_dir，尝试转换为多平台格式
+        if key == 'base_dir' and isinstance(value, str):
+            value = convert_to_multi_platform_config(value, 'base_dir')
 
-        # ===== 新增逻辑开始 =====
-        final_key = key.split('.')[-1]
+        # 设置值
+        super().set(key, value, type_hint=type_hint)
 
-        # 1. 对 base_dir 做单路径 -> 多平台配置转换
-        if final_key == 'base_dir' and isinstance(value, str):
-            try:
-                from .core.cross_platform_paths import convert_to_multi_platform_config
-                multi_cfg = convert_to_multi_platform_config(value, 'base_dir')
-                value = ConfigNode(multi_cfg)
-            except Exception:
-                # 如果转换失败则保持原值
-                pass
-
-        # ===== 新增逻辑结束 =====
-
-        keys = key.split('.')
-        current = self
-
-        for k in keys[:-1]:
-            if k not in current or not isinstance(current[k], ConfigNode):
-                current[k] = ConfigNode()
-            current = current[k]
-
-        current[keys[-1]] = value
-
-        # 设置类型提示
-        if type_hint:
-            self.set_type_hint(key, type_hint)
-
-        # ===== 新增逻辑：paths.* 字段自动创建目录 =====
-        try:
-            if key.startswith('paths.') and isinstance(value, str):
-                from .core.path_configuration import DirectoryCreator
-                DirectoryCreator.create_directory(value, exist_ok=True)
-        except Exception:
-            # 目录创建失败时不影响主流程
-            pass
-        # ===== 新增逻辑结束 =====
+        # 如果是路径相关配置，更新路径配置
+        if self._should_update_path_config(key):
+            self._update_path_configuration()
 
         # 安排自动保存
         if autosave:
@@ -839,9 +807,8 @@ def get_config_manager(
                             test_mode=test_mode)
 
     if manager:
-        # 在返回前，自动设置项目路径
+        # 在返回前，自动设置项目路径（已确保自动创建目录）
         manager.setup_project_paths()
-
     return manager
 
 

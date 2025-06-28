@@ -133,6 +133,8 @@ class ConfigManagerCore(ConfigNode):
         if not hasattr(self, '_path_config_manager') or self._path_config_manager is None:
             self._path_config_manager = PathConfigurationManager(self)
         self._path_config_manager.initialize_path_configuration()
+        # 生成所有路径并自动创建目录
+        self._path_config_manager.setup_project_paths()
 
     def _load(self):
         """加载配置文件"""
@@ -589,34 +591,12 @@ class ConfigManagerCore(ConfigNode):
                 self._path_config_manager.invalidate_cache()
                 path_configs = self._path_config_manager.generate_all_paths()
 
-                # 首先创建所有目录
-                from .path_configuration import DirectoryCreator
-                directory_creator = DirectoryCreator()
-                creation_results = directory_creator.create_path_structure(path_configs)
+                # 更新配置
+                for key, value in path_configs.items():
+                    self.set(key, value, autosave=False)
 
-                # 记录目录创建结果
-                for key, success in creation_results.items():
-                    if not success:
-                        debug("警告: 目录创建失败 {}: {}", key, path_configs.get(key))
-
-                # 然后设置配置值 - 只设置到paths命名空间，避免重复
-                for path_key, path_value in path_configs.items():
-                    if path_key.startswith('paths.'):
-                        nested_key = path_key[6:]  # 去掉'paths.'前缀
-                        if 'paths' not in self._data:
-                            self._data['paths'] = ConfigNode()
-                        if hasattr(self._data['paths'], '_data'):
-                            self._data['paths']._data[nested_key] = path_value
-                        else:
-                            setattr(self._data['paths'], nested_key, path_value)
-                        
-                        # 清理根级别的重复配置
-                        if path_key in self._data:
-                            del self._data[path_key]
             except Exception as e:
-                debug("路径配置更新失败: {}", e)
-                import traceback
-                traceback.print_exc()
+                debug("警告: 路径配置更新失败: {}", e)
 
     def get_path_configuration_info(self) -> Dict[str, Any]:
         """获取路径配置信息"""
@@ -625,9 +605,7 @@ class ConfigManagerCore(ConfigNode):
         return {}
 
     def create_path_directories(self, create_all: bool = False) -> Dict[str, bool]:
-        """创建路径目录结构"""
-        if self._path_config_manager:
-            return self._path_config_manager.create_directories(create_all)
+        """创建路径目录结构（已废弃，统一由setup_project_paths自动处理）"""
         return {}
 
     def update_debug_mode(self) -> None:
@@ -683,36 +661,6 @@ class ConfigManagerCore(ConfigNode):
             return True
 
         return False
-
-    def _create_directory_for_path(self, key: str, path: Any) -> None:
-        """为路径配置创建目录
-
-        Args:
-            key: 配置键
-            path: 路径值（可能是字符串或多平台配置）
-        """
-        try:
-            from pathlib import Path
-            # 处理多平台配置（ConfigNode或dict）
-            if hasattr(path, 'is_multi_platform_config') and path.is_multi_platform_config():
-                # 为所有平台的路径都创建目录
-                for platform in ['windows', 'linux', 'ubuntu', 'macos']:
-                    platform_path = path.get_platform_path(platform)
-                    if platform_path:
-                        Path(platform_path).mkdir(parents=True, exist_ok=True)
-                        debug("创建多平台配置目录: {} -> {}", platform, platform_path)
-            elif isinstance(path, dict):
-                for platform, platform_path in path.items():
-                    if platform_path:
-                        Path(platform_path).mkdir(parents=True, exist_ok=True)
-                        debug("创建字典格式多平台配置目录: {} -> {}", platform, platform_path)
-            elif isinstance(path, str):
-                Path(path).mkdir(parents=True, exist_ok=True)
-                debug("创建字符串路径目录: {}", path)
-        except (OSError, PermissionError, ValueError) as e:
-            debug("警告: 无法创建目录 {}: {}, 错误: {}", key, path, e)
-        except Exception as e:
-            debug("警告: 创建目录时发生未知错误 {}: {}, 错误: {}", key, path, e)
 
     def get_serializable_data(self):
         """获取可序列化的配置数据，用于多进程环境

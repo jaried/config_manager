@@ -12,7 +12,7 @@ import sys
 # Add project root to Python path
 # 项目根目录由conftest.py自动配置
 
-from src.config_manager import get_config_manager, _clear_instances_for_testing
+from config_manager import get_config_manager, _clear_instances_for_testing
 
 @pytest.fixture(autouse=True)
 def clear_instances_fixture():
@@ -107,19 +107,12 @@ class TestDebugModeIntegration:
                 debug_mode = config.debug_mode
                 assert debug_mode is True
                 
-                # 手动触发路径配置初始化
-                if hasattr(config, '_path_config_manager') and config._path_config_manager:
-                    # 确保路径配置管理器重新初始化
-                    config._path_config_manager.initialize_path_configuration()
-                    paths = config._path_config_manager.generate_all_paths()
-                    work_dir = paths.get('paths.work_dir', '')
-                    
-                    # 验证调试模式路径结构
-                    # 注意：测试模式下路径可能不同，我们只验证包含'debug'
-                    assert 'debug' in work_dir or 'integration_test' in work_dir
-                else:
-                    # 如果路径配置管理器不存在，跳过路径验证
-                    pytest.skip("路径配置管理器未初始化")
+                # 获取工作目录
+                work_dir = config.get('paths.work_dir')
+                
+                # 验证调试模式路径结构
+                assert work_dir is not None and work_dir != ''
+                assert 'debug' in work_dir or 'integration_test' in work_dir
     
     def test_external_module_access_debug_mode(self):
         """测试外部模块访问debug_mode的场景"""

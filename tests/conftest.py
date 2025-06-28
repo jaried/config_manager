@@ -21,15 +21,6 @@ if PROJECT_ROOT and str(PROJECT_ROOT) not in sys.path:
 
 start_time = datetime.now()
 
-import os
-
-# 添加项目根目录到Python路径
-project_root = os.path.dirname(os.path.dirname(__file__))
-src_path = os.path.join(project_root, 'src')
-
-if src_path not in sys.path:
-    sys.path.insert(0, src_path)
-
 # 设置pytest配置
 def pytest_configure(config):
     """pytest配置"""

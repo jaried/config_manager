@@ -20,7 +20,7 @@ __data__:
     checkpoint_dir: 'd:\demo_logs\config_manager\experiment_001\checkpoint'
     best_checkpoint_dir: 'd:\demo_logs\config_manager\experiment_001\checkpoint\best'
     tsb_logs_dir: 'd:\demo_logs\config_manager\experiment_001\tsb_logs\2025-01-07\100000'
-    log_dir: 'd:\temp/default/logs'
+    log_dir: 'd:\demo_logs\config_manager\experiment_001\logs\2025-01-07\100000'
     debug_dir: d:\demo_logs\config_manager\experiment_001\debug
     tensorboard_dir: d:\demo_logs\config_manager\experiment_001\tensorboard
     data_dir: d:\temp/default/data
@@ -58,7 +58,7 @@ __data__:
   scheduler_module: scheduler_started
   scheduler_module_data: from_scheduler
   scheduler_progress: completed
-  scheduler_start_time: '2025-06-29T03:25:51.603969'
+  scheduler_start_time: '2025-06-29T07:33:16.631885'
   scheduler_status: running
   server:
     port: '8080'
