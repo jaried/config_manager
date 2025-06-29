@@ -31,7 +31,8 @@ def test_tc0002_001_001_autosave_basic():
         cfg = get_config_manager(
             config_path=config_file,
             autosave_delay=0.1,
-            watch=False
+            watch=False,
+            test_mode=True
         )
 
         cfg.autosave_test = "value1"
@@ -67,7 +68,8 @@ def test_tc0002_001_002_multilevel_autosave():
         cfg = get_config_manager(
             config_path=config_file,
             autosave_delay=0.1,
-            watch=False
+            watch=False,
+            test_mode=True
         )
 
         cfg.level1 = {}
@@ -93,7 +95,8 @@ def test_tc0002_001_003_autosave_delay():
         cfg = get_config_manager(
             config_path=config_file,
             autosave_delay=0.5,
-            watch=False
+            watch=False,
+            test_mode=True
         )
 
         start_time_val = time.time()

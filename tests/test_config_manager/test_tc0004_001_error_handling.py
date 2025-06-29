@@ -22,7 +22,7 @@ def test_tc0004_001_001_invalid_key_access():
     """测试无效键访问"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         value = cfg.get("invalid_key")
         assert value is None
@@ -36,7 +36,7 @@ def test_tc0004_001_002_file_permission_error():
     """测试文件权限错误处理"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         original_save = cfg.save
 
@@ -60,7 +60,7 @@ def test_tc0004_001_003_edge_case_values():
     """测试边界值处理"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         cfg.set("empty_value", None)
         value = cfg.get("empty_value")

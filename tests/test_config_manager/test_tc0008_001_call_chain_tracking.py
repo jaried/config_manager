@@ -54,7 +54,8 @@ def test_tc0008_001_002_config_loading_call_chain():
                 config_manager = get_config_manager(
                     config_path=config_file,
                     watch=False,
-                    autosave_delay=0.1
+                    autosave_delay=0.1,
+                    test_mode=True
                 )
                 time.sleep(0.1)  # 等待输出完成
 
@@ -137,7 +138,8 @@ def test_tc0008_001_003_nested_call_chain():
                 cfg = get_config_manager(
                     config_path=config_file,
                     watch=False,
-                    autosave_delay=0.1
+                    autosave_delay=0.1,
+                    test_mode=True
                 )
                 # 等待确保输出完成
                 time.sleep(0.1)
@@ -217,7 +219,8 @@ def test_tc0008_001_004_start_time_detection():
                 config_path=config_file,
                 watch=False,
                 autosave_delay=0.1,
-                first_start_time=test_start_time
+                first_start_time=test_start_time,
+                test_mode=True
             )
 
             # 设置一个值触发保存以便检查时间
@@ -331,7 +334,8 @@ def test_tc0008_001_009_different_modules():
                 cfg = get_config_manager(
                     config_path=config_file,
                     watch=False,
-                    autosave_delay=0.1
+                    autosave_delay=0.1,
+                    test_mode=True
                 )
             return cfg, output.getvalue()
 

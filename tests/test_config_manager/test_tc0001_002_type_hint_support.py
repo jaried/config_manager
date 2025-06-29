@@ -1,4 +1,4 @@
-# tests/config_manager/tc0002_001_autosave_feature.py
+# tests/config_manager/tc0001_002_type_hint_support.py
 from __future__ import annotations
 from datetime import datetime
 
@@ -26,87 +26,66 @@ def cleanup_instances():
     return
 
 
-def test_tc0002_001_001_autosave_basic():
-    """测试基本自动保存功能"""
+def test_tc0001_002_001_type_hint_support():
+    """测试类型提示支持"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(
-            config_path=config_file,
-            autosave_delay=0.1,
-            watch=False
-        )
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
-        cfg.autosave_test = "value1"
+        # 测试基本类型
+        cfg.string_value = "test"
+        cfg.int_value = 42
+        cfg.float_value = 3.14
+        cfg.bool_value = True
+        cfg.list_value = [1, 2, 3]
+        cfg.dict_value = {"key": "value"}
 
-        # 等待自动保存
-        time.sleep(0.2)
-
-        # 验证备份文件存在（现在文件保存到备份路径）
-        backup_path = cfg._get_backup_path()
-        file_exists = os.path.exists(backup_path)
-        assert file_exists
-
-        reloaded = cfg.reload()
-        assert reloaded
-
-        # 使用 get 方法而不是直接属性访问，更稳定
-        value = cfg.get('autosave_test')
-        if value is None:
-            # 如果 get 失败，尝试直接从 _data 获取
-            value = cfg._data.get('autosave_test')
-
-        assert value == "value1"
+        assert cfg.string_value == "test"
+        assert cfg.int_value == 42
+        assert cfg.float_value == 3.14
+        assert cfg.bool_value is True
+        assert cfg.list_value == [1, 2, 3]
+        assert cfg.dict_value == {"key": "value"}
     return
 
 
-def test_tc0002_001_002_multilevel_autosave():
-    """测试多级配置自动保存"""
+def test_tc0001_002_002_nested_type_hint_support():
+    """测试嵌套类型提示支持"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(
-            config_path=config_file,
-            autosave_delay=0.1,
-            watch=False
-        )
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
-        cfg.level1 = {}
-        cfg.level1.level2 = {}
-        cfg.level1.level2.level3_value = "deep_value"
+        # 测试嵌套结构
+        cfg.database = {}
+        cfg.database.host = "localhost"
+        cfg.database.port = 5432
+        cfg.database.credentials = {}
+        cfg.database.credentials.username = "admin"
+        cfg.database.credentials.password = "secret"
 
-        # 等待自动保存
-        time.sleep(0.2)
-
-        reloaded = cfg.reload()
-        assert reloaded
-
-        # 使用get方法获取嵌套值
-        value = cfg.get("level1.level2.level3_value")
-        assert value == "deep_value"
+        assert cfg.database.host == "localhost"
+        assert cfg.database.port == 5432
+        assert cfg.database.credentials.username == "admin"
+        assert cfg.database.credentials.password == "secret"
     return
 
 
-def test_tc0002_001_003_autosave_delay():
-    """测试自动保存延迟功能"""
+def test_tc0001_002_003_complex_type_hint_support():
+    """测试复杂类型提示支持"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(
-            config_path=config_file,
-            autosave_delay=0.5,
-            watch=False
-        )
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
-        start_time_val = time.time()
-        cfg.delay_test = "value"
-        end_time_val = time.time()
+        # 测试复杂嵌套结构
+        cfg.application = {}
+        cfg.application.features = {}
+        cfg.application.features.feature_a = {}
+        cfg.application.features.feature_a.enabled = True
+        cfg.application.features.feature_a.settings = {}
+        cfg.application.features.feature_a.settings.timeout = 30
+        cfg.application.features.feature_a.settings.retries = [1, 2, 3]
 
-        time_diff = end_time_val - start_time_val
-        assert time_diff < 0.1
-
-        # 等待自动保存
-        time.sleep(0.6)
-
-        # 验证备份文件存在（现在文件保存到备份路径）
-        backup_path = cfg._get_backup_path()
-        file_exists = os.path.exists(backup_path)
-        assert file_exists
+        assert cfg.application.features.feature_a.enabled is True
+        assert cfg.application.features.feature_a.settings.timeout == 30
+        assert cfg.application.features.feature_a.settings.retries == [1, 2, 3]
     return

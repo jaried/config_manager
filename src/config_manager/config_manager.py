@@ -18,52 +18,120 @@ from config_manager.logger import info
 from .core.cross_platform_paths import convert_to_multi_platform_config
 
 # 全局调用链显示开关 - 手工修改这个值来控制调用链显示
-ENABLE_CALL_CHAIN_DISPLAY = False  # 默认关闭调用链显示
+ENABLE_CALL_CHAIN_DISPLAY = True  # 默认关闭调用链显示
 
 
 class ConfigManager(ConfigManagerCore):
     """配置管理器类，支持自动保存和类型提示"""
-    _instances = {}
+    _instance = None  # 全局单例实例（生产模式）
+    _instances = {}  # 多例缓存（测试模式）
     _thread_lock = threading.Lock()
     _global_listeners = []
+    _initialized = False  # 初始化标志
+    _test_mode = False  # 测试模式标志
 
     def __new__(cls, config_path: str = None,
                 watch: bool = True, auto_create: bool = False,
                 autosave_delay: float = 0.1, first_start_time: datetime = None,
                 test_mode: bool = False):
-        # 测试模式处理
+        
+        # 设置测试模式标志
+        cls._test_mode = test_mode
+        
         if test_mode:
-            config_path = cls._setup_test_environment(config_path, first_start_time)
-            auto_create = True  # 测试模式强制启用自动创建
-            watch = False  # 测试模式禁用文件监视
+            # 测试模式：使用多例模式
+            return cls._create_test_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
+        else:
+            # 生产模式：使用全局单例模式
+            return cls._create_singleton_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
 
-        # 生成缓存键 - 修复：基于实际解析的路径
-        cache_key = cls._generate_cache_key(config_path, test_mode)
-
+    @classmethod
+    def _create_test_instance(cls, config_path: str, watch: bool, auto_create: bool, 
+                             autosave_delay: float, first_start_time: datetime):
+        """创建测试模式实例（多例模式）"""
+        # 生成缓存键
+        cache_key = cls._generate_test_cache_key(config_path)
+        
         if cache_key not in cls._instances:
             with cls._thread_lock:
                 if cache_key not in cls._instances:
-                    # 创建新实例，直接调用object.__new__避免递归
+                    # 创建新实例
                     instance = object.__new__(cls)
-
-                    # 手动初始化ConfigNode的_data属性
                     instance.__dict__['_data'] = {}
-
-                    # 初始化ConfigManagerCore
                     ConfigManagerCore.__init__(instance)
-
-                    # 执行配置管理器的初始化
+                    
                     success = instance.initialize(
                         config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
                     )
-
+                    
                     if not success:
-                        # 初始化失败，不缓存实例，返回None
                         print(f"⚠️  配置管理器初始化失败，返回None")
                         return None
-
+                    
                     cls._instances[cache_key] = instance
+        
         return cls._instances[cache_key]
+
+    @classmethod
+    def _create_singleton_instance(cls, config_path: str, watch: bool, auto_create: bool, 
+                                  autosave_delay: float, first_start_time: datetime):
+        """创建生产模式实例（全局单例模式）"""
+        if cls._instance is None:
+            with cls._thread_lock:
+                if cls._instance is None:
+                    # 创建新实例
+                    instance = object.__new__(cls)
+                    instance.__dict__['_data'] = {}
+                    ConfigManagerCore.__init__(instance)
+                    
+                    success = instance.initialize(
+                        config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
+                    )
+                    
+                    if not success:
+                        print(f"⚠️  配置管理器初始化失败，返回None")
+                        return None
+                    
+                    cls._instance = instance
+                    cls._initialized = True
+        else:
+            # 如果实例已存在，检查参数是否一致
+            existing_instance = cls._instance
+            if (config_path != getattr(existing_instance, '_config_path', None) or
+                cls._test_mode != getattr(existing_instance, '_test_mode', False)):
+                print(f"⚠️  警告：尝试使用不同参数创建ConfigManager实例")
+                print(f"   现有实例配置路径: {getattr(existing_instance, '_config_path', 'None')}")
+                print(f"   新请求配置路径: {config_path}")
+                print(f"   现有实例测试模式: {getattr(existing_instance, '_test_mode', False)}")
+                print(f"   新请求测试模式: {cls._test_mode}")
+                print(f"   返回现有实例，忽略新参数")
+        
+        return cls._instance
+
+    @classmethod
+    def _generate_test_cache_key(cls, config_path: str) -> str:
+        """生成测试模式的缓存键"""
+        try:
+            if config_path is not None:
+                # 显式路径：使用绝对路径，但标准化路径分隔符
+                abs_path = os.path.abspath(config_path)
+                normalized_path = abs_path.replace('\\', '/')
+                cache_key = f"explicit:{normalized_path}"
+            else:
+                # 自动路径：基于当前工作目录
+                cwd = os.getcwd()
+                normalized_cwd = cwd.replace('\\', '/')
+                cache_key = f"auto:{normalized_cwd}"
+            
+            return cache_key
+        except Exception as e:
+            # 如果路径解析失败，生成一个基于输入参数的缓存键
+            if config_path is not None:
+                base_key = f"explicit:{config_path}"
+            else:
+                base_key = f"default:{os.getcwd()}"
+            
+            return base_key
 
     def __init__(self, config_path: str = None,
                  watch: bool = False, auto_create: bool = False,
@@ -72,39 +140,6 @@ class ConfigManager(ConfigManagerCore):
         """初始化配置管理器，单例模式下可能被多次调用"""
         # 单例模式下，__init__可能被多次调用，但只有第一次有效
         pass
-
-    @classmethod
-    def _generate_cache_key(cls, config_path: str, test_mode: bool = False) -> str:
-        """生成缓存键 - 改进版本：更稳定的缓存键生成"""
-        try:
-            if config_path is not None:
-                # 显式路径：使用绝对路径，但标准化路径分隔符
-                abs_path = os.path.abspath(config_path)
-                # 标准化路径分隔符，确保跨平台一致性
-                normalized_path = abs_path.replace('\\', '/')
-                cache_key = f"explicit:{normalized_path}"
-            else:
-                # 自动路径：基于当前工作目录，但使用更稳定的标识
-                cwd = os.getcwd()
-                normalized_cwd = cwd.replace('\\', '/')
-                cache_key = f"auto:{normalized_cwd}"
-
-            # 测试模式添加特殊标识，确保测试实例独立
-            if test_mode:
-                cache_key = f"test:{cache_key}"
-
-            return cache_key
-        except Exception as e:
-            # 如果路径解析失败，生成一个基于输入参数的缓存键
-            if config_path is not None:
-                base_key = f"explicit:{config_path}"
-            else:
-                base_key = f"default:{os.getcwd()}"
-
-            if test_mode:
-                base_key = f"test:{base_key}"
-
-            return base_key
 
     @staticmethod
     def generate_config_id() -> str:
@@ -791,6 +826,12 @@ def get_config_manager(
     Returns:
         ConfigManager 实例，如果初始化失败则返回None
     """
+    # 测试模式特殊处理：如果当前有实例且不是测试模式，需要清理
+    if test_mode and ConfigManager._instance is not None:
+        if not getattr(ConfigManager._instance, '_test_mode', False):
+            print(f"⚠️  测试模式：清理现有非测试实例")
+            _clear_instances_for_testing()
+    
     # 智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
     if config_path and not auto_create:
         import tempfile
@@ -802,6 +843,12 @@ def get_config_manager(
                 'tmpdir' in config_path.lower()):
             auto_create = True
             print(f"✓ 检测到测试环境，自动启用auto_create: {config_path}")
+
+    # 测试模式处理
+    if test_mode:
+        config_path = ConfigManager._setup_test_environment(config_path, first_start_time)
+        auto_create = True  # 测试模式强制启用自动创建
+        watch = False  # 测试模式禁用文件监视
 
     manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
                             test_mode=test_mode)
@@ -815,6 +862,17 @@ def get_config_manager(
 def _clear_instances_for_testing():
     """清理所有实例，仅用于测试"""
     with ConfigManager._thread_lock:
+        # 清理生产模式实例
+        if ConfigManager._instance:
+            if hasattr(ConfigManager._instance, '_cleanup'):
+                try:
+                    ConfigManager._instance._cleanup()
+                except:
+                    pass  # 忽略清理过程中的错误
+        ConfigManager._instance = None
+        ConfigManager._initialized = False
+        
+        # 清理测试模式实例
         for instance in ConfigManager._instances.values():
             if hasattr(instance, '_cleanup'):
                 try:
@@ -833,21 +891,38 @@ def debug_instances():
     """调试方法：显示当前所有实例信息"""
     with ConfigManager._thread_lock:
         print(f"=== ConfigManager实例调试信息 ===")
-        print(f"当前实例数量: {len(ConfigManager._instances)}")
-        for i, (cache_key, instance) in enumerate(ConfigManager._instances.items()):
-            print(f"实例 {i+1}:")
-            print(f"  缓存键: {cache_key}")
-            print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
-            print(f"  已初始化: {getattr(instance, '_initialized', 'N/A')}")
-            print(f"  主程序: {getattr(instance, '_is_main_program', 'N/A')}")
-            print(f"  实例ID: {id(instance)}")
-            print()
+        print(f"测试模式: {ConfigManager._test_mode}")
+        
+        if ConfigManager._test_mode:
+            # 测试模式：显示多例信息
+            print(f"测试模式实例数量: {len(ConfigManager._instances)}")
+            for i, (cache_key, instance) in enumerate(ConfigManager._instances.items()):
+                print(f"测试实例 {i+1}:")
+                print(f"  缓存键: {cache_key}")
+                print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
+                print(f"  测试模式: {getattr(instance, '_test_mode', 'N/A')}")
+                print(f"  实例ID: {id(instance)}")
+        else:
+            # 生产模式：显示单例信息
+            if ConfigManager._instance:
+                instance = ConfigManager._instance
+                print(f"生产模式实例信息:")
+                print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
+                print(f"  已初始化: {getattr(instance, '_initialized', 'N/A')}")
+                print(f"  测试模式: {getattr(instance, '_test_mode', 'N/A')}")
+                print(f"  实例ID: {id(instance)}")
+            else:
+                print(f"当前没有生产模式实例")
+        print()
 
 
 def get_instance_count():
     """获取当前实例数量"""
     with ConfigManager._thread_lock:
-        return len(ConfigManager._instances)
+        if ConfigManager._test_mode:
+            return len(ConfigManager._instances)
+        else:
+            return 1 if ConfigManager._instance else 0
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ def test_tc0007_001_001_simple_reload():
     """测试简单重新加载"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 设置值
         cfg.test_value = "hello"
@@ -44,7 +44,7 @@ def test_tc0007_001_002_nested_reload():
     """测试嵌套结构重新加载"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 设置嵌套结构
         cfg.level1 = {}
@@ -74,7 +74,8 @@ def test_tc0007_001_003_autosave_reload():
         cfg = get_config_manager(
             config_path=config_file,
             watch=False,
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
 
         # 设置值并等待自动保存

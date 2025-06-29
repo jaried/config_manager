@@ -27,7 +27,8 @@ def test_tc0003_001_001_thread_safety():
         cfg = get_config_manager(
             config_path=config_file,
             autosave_delay=0.1,
-            watch=False
+            watch=False,
+            test_mode=True
         )
         results = []
         threads = []

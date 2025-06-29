@@ -24,7 +24,7 @@ def test_tc0006_001_001_basic_functionality():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
 
         # 创建配置管理器
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 测试基本设置
         cfg.app_name = "TestApp"
@@ -58,7 +58,7 @@ def test_tc0006_001_002_nested_dict_assignment():
     """测试嵌套字典赋值"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 测试多层嵌套字典
         cfg.level1 = {}
@@ -82,7 +82,7 @@ def test_tc0006_001_003_update_with_dict():
     """测试使用字典更新"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 使用update方法设置嵌套结构
         cfg.update({

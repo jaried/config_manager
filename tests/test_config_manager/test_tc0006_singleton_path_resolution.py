@@ -69,12 +69,12 @@ class TestSingletonPathResolution:
         try:
             # 3. 在第一个目录创建实例
             os.chdir(temp_dir1)
-            cm1 = get_config_manager(auto_create=True)
+            cm1 = get_config_manager(auto_create=True, test_mode=True)
             path1 = cm1.get_config_path()
             
             # 4. 在第二个目录创建实例
             os.chdir(temp_dir2)
-            cm2 = get_config_manager(auto_create=True)
+            cm2 = get_config_manager(auto_create=True, test_mode=True)
             path2 = cm2.get_config_path()
             
             # 5. 验证结果
@@ -106,8 +106,8 @@ class TestSingletonPathResolution:
         from config_manager import get_config_manager
         
         # 在同一目录下多次调用
-        cm1 = get_config_manager()
-        cm2 = get_config_manager()
+        cm1 = get_config_manager(test_mode=True)
+        cm2 = get_config_manager(test_mode=True)
         
         # 应该返回相同的实例
         assert cm1 is cm2, "同一目录下应该返回相同的实例"
@@ -118,7 +118,7 @@ class TestSingletonPathResolution:
         from config_manager import get_config_manager
         
         # 1. 创建默认实例
-        cm1 = get_config_manager()
+        cm1 = get_config_manager(test_mode=True)
         
         # 2. 创建临时目录和显式路径
         temp_dir = tempfile.mkdtemp(prefix="test_explicit_")
@@ -126,7 +126,7 @@ class TestSingletonPathResolution:
         
         try:
             # 3. 使用显式路径创建实例
-            cm2 = get_config_manager(config_path=explicit_path)
+            cm2 = get_config_manager(config_path=explicit_path, test_mode=True)
             
             # 4. 验证结果
             assert cm1 is not cm2, "显式路径应该创建不同的实例"
@@ -160,10 +160,10 @@ class TestSingletonPathResolution:
         
         try:
             # 3. 使用显式路径创建完全独立的实例
-            cm1 = get_config_manager(config_path=config_file1, auto_create=True)
+            cm1 = get_config_manager(config_path=config_file1, auto_create=True, test_mode=True)
             cm1.set(key1, 'value1', autosave=False)
             
-            cm2 = get_config_manager(config_path=config_file2, auto_create=True)
+            cm2 = get_config_manager(config_path=config_file2, auto_create=True, test_mode=True)
             cm2.set(key2, 'value2', autosave=False)
             
             # 4. 验证配置隔离
@@ -197,7 +197,7 @@ class TestSingletonPathResolution:
         
         # 1. 测试自动路径的缓存键格式
         # 注意：在setup_method中我们已经切换到项目根目录了
-        cm1 = get_config_manager()
+        cm1 = get_config_manager(test_mode=True)
         cache_keys = list(ConfigManager._instances.keys())
         
         # 应该有一个缓存键
@@ -224,7 +224,7 @@ class TestSingletonPathResolution:
         explicit_path = os.path.join(temp_dir, 'explicit.yaml')
         
         try:
-            cm2 = get_config_manager(config_path=explicit_path)
+            cm2 = get_config_manager(config_path=explicit_path, test_mode=True)
             cache_keys_after = list(ConfigManager._instances.keys())
             
             # 应该有显式路径的缓存键（考虑标准化后的路径）

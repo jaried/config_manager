@@ -30,7 +30,7 @@ def test_tc0001_001_001_get_set_operations():
     """测试基本设置和获取操作"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         cfg.app_name = "TestApp"
         app_name = cfg.app_name
@@ -47,7 +47,7 @@ def test_tc0001_001_002_attribute_error():
     """测试访问不存在的属性"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         with pytest.raises(AttributeError):
             value = cfg.non_existent_property
@@ -58,7 +58,7 @@ def test_tc0001_001_003_update_operations():
     """测试批量更新操作"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         updates = {
             'feature_a_enabled': True,
@@ -82,7 +82,7 @@ def test_tc0001_001_004_config_persistence():
     """测试配置持久化"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         cfg.persistence_test = "save_me"
 
@@ -108,7 +108,7 @@ def test_tc0001_001_005_config_id_generation():
     """测试配置ID生成"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         id1 = cfg.generate_config_id()
         id2 = cfg.generate_config_id()

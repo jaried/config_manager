@@ -23,7 +23,7 @@ def test_tc0005_001_001_snapshot_and_restore():
     """测试快照和恢复功能"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 设置初始值
         cfg.test_value = "original"
@@ -56,7 +56,7 @@ def test_tc0005_001_002_temporary_context():
     """测试临时配置上下文"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 设置初始值
         cfg.temp_test = "original"
@@ -80,7 +80,7 @@ def test_tc0005_001_003_config_path_methods():
     """测试配置路径相关方法"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1, test_mode=True)
 
         # 设置一个值触发自动保存
         cfg.path_test = "test_value"
@@ -111,8 +111,8 @@ def test_tc0005_001_004_singleton_behavior():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
 
         # 获取两次配置管理器实例
-        cfg1 = get_config_manager(config_path=config_file, watch=False)
-        cfg2 = get_config_manager(config_path=config_file, watch=False)
+        cfg1 = get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        cfg2 = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 应该是同一个实例
         assert cfg1 is cfg2
@@ -128,7 +128,7 @@ def test_tc0005_001_005_empty_snapshot_restore():
     """测试空快照恢复"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
-        cfg = get_config_manager(config_path=config_file, watch=False)
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         # 创建空快照
         empty_snapshot = {'data': {}, 'type_hints': {}}
@@ -151,7 +151,7 @@ def test_tc0005_001_006_backup_loading():
         config_file = os.path.join(tmpdir, 'test_config.yaml')
 
         # 创建配置管理器并设置值
-        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1)
+        cfg = get_config_manager(config_path=config_file, watch=False, auto_create=True, autosave_delay=0.1, test_mode=True)
         cfg.backup_test = "original_value"
         cfg.nested_backup = {}
         cfg.nested_backup.value = "nested_value"

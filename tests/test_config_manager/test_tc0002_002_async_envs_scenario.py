@@ -49,7 +49,8 @@ def test_tc0002_002_001_async_main_scheduler_flow():
             cfg_main = get_config_manager(
                 config_path=config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
             cfg_main.main_module_data = "from_main"
             cfg_main.main_startup_time = datetime.now().isoformat()
@@ -144,7 +145,8 @@ def test_tc0002_002_002_envs_path_simulation():
             cfg1 = get_config_manager(
                 config_path=project_config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
             cfg1.project_data = "project_environment"
 
@@ -157,7 +159,8 @@ def test_tc0002_002_002_envs_path_simulation():
             cfg2 = get_config_manager(
                 config_path=envs_config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
 
             # 验证加载了envs配置
@@ -198,7 +201,8 @@ def test_tc0002_002_003_multiple_async_calls_same_path():
             cfg = get_config_manager(
                 config_path=config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
 
             # 设置工作者特定的数据
@@ -258,7 +262,8 @@ def test_tc0002_002_004_async_exception_handling():
             cfg = get_config_manager(
                 config_path=config_file,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
 
             cfg.before_exception = "data_before_exception"
@@ -321,7 +326,8 @@ def test_tc0002_002_005_mock_real_scenario():
             cfg_main = get_config_manager(
                 config_path=project_config,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
             cfg_main.main_startup = "main_module_started"
             cfg_main.project_root = tmpdir
@@ -344,7 +350,8 @@ def test_tc0002_002_005_mock_real_scenario():
             cfg_scheduler = get_config_manager(
                 config_path=envs_config,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
 
             # 验证加载了envs配置
@@ -366,7 +373,8 @@ def test_tc0002_002_005_mock_real_scenario():
             cfg_main_reloaded = get_config_manager(
                 config_path=main_config_path,
                 autosave_delay=0.1,
-                watch=False
+                watch=False,
+                test_mode=True
             )
 
             return cfg_main_reloaded, cfg_scheduler, main_backup_path, main_data
@@ -421,7 +429,8 @@ async def test_tc0002_002_006_pytest_async_decorator():
         cfg1 = get_config_manager(
             config_path=config_file,
             autosave_delay=0.1,
-            watch=False
+            watch=False,
+            test_mode=True
         )
         cfg1.pytest_async_test = "async_with_decorator"
 

@@ -64,7 +64,8 @@ class MockApplication:
             self.config = get_config_manager(
                 config_path=self.config_path,
                 watch=False,
-                autosave_delay=0.1
+                autosave_delay=0.1,
+                test_mode=True
             )
             self.config.app_name = "MockApplication"
             self.config.version = "1.0.0"
@@ -123,7 +124,8 @@ def test_tc0008_002_002_deep_nested_function_calls():
                 cfg = get_config_manager(
                     config_path=config_file,
                     watch=False,
-                    autosave_delay=0.1
+                    autosave_delay=0.1,
+                    test_mode=True
                 )
                 cfg.deep_nested_test = "success"
 
@@ -184,7 +186,8 @@ def test_tc0008_002_003_multiple_config_instances():
                 cfg = get_config_manager(
                     config_path=config_file_1,
                     watch=False,
-                    autosave_delay=0.1
+                    autosave_delay=0.1,
+                    test_mode=True
                 )
                 cfg.instance_id = "config_1"
                 created_configs.append(cfg)
@@ -198,7 +201,8 @@ def test_tc0008_002_003_multiple_config_instances():
                 cfg = get_config_manager(
                     config_path=config_file_2,
                     watch=False,
-                    autosave_delay=0.1
+                    autosave_delay=0.1,
+                    test_mode=True
                 )
                 cfg.instance_id = "config_2"
                 created_configs.append(cfg)
@@ -275,7 +279,8 @@ def test_tc0008_002_004_call_chain_performance():
                     cfg = get_config_manager(
                         config_path=config_file,
                         watch=False,
-                        autosave_delay=0.1
+                        autosave_delay=0.1,
+                        test_mode=True
                     )
                     cfg.performance_test_iteration = i
 
@@ -315,7 +320,8 @@ def test_tc0008_002_005_call_chain_with_module_start_time():
                         config_path=config_file,
                         watch=False,
                         autosave_delay=0.1,
-                        first_start_time=test_start_time
+                        first_start_time=test_start_time,
+                        test_mode=True
                     )
                     cfg.module_start_time_test = "success"
 
@@ -379,7 +385,8 @@ async def test_tc0008_002_006_async_scheduler_scenario():
                     self.config = get_config_manager(
                         config_path=config_file,
                         watch=False,
-                        autosave_delay=0.1
+                        autosave_delay=0.1,
+                        test_mode=True
                     )
                     self.config.scheduler_status = "initialized"
                     # 保存实例引用
@@ -461,7 +468,8 @@ def test_tc0008_002_007_exception_handling_scenario():
                     cfg = get_config_manager(
                         config_path=config_file,
                         watch=False,
-                        autosave_delay=0.1
+                        autosave_delay=0.1,
+                        test_mode=True
                     )
                     cfg.test_before_exception = "success"
 
