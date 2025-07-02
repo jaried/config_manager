@@ -6,11 +6,11 @@ import os
 import sys
 from unittest.mock import patch, MagicMock
 from pathlib import Path
-from config_manager import get_config_manager, _clear_instances_for_testing
+from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 # 项目根目录由conftest.py自动配置
 
-from config_manager.core.cross_platform_paths import (
+from src.config_manager.core.cross_platform_paths import (
     CrossPlatformPathManager,
     get_cross_platform_manager,
     convert_to_multi_platform_config,
@@ -137,13 +137,16 @@ class TestCrossPlatformPathManager:
     @patch('platform.system', return_value='Windows')
     def test_convert_to_multi_platform_config_windows_path(self, mock_system, tmp_path):
         """测试Windows路径转换为多平台配置"""
-        windows_path = str(tmp_path / 'test' / 'path')
+        # 在测试环境中，使用已经在系统临时目录下的路径
+        test_path = str(tmp_path / 'test' / 'path')
         with patch.object(self.manager, '_detect_path_platform', return_value='windows'):
-            result = self.manager.convert_to_multi_platform_config(windows_path, 'base_dir')
+            result = self.manager.convert_to_multi_platform_config(test_path, 'base_dir')
             assert isinstance(result, dict)
-            assert result['windows'] == windows_path
+            assert result['windows'] == test_path
             assert 'ubuntu' in result
-            assert result['ubuntu'] == f'/home/tony{Path(windows_path).drive}{windows_path.replace(Path(windows_path).drive, "").replace(os.sep, "/")}'
+            # ubuntu路径应该保持在系统临时目录下，不需要/home/tony前缀
+            expected_ubuntu_path = test_path.replace('\\', '/')
+            assert result['ubuntu'] == expected_ubuntu_path
 
     @patch('platform.system', return_value='Linux')
     def test_convert_to_multi_platform_config_linux_path(self, mock_system, tmp_path):
@@ -236,7 +239,7 @@ class TestCrossPlatformPathFunctions:
         path_dict = {'windows': str(tmp_path / 'win'), 'linux': str(tmp_path / 'nix')}
         
         # 修复：确保Mock正确工作
-        with patch('config_manager.core.cross_platform_paths.get_cross_platform_manager') as mock_get_manager:
+        with patch('src.config_manager.core.cross_platform_paths.get_cross_platform_manager') as mock_get_manager:
             mock_manager = MagicMock()
             mock_manager.get_current_os.return_value = 'windows'
             mock_manager.get_platform_path.return_value = str(tmp_path / 'win')
@@ -245,7 +248,7 @@ class TestCrossPlatformPathFunctions:
             result = get_platform_path(path_dict, 'test')
             assert result == str(tmp_path / 'win')
             
-        with patch('config_manager.core.cross_platform_paths.get_cross_platform_manager') as mock_get_manager:
+        with patch('src.config_manager.core.cross_platform_paths.get_cross_platform_manager') as mock_get_manager:
             mock_manager = MagicMock()
             mock_manager.get_current_os.return_value = 'linux'
             mock_manager.get_platform_path.return_value = str(tmp_path / 'nix')

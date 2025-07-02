@@ -9,8 +9,8 @@ import tempfile
 import atexit
 from unittest.mock import patch, MagicMock, Mock
 
-from config_manager import get_config_manager
-from config_manager.core.autosave_manager import AutosaveManager
+from src.config_manager import get_config_manager
+from src.config_manager.core.autosave_manager import AutosaveManager
 
 
 

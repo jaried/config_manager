@@ -45,7 +45,7 @@ def test_tc0001_002_001_type_hint_support():
         assert cfg.float_value == 3.14
         assert cfg.bool_value is True
         assert cfg.list_value == [1, 2, 3]
-        assert cfg.dict_value == {"key": "value"}
+        assert cfg.dict_value.to_dict() == {"key": "value"}
     return
 
 

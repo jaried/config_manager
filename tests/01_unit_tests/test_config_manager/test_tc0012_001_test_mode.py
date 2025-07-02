@@ -6,8 +6,8 @@ import tempfile
 import os
 import pytest
 import time
-from config_manager import get_config_manager, TestEnvironmentManager
-from config_manager.config_manager import _clear_instances_for_testing
+from src.config_manager import get_config_manager, TestEnvironmentManager
+from src.config_manager.config_manager import _clear_instances_for_testing
 
 
 

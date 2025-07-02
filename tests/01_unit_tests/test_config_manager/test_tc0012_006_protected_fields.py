@@ -5,7 +5,7 @@ import tempfile
 import pytest
 from unittest.mock import patch, MagicMock
 
-from src.config_manager.config_manager import ConfigManager, _clear_instances_for_testing
+from src.config_manager.config_manager import ConfigManager, _clear_instances_for_testing, get_config_manager
 
 
 
@@ -50,10 +50,10 @@ class TestTC0012006ProtectedFields:
                 ]
             },
             
-            # 真正的路径字段
-            'base_dir': "/original/base/path",
-            'work_dir': "/original/work/path",
-            'log_dir': "/original/log/path"
+            # 真正的路径字段  
+            'base_dir': "/tmp/original/base/path",
+            'work_dir': "/tmp/original/work/path",
+            'log_dir': "/tmp/original/log/path"
         }
 
     @patch('ruamel.yaml.YAML')
@@ -123,9 +123,9 @@ class TestTC0012006ProtectedFields:
             f.write("""__data__:
   project_name: test_project
   first_start_time: "2025-01-07T18:15:20"
-  base_dir: "/original/base/path"
-  work_dir: "/original/work/path"
-  log_dir: "/original/log/path"
+  base_dir: "/tmp/original/base/path"
+  work_dir: "/tmp/original/work/path"
+  log_dir: "/tmp/original/log/path"
   proxy:
     http: "http://localhost:3213"
     https: "https://localhost:3214"
@@ -134,23 +134,24 @@ __type_hints__: {}
             config_file = f.name
 
         try:
-            # 执行
-            config_manager = ConfigManager(config_path=config_file, test_mode=True)
+            # 执行 - 使用get_config_manager函数确保test_mode逻辑被正确调用
+            config_manager = get_config_manager(config_path=config_file, test_mode=True)
             
             # 根据任务6，test_mode现在只修改base_dir
-            assert config_manager.base_dir != "/original/base/path"
+            # 验证base_dir确实被替换了（不等于原始值）
+            assert config_manager.base_dir != "/tmp/original/base/path", f"base_dir应该被替换，但仍然是: {config_manager.base_dir}"
             
             # 验证替换后的路径包含测试环境路径
             # 标准化路径格式进行比较，处理Windows路径的反斜杠和正斜杠混合问题
             normalized_base_dir = str(config_manager.base_dir).replace('\\', '/').replace('//', '/')
             
             # 检查路径包含测试环境特征
-            assert 'temp' in normalized_base_dir.lower() or 'tmp' in normalized_base_dir.lower()
-            assert 'tests' in normalized_base_dir
+            assert 'temp' in normalized_base_dir.lower() or 'tmp' in normalized_base_dir.lower(), f"base_dir应该包含temp或tmp: {normalized_base_dir}"
+            assert 'tests' in normalized_base_dir, f"base_dir应该包含tests: {normalized_base_dir}"
             
             # work_dir和log_dir不再被test_mode自动替换，保持原值
-            assert config_manager.work_dir == "/original/work/path"
-            assert config_manager.log_dir == "/original/log/path"
+            assert config_manager.work_dir == "/tmp/original/work/path"
+            assert config_manager.log_dir == "/tmp/original/log/path"
             
             # 验证网络URL没有被替换
             assert config_manager.proxy.http == "http://localhost:3213"

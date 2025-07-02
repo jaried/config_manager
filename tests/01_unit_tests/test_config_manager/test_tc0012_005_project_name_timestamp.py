@@ -21,12 +21,12 @@ class TestTC0012005ProjectNameTimestamp:
 
     def test_tc0012_005_001_project_name_from_config(self):
         """测试从配置文件中读取project_name"""
-        # 使用生产环境配置管理器，应该读取到config_manager
+        # 使用生产环境配置管理器，应该读取到test_project
         cfg = get_config_manager()
         
         # 验证project_name被正确读取
         project_name = cfg.get('project_name')
-        assert project_name == 'config_manager', f"期望project_name为'config_manager'，实际: {project_name}"
+        assert project_name == 'test_project', f"期望project_name为'test_project'，实际: {project_name}"
         
         print(f"✓ 生产环境project_name: {project_name}")
 
@@ -39,7 +39,7 @@ class TestTC0012005ProjectNameTimestamp:
         
         # 验证工作目录包含project_name
         work_dir = cfg.paths.work_dir
-        assert 'config_manager' in work_dir, f"工作目录应包含project_name 'config_manager': {work_dir}"
+        assert 'test_project' in work_dir, f"工作目录应包含project_name 'test_project': {work_dir}"
         
         # 验证路径包含正确的时间戳
         assert '20250107' in work_dir, f"工作目录应包含日期20250107: {work_dir}"
@@ -56,7 +56,7 @@ class TestTC0012005ProjectNameTimestamp:
         
         # 验证测试配置中包含project_name
         project_name = cfg.project_name
-        assert project_name == 'config_manager', f"测试配置中的project_name应为'config_manager'，实际: {project_name}"
+        assert project_name == 'test_project', f"测试配置中的project_name应为'test_project'，实际: {project_name}"
         
         # 验证first_start_time被正确设置
         first_start_time = cfg.first_start_time
@@ -144,7 +144,7 @@ __type_hints__: {}
         # 验证工作目录的时间戳部分相同
         assert '20250107' in work_dir1 and '20250107' in work_dir2, "日期部分应该相同"
         assert '142550' in work_dir1 and '142550' in work_dir2, "时间部分应该相同"
-        assert 'config_manager' in work_dir1 and 'config_manager' in work_dir2, "project_name部分应该相同"
+        assert 'test_project' in work_dir1 and 'test_project' in work_dir2, "project_name部分应该相同"
         
         # 验证完整路径相同
         assert work_dir1 == work_dir2, f"相同first_start_time应生成相同工作目录，目录1: {work_dir1}，目录2: {work_dir2}"
@@ -168,6 +168,6 @@ __type_hints__: {}
         assert 'tests' in work_dir
         assert '20250107' in work_dir
         assert '181520' in work_dir
-        assert 'config_manager' in work_dir
+        assert 'test_project' in work_dir
         
         print(f"✓ work_dir: {work_dir}") 

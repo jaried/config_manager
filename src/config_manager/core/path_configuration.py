@@ -394,8 +394,18 @@ class PathConfigurationManager:
             # 生成所有路径
             path_configs = self.generate_all_paths()
             
-            # 关键修复：直接将生成的路径对象设置为 config.paths
-            self._config_manager.paths = ConfigNode(path_configs.get('paths', {}), _root=self._config_manager)
+            # 修复：直接设置到_data中，避免触发__setattr__和自动保存
+            if not hasattr(self._config_manager, 'paths'):
+                # 如果paths属性不存在，直接创建
+                self._config_manager._data['paths'] = ConfigNode(path_configs.get('paths', {}), _root=self._config_manager)
+            else:
+                # 如果paths属性已存在，直接更新其_data
+                if hasattr(self._config_manager.paths, '_data'):
+                    self._config_manager.paths._data.clear()
+                    self._config_manager.paths._data.update(path_configs.get('paths', {}))
+                else:
+                    # 如果paths没有_data属性，重新创建
+                    self._config_manager._data['paths'] = ConfigNode(path_configs.get('paths', {}), _root=self._config_manager)
 
         except Exception as e:
             # 其他错误，不影响主流程

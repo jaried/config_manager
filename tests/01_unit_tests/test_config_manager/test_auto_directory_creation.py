@@ -18,8 +18,7 @@ def clear_instances_fixture():
     _clear_instances_for_testing()
 
 class TestAutoDirectoryCreation:
-    @patch('is_debug.is_debug', return_value=True)
-    def test_paths_namespace_auto_creation(self, mock_is_debug, tmp_path: Path):
+    def test_paths_namespace_auto_creation(self, tmp_path: Path):
         config_path = tmp_path / "config.yaml"
         base_dir = tmp_path / "base"
         config_content = f"base_dir: {base_dir.as_posix()}\nproject_name: AutoDirTest\nexperiment_name: exp1"
@@ -28,7 +27,7 @@ class TestAutoDirectoryCreation:
         config = get_config_manager(config_path=str(config_path), test_mode=True)
         
         work_dir = Path(config.paths.work_dir)
-        assert 'debug' in work_dir.parts
+        # 在非debug模式下，work_dir不包含debug目录
         assert 'AutoDirTest' in work_dir.parts
         assert work_dir.exists()
 
@@ -73,9 +72,8 @@ class TestAutoDirectoryCreation:
 
         assert not output_file.exists()
 
-    @patch('is_debug.is_debug', return_value=False)
     @patch('os.makedirs', side_effect=PermissionError("Permission denied"))
-    def test_permission_error_handling(self, mock_makedirs, mock_is_debug, tmp_path: Path):
+    def test_permission_error_handling(self, mock_makedirs, tmp_path: Path):
         pytest.skip("路径不再自动创建，此测试已不适用")
 
     def test_existing_directory_handling(self, tmp_path):

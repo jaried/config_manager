@@ -21,8 +21,8 @@ src_path = os.path.join(project_root, 'src')
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-from config_manager import get_config_manager
-from config_manager.config_manager import _clear_instances_for_testing
+from src.config_manager import get_config_manager
+from src.config_manager.config_manager import _clear_instances_for_testing
 
 
 @pytest.fixture(autouse=True)

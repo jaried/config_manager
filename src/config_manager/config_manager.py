@@ -14,11 +14,11 @@ from typing import Any, Dict
 from .config_node import ConfigNode
 from .core.manager import ConfigManagerCore
 from .core.path_resolver import PathResolver
-from config_manager.logger import info
+from .logger import info
 from .core.cross_platform_paths import convert_to_multi_platform_config
 
 # 全局调用链显示开关 - 手工修改这个值来控制调用链显示
-ENABLE_CALL_CHAIN_DISPLAY = True  # 默认关闭调用链显示
+ENABLE_CALL_CHAIN_DISPLAY = False  # 默认关闭调用链显示
 
 
 class ConfigManager(ConfigManagerCore):
@@ -29,6 +29,7 @@ class ConfigManager(ConfigManagerCore):
     _global_listeners = []
     _initialized = False  # 初始化标志
     _test_mode = False  # 测试模式标志
+    _paths_initialized = False  # 路径配置初始化标志
 
     def __new__(cls, config_path: str = None,
                 watch: bool = True, auto_create: bool = False,
@@ -60,6 +61,9 @@ class ConfigManager(ConfigManagerCore):
                     instance.__dict__['_data'] = {}
                     ConfigManagerCore.__init__(instance)
                     
+                    # 设置测试模式标志
+                    instance._test_mode = True
+                    
                     success = instance.initialize(
                         config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
                     )
@@ -83,6 +87,9 @@ class ConfigManager(ConfigManagerCore):
                     instance = object.__new__(cls)
                     instance.__dict__['_data'] = {}
                     ConfigManagerCore.__init__(instance)
+                    
+                    # 设置测试模式标志
+                    instance._test_mode = False
                     
                     success = instance.initialize(
                         config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
@@ -119,6 +126,8 @@ class ConfigManager(ConfigManagerCore):
                 cache_key = f"explicit:{normalized_path}"
             else:
                 # 自动路径：基于当前工作目录
+                # 注意：在测试模式下，我们仍然使用当前工作目录作为缓存键的基础
+                # 这样即使路径被替换为测试环境路径，缓存键仍然反映原始的工作目录
                 cwd = os.getcwd()
                 normalized_cwd = cwd.replace('\\', '/')
                 cache_key = f"auto:{normalized_cwd}"
@@ -150,27 +159,36 @@ class ConfigManager(ConfigManagerCore):
     @classmethod
     def _setup_test_environment(cls, original_config_path: str = None, first_start_time: datetime = None) -> str:
         """设置测试环境"""
-        # 1. 检测生产配置，获取project_name
-        prod_config_path = None
-
-        if original_config_path:
-            # 如果明确传入了配置路径，优先使用
-            prod_config_path = original_config_path
-            print(f"✓ 使用传入的配置路径: {prod_config_path}")
-        else:
-            # 尝试检测生产配置
+        # 基于当前工作目录生成测试配置路径
+        cwd = os.getcwd()
+        print(f"✓ 基于当前工作目录生成测试路径: {cwd}")
+        
+        # 生成测试环境路径
+        test_base_dir, test_config_path = cls._generate_test_environment_path(first_start_time)
+        
+        # 设置测试模式环境变量
+        os.environ['CONFIG_MANAGER_TEST_MODE'] = 'true'
+        os.environ['CONFIG_MANAGER_TEST_BASE_DIR'] = test_base_dir
+        print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {tempfile.gettempdir()}")
+        
+        # 确保测试配置目录存在
+        os.makedirs(os.path.dirname(test_config_path), exist_ok=True)
+        
+        # 如果传入了明确的配置路径，将其作为生产配置源
+        prod_config_path = original_config_path
+        
+        # 如果没有传入明确的配置路径，尝试检测生产配置
+        if not prod_config_path:
             prod_config_path = cls._detect_production_config()
             if prod_config_path:
                 print(f"✓ 检测到生产配置: {prod_config_path}")
             else:
                 print("⚠️  未检测到生产配置，将尝试其他方法")
 
-        # 2. 如果没有找到生产配置，尝试更广泛的搜索
+        # 如果没有找到生产配置，尝试更广泛的搜索
         if not prod_config_path or not os.path.exists(prod_config_path):
             print("⚠️  生产配置不存在，尝试更广泛的搜索...")
 
-            # 获取当前工作目录
-            cwd = os.getcwd()
             print(f"当前工作目录: {cwd}")
 
             # 策略1: 从当前工作目录的不同位置查找配置文件
@@ -216,10 +234,10 @@ class ConfigManager(ConfigManagerCore):
                             print(f"✓ 在上级目录找到配置文件: {prod_config_path}")
                             break
 
-                    if prod_config_path and os.path.exists(prod_config_path):
-                        break
+                        if prod_config_path and os.path.exists(prod_config_path):
+                            break
 
-                    current_dir = parent_dir
+                        current_dir = parent_dir
 
             # 策略3: 如果还是没找到，尝试从调用栈中查找
             if not prod_config_path or not os.path.exists(prod_config_path):
@@ -233,108 +251,72 @@ class ConfigManager(ConfigManagerCore):
                         if 'config_manager' in filename:
                             continue
 
-                        # 跳过系统文件
-                        if ('site-packages' in filename or
-                                'lib/python' in filename.lower() or
-                                '<' in filename):
+                        # 跳过pytest相关文件
+                        if 'pytest' in filename or '_pytest' in filename:
                             continue
 
-                        # 从调用文件的目录开始查找
-                        file_dir = os.path.dirname(filename)
-                        print(f"从调用文件目录查找: {file_dir}")
+                        # 跳过Python标准库文件
+                        if filename.startswith('<') or 'site-packages' in filename:
+                            continue
 
-                        # 在调用文件的目录及其上级目录中查找
-                        search_dir = file_dir
-                        for level in range(5):  # 最多向上查找5级
-                            test_paths = [
-                                os.path.join(search_dir, 'src', 'config', 'config.yaml'),
-                                os.path.join(search_dir, 'config', 'config.yaml'),
-                                os.path.join(search_dir, 'config.yaml'),
-                            ]
+                        # 尝试从调用文件所在目录查找配置文件
+                        call_dir = os.path.dirname(os.path.abspath(filename))
+                        print(f"从调用文件目录查找: {call_dir}")
 
-                            for path in test_paths:
-                                if os.path.exists(path):
-                                    # 修复: 如果找到的配置文件在tests目录下，跳过
-                                    if 'tests' + os.sep in path or '/tests/' in path:
-                                        print(f"⚠️  跳过tests目录下的配置文件: {path}")
-                                        continue
-                                    prod_config_path = path
-                                    print(f"✓ 从调用栈找到配置文件: {prod_config_path}")
-                                    break
+                        test_paths = [
+                            os.path.join(call_dir, 'src', 'config', 'config.yaml'),
+                            os.path.join(call_dir, 'config', 'config.yaml'),
+                            os.path.join(call_dir, 'config.yaml'),
+                        ]
+
+                        for path in test_paths:
+                            if os.path.exists(path):
+                                # 修复: 如果找到的配置文件在tests目录下，跳过
+                                if 'tests' + os.sep in path or '/tests/' in path:
+                                    print(f"⚠️  跳过tests目录下的配置文件: {path}")
+                                    continue
+                                prod_config_path = path
+                                print(f"✓ 从调用文件目录找到配置文件: {prod_config_path}")
+                                break
 
                             if prod_config_path and os.path.exists(prod_config_path):
                                 break
 
-                            parent = os.path.dirname(search_dir)
-                            if parent == search_dir:  # 已到根目录
-                                break
-                            search_dir = parent
-
-                        if prod_config_path and os.path.exists(prod_config_path):
-                            break
-
                 except Exception as e:
-                    print(f"从调用栈查找配置文件失败: {e}")
+                    print(f"⚠️  从调用栈查找时出错: {e}")
 
-            # 策略4: 最后尝试一些常见的项目结构
+            # 策略4: 尝试常见项目结构
             if not prod_config_path or not os.path.exists(prod_config_path):
                 print("尝试常见项目结构...")
-                # 尝试一些常见的项目名称和结构
-                common_patterns = [
-                    # 当前目录的兄弟目录
-                    os.path.join(os.path.dirname(cwd), '*/src/config/config.yaml'),
-                    # 当前目录的父目录
-                    os.path.join(os.path.dirname(os.path.dirname(cwd)), 'src/config/config.yaml'),
-                ]
-
-                import glob
-                for pattern in common_patterns:
-                    matches = glob.glob(pattern)
-                    if matches:
-                        # 修复: 过滤掉tests目录下的配置文件
-                        filtered_matches = [
-                            match for match in matches
-                            if not ('tests' + os.sep in match or '/tests/' in match)
-                        ]
-                        if filtered_matches:
-                            # 选择第一个匹配的文件
-                            prod_config_path = filtered_matches[0]
+                try:
+                    # 尝试从当前工作目录向上查找，寻找包含src/config/config.yaml的项目结构
+                    current_dir = os.getcwd()
+                    for level in range(10):  # 最多向上查找10级目录
+                        test_path = os.path.join(current_dir, 'src', 'config', 'config.yaml')
+                        if os.path.exists(test_path):
+                            prod_config_path = test_path
                             print(f"✓ 从常见项目结构找到配置文件: {prod_config_path}")
-                        else:
-                            print("⚠️  模式匹配找到的都是tests目录下的配置文件，已跳过")
-                        break
+                            break
+                        
+                        parent_dir = os.path.dirname(current_dir)
+                        if parent_dir == current_dir:  # 已到根目录
+                            break
+                        current_dir = parent_dir
+                except Exception as e:
+                    print(f"⚠️  尝试常见项目结构时出错: {e}")
 
-        project_name = None
+        # 如果找到了生产配置，复制到测试环境
         if prod_config_path and os.path.exists(prod_config_path):
-            try:
-                with open(prod_config_path, 'r', encoding='utf-8') as f:
-                    # 使用安全的YAML加载
-                    from ruamel.yaml import YAML
-                    yaml = YAML(typ='safe')
-                    config_data = yaml.load(f)
-                    if config_data and 'project_name' in config_data:
-                        project_name = config_data['project_name']
-                        print(f"✓ 从主配置文件读取project_name: {project_name} (文件: {prod_config_path})")
-            except Exception as e:
-                print(f"读取project_name失败: {e}")
-
-        # 2. 生成测试环境路径
-        test_base_dir, test_config_path = cls._generate_test_environment_path(first_start_time)
-
-        # 3. 复制并修改配置
-        if prod_config_path and os.path.exists(prod_config_path):
-            cls._copy_production_config_to_test(prod_config_path, test_config_path, first_start_time, project_name)
-            print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
+            # 复制生产配置到测试环境
+            cls._copy_production_config_to_test(prod_config_path, test_config_path, first_start_time)
+            
+            return test_config_path
         else:
+            # 如果没有找到生产配置，创建空的测试配置
             # 创建空的测试配置
-            cls._create_empty_test_config(test_config_path, first_start_time, project_name)
-            print(f"✓ 已创建空的测试配置: {test_config_path}")
-
-        # 7. 设置测试环境变量（可选）
-        os.environ['CONFIG_MANAGER_TEST_MODE'] = 'true'
-        os.environ['CONFIG_MANAGER_TEST_BASE_DIR'] = test_base_dir
-
-        return test_config_path
+            cls._create_empty_test_config(test_config_path, first_start_time)
+            
+            return test_config_path
 
     @classmethod
     def _generate_test_environment_path(cls, first_start_time: datetime = None) -> tuple[
@@ -360,8 +342,8 @@ class ConfigManager(ConfigManagerCore):
         date_str = first_start_time.strftime("%Y%m%d")
         time_str = first_start_time.strftime("%H%M%S")
 
-        # 优先使用pytest的tmp_path，如果不可用则使用系统临时目录
-        temp_dir = tempfile.gettempdir()
+        # 基于当前工作目录生成测试路径
+        cwd = os.getcwd()
         
         # 检查是否在pytest环境中
         pytest_tmp_path = cls._detect_pytest_tmp_path()
@@ -369,13 +351,16 @@ class ConfigManager(ConfigManagerCore):
             test_base_dir = pytest_tmp_path
             print(f"✓ 检测到pytest环境，使用pytest tmp_path: {test_base_dir}")
         else:
-            # 生成唯一的测试目录
-            test_base_dir = os.path.join(temp_dir, 'tests', date_str, time_str)
-            print(f"✓ 使用系统临时目录: {test_base_dir}")
+            # 基于当前工作目录生成唯一的测试目录
+            # 使用当前工作目录的哈希值来确保不同目录生成不同的路径
+            import hashlib
+            cwd_hash = hashlib.md5(cwd.encode()).hexdigest()[:8]
+            test_base_dir = os.path.join(tempfile.gettempdir(), 'tests', date_str, time_str, cwd_hash)
+            print(f"✓ 基于当前工作目录生成测试路径: {test_base_dir}")
         
         test_config_path = os.path.join(test_base_dir, 'src', 'config', 'config.yaml')
         
-        print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_dir}")
+        print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {tempfile.gettempdir()}")
         return test_base_dir, test_config_path
 
     @classmethod
@@ -537,7 +522,8 @@ class ConfigManager(ConfigManagerCore):
             if project_name:
                 config_data['project_name'] = project_name
             
-            # 关键简化：只强制覆盖 base_dir
+            # 根据任务6：简化test_mode逻辑，只设置base_dir
+            # 只修改base_dir，其他路径字段保持原值
             config_data['base_dir'] = test_base_dir
 
             # 更新时间信息
@@ -832,30 +818,34 @@ def get_config_manager(
             print(f"⚠️  测试模式：清理现有非测试实例")
             _clear_instances_for_testing()
     
-    # 智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
-    if config_path and not auto_create:
-        import tempfile
-        temp_dir = tempfile.gettempdir()
-        # Windows和Unix的临时目录检测
-        if (temp_dir.lower() in config_path.lower() or
-                '/tmp/' in config_path or
-                '\\temp\\' in config_path.lower() or
-                'tmpdir' in config_path.lower()):
-            auto_create = True
-            print(f"✓ 检测到测试环境，自动启用auto_create: {config_path}")
-
     # 测试模式处理
     if test_mode:
-        config_path = ConfigManager._setup_test_environment(config_path, first_start_time)
+        # 测试模式下，总是调用_setup_test_environment进行路径替换
+        original_config_path = config_path  # 保存原始路径
+        config_path = ConfigManager._setup_test_environment(original_config_path, first_start_time)
         auto_create = True  # 测试模式强制启用自动创建
         watch = False  # 测试模式禁用文件监视
+    else:
+        # 非测试模式：智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
+        if config_path and not auto_create:
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            # Windows和Unix的临时目录检测
+            if (temp_dir.lower() in config_path.lower() or
+                    '/tmp/' in config_path or
+                    '\\temp\\' in config_path.lower() or
+                    'tmpdir' in config_path.lower()):
+                auto_create = True
+                print(f"✓ 检测到测试环境，自动启用auto_create: {config_path}")
 
     manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
                             test_mode=test_mode)
 
     if manager:
-        # 在返回前，自动设置项目路径（已确保自动创建目录）
-        manager.setup_project_paths()
+        # 修复：只在首次初始化时设置项目路径，避免重复初始化
+        if not getattr(manager, '_paths_initialized', False):
+            manager.setup_project_paths()
+            manager._paths_initialized = True
     return manager
 
 
@@ -871,6 +861,7 @@ def _clear_instances_for_testing():
                     pass  # 忽略清理过程中的错误
         ConfigManager._instance = None
         ConfigManager._initialized = False
+        ConfigManager._paths_initialized = False
         
         # 清理测试模式实例
         for instance in ConfigManager._instances.values():
@@ -901,6 +892,7 @@ def debug_instances():
                 print(f"  缓存键: {cache_key}")
                 print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
                 print(f"  测试模式: {getattr(instance, '_test_mode', 'N/A')}")
+                print(f"  路径已初始化: {getattr(instance, '_paths_initialized', 'N/A')}")
                 print(f"  实例ID: {id(instance)}")
         else:
             # 生产模式：显示单例信息
@@ -910,6 +902,7 @@ def debug_instances():
                 print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
                 print(f"  已初始化: {getattr(instance, '_initialized', 'N/A')}")
                 print(f"  测试模式: {getattr(instance, '_test_mode', 'N/A')}")
+                print(f"  路径已初始化: {getattr(instance, '_paths_initialized', 'N/A')}")
                 print(f"  实例ID: {id(instance)}")
             else:
                 print(f"当前没有生产模式实例")

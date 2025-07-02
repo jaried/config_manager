@@ -15,7 +15,7 @@ from unittest.mock import patch, MagicMock
 # Add project root to Python path
 # 项目根目录由conftest.py自动配置
 
-from config_manager import get_config_manager, _clear_instances_for_testing
+from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 @pytest.fixture(autouse=True)
 def clear_instances_fixture():

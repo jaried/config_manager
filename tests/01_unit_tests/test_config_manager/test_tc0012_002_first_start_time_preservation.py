@@ -5,7 +5,7 @@ import os
 import tempfile
 import pytest
 from datetime import datetime
-from config_manager import get_config_manager, _clear_instances_for_testing
+from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 
 
@@ -20,7 +20,7 @@ class TestFirstStartTimePreservation:
     def teardown_method(self):
         """每个测试方法后的清理"""
         # 清理测试环境
-        from config_manager.test_environment import TestEnvironmentManager
+        from src.config_manager.test_environment import TestEnvironmentManager
         try:
             TestEnvironmentManager.cleanup_current_test_environment()
         except:

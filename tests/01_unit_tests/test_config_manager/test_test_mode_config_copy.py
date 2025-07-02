@@ -5,7 +5,7 @@ import pytest
 from ruamel.yaml import YAML
 from datetime import datetime
 
-from config_manager import get_config_manager
+from src.config_manager import get_config_manager
 
 def make_prod_config(tmpdir, extra_data=None):
     """生成一个包含多种类型和嵌套的生产配置文件"""
