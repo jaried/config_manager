@@ -1,7 +1,3 @@
 /build/
-/collect_py.py
-/所有的测试用例.txt
-/所有的源代码.txt
 /.idea/
 /src/config_manager.egg-info/
-根目录配置文件.txt
