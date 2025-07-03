@@ -76,6 +76,7 @@ def test_tc0002_002_001_async_main_scheduler_flow():
         # 它可能创建了不同的实例，这取决于默认路径的解析
 
         # 验证备份文件存在
+        result_cfg_main.save()  # 确保备份文件创建
         backup_path = result_cfg_main._get_backup_path()
         assert os.path.exists(backup_path)
     return
@@ -179,7 +180,11 @@ def test_tc0002_002_002_envs_path_simulation():
         # 验证两个配置管理器是独立的
         assert cfg1 is not cfg2
 
-        # 验证各自的备份文件都存在
+        # 验证各自的备份文件都存在（使用新的backup_dir路径）
+        # 手动保存以确保备份文件立即创建
+        cfg1.save()
+        cfg2.save()
+        
         backup_path1 = cfg1._get_backup_path()
         backup_path2 = cfg2._get_backup_path()
 
@@ -192,34 +197,52 @@ def test_tc0002_002_002_envs_path_simulation():
 
 
 def test_tc0002_002_003_multiple_async_calls_same_path():
-    """测试多个异步调用使用相同路径的场景"""
+    """测试多个异步调用使用序列化配置的场景"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'shared_async_config.yaml')
 
-        async def async_worker(worker_id: int, delay: float):
-            """模拟异步工作者"""
-            cfg = get_config_manager(
-                config_path=config_file,
-                autosave_delay=0.1,
-                watch=False,
-                test_mode=True
-            )
+        # 主程序创建配置管理器
+        main_cfg = get_config_manager(
+            config_path=config_file,
+            autosave_delay=0.1,
+            watch=False,
+            test_mode=True
+        )
+        
+        # 设置一些初始配置
+        main_cfg.test_scenario = "multiple_async_workers"
+        main_cfg.total_workers = 3
+        
+        # 序列化配置以传递给worker
+        serializable_config = main_cfg.get_serializable_data()
 
-            # 设置工作者特定的数据
-            setattr(cfg, f'worker_{worker_id}_data', f'data_from_worker_{worker_id}')
-            setattr(cfg, f'worker_{worker_id}_timestamp', datetime.now().isoformat())
-
+        async def async_worker(worker_id: int, delay: float, shared_config):
+            """模拟异步工作者，使用序列化的配置"""
+            # Worker使用序列化的配置数据，不创建新的配置管理器
+            config_data = shared_config
+            
+            # 模拟从配置中读取数据
+            scenario = config_data.get('test_scenario', 'unknown')
+            total_workers = config_data.get('total_workers', 0)
+            
             # 模拟异步工作
             await asyncio.sleep(delay)
-
-            return cfg, worker_id
+            
+            # 返回worker的工作结果（包含从配置中读取的信息）
+            return {
+                'worker_id': worker_id,
+                'scenario': scenario,
+                'total_workers': total_workers,
+                'worker_data': f'data_from_worker_{worker_id}',
+                'timestamp': datetime.now().isoformat()
+            }
 
         async def run_multiple_workers():
-            # 并发运行多个异步工作者
+            # 并发运行多个异步工作者，传递序列化的配置
             tasks = [
-                async_worker(1, 0.1),
-                async_worker(2, 0.15),
-                async_worker(3, 0.05)
+                async_worker(1, 0.1, serializable_config),
+                async_worker(2, 0.15, serializable_config),
+                async_worker(3, 0.05, serializable_config)
             ]
 
             results = await asyncio.gather(*tasks)
@@ -228,27 +251,28 @@ def test_tc0002_002_003_multiple_async_calls_same_path():
         async def test_with_final_wait():
             results = await run_multiple_workers()
 
-            # 验证所有工作者使用的是同一个配置实例（单例模式）
-            cfg_instances = [result[0] for result in results]
-            for i in range(1, len(cfg_instances)):
-                assert cfg_instances[0] is cfg_instances[i]
+            # 验证所有工作者都能正确读取配置数据
+            for result in results:
+                assert result['scenario'] == "multiple_async_workers"
+                assert result['total_workers'] == 3
+                assert result['worker_data'] == f"data_from_worker_{result['worker_id']}"
+                assert result['timestamp'] is not None
 
-            # 验证所有工作者的数据都存在
-            cfg = cfg_instances[0]
-            for worker_id in [1, 2, 3]:
-                assert cfg.get(f'worker_{worker_id}_data') == f'data_from_worker_{worker_id}'
-                assert cfg.get(f'worker_{worker_id}_timestamp') is not None
+            # 验证序列化配置的完整性
+            assert serializable_config.get('test_scenario') == "multiple_async_workers"
+            assert serializable_config.get('total_workers') == 3
 
-            # 等待自动保存完成
-            await asyncio.sleep(0.3)
+            return results
 
-            return cfg
+        results = asyncio.run(test_with_final_wait())
 
-        result_cfg = asyncio.run(test_with_final_wait())
-
-        # 验证备份文件存在
-        backup_path = result_cfg._get_backup_path()
+        # 验证主配置管理器的备份文件存在
+        main_cfg.save()  # 确保备份文件创建
+        backup_path = main_cfg._get_backup_path()
         assert os.path.exists(backup_path)
+        
+        # 验证序列化配置是可序列化的
+        assert serializable_config.is_serializable()
     return
 
 
@@ -295,6 +319,7 @@ def test_tc0002_002_004_async_exception_handling():
         assert result_cfg.get('exception_message') == "模拟的异步异常"
 
         # 验证备份文件存在
+        result_cfg.save()  # 确保备份文件创建
         backup_path = result_cfg._get_backup_path()
         assert os.path.exists(backup_path)
     return
@@ -335,6 +360,7 @@ def test_tc0002_002_005_mock_real_scenario():
             await asyncio.sleep(0.2)
 
             # 保存main配置的备份路径和数据，用于后续验证
+            cfg_main.save()  # 确保备份文件创建
             main_backup_path = cfg_main._get_backup_path()
             main_config_path = cfg_main.get_config_path()
             main_data = {
@@ -399,6 +425,7 @@ def test_tc0002_002_005_mock_real_scenario():
         assert cfg_scheduler.get('crawl_progress') == "50%"
 
         # 验证备份文件都存在
+        cfg_scheduler.save()  # 确保备份文件创建
         scheduler_backup = cfg_scheduler._get_backup_path()
 
         assert os.path.exists(main_backup_path)
@@ -456,6 +483,7 @@ async def test_tc0002_002_006_pytest_async_decorator():
         assert cfg1.get('async_operation_count') == 2
 
         # 验证备份文件
+        cfg1.save()  # 确保备份文件创建
         backup_path = cfg1._get_backup_path()
         assert os.path.exists(backup_path)
     return

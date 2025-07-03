@@ -1,0 +1,32 @@
+__data__:
+  first_start_time: '2025-06-27T15:39:24.509210'
+  config_file_path: 
+    D:\Tony\Documents\invest2025\project\config_manager\temp\access_demo.yaml
+  base_dir:
+    windows: d:\logs
+    linux: /home/tony/logs
+    ubuntu: /home/tony/logs
+    macos: /Users/tony/logs
+  paths:
+    work_dir: d:\logs\project_name\experiment_name
+    checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint
+    best_checkpoint_dir: d:\logs\project_name\experiment_name\checkpoint\best
+    debug_dir: d:\logs\project_name\experiment_name\debug
+    tensorboard_dir: d:\logs\project_name\experiment_name\tensorboard
+    tsb_logs_dir: 
+      d:\logs\project_name\experiment_name\tsb_logs\2025-06-27\153924
+    log_dir: d:\logs\project_name\experiment_name\logs\2025-06-27\153924
+  project_name: project_name
+  experiment_name: experiment_name
+  app_name: AccessDemo
+  database:
+    host: localhost
+    port: 5432
+    credentials:
+      username: admin
+      password: secret
+  features:
+    - auth
+    - logging
+    - caching
+__type_hints__: {}

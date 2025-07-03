@@ -105,15 +105,15 @@ class TestTC0012004BackupIsolation:
         assert os.path.exists(backup_path)
         
         # 验证目录结构
-        # 期望结构：{temp}/tests/20250107/100000/src/config/backup/20250107/100000/config_20250107_100000.yaml
+        # 新的期望结构：{temp}/tests/20250107/100000/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
         path_parts = backup_path.replace('\\', '/').split('/')
         
         # 查找关键目录
         assert 'tests' in path_parts
         assert '20250107' in path_parts
         assert '100000' in path_parts
-        assert 'src' in path_parts
-        assert 'config' in path_parts
+        assert 'test_project' in path_parts
+        assert 'experiment_name' in path_parts
         assert 'backup' in path_parts
         
         # 验证文件名格式

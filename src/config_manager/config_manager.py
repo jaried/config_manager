@@ -117,20 +117,23 @@ class ConfigManager(ConfigManagerCore):
 
     @classmethod
     def _generate_test_cache_key(cls, config_path: str) -> str:
-        """生成测试模式的缓存键"""
+        """生成测试模式的缓存键，同一测试用例内相同路径返回相同键，不同测试用例间隔离"""
         try:
+            # 生成基础键
             if config_path is not None:
                 # 显式路径：使用绝对路径，但标准化路径分隔符
                 abs_path = os.path.abspath(config_path)
                 normalized_path = abs_path.replace('\\', '/')
-                cache_key = f"explicit:{normalized_path}"
+                base_key = f"explicit:{normalized_path}"
             else:
                 # 自动路径：基于当前工作目录
-                # 注意：在测试模式下，我们仍然使用当前工作目录作为缓存键的基础
-                # 这样即使路径被替换为测试环境路径，缓存键仍然反映原始的工作目录
                 cwd = os.getcwd()
                 normalized_cwd = cwd.replace('\\', '/')
-                cache_key = f"auto:{normalized_cwd}"
+                base_key = f"auto:{normalized_cwd}"
+            
+            # 获取测试用例标识符实现测试间隔离
+            test_identifier = cls._get_test_identifier()
+            cache_key = f"{base_key}:test:{test_identifier}"
             
             return cache_key
         except Exception as e:
@@ -140,7 +143,48 @@ class ConfigManager(ConfigManagerCore):
             else:
                 base_key = f"default:{os.getcwd()}"
             
-            return base_key
+            # 即使出错也要添加测试标识符
+            test_identifier = cls._get_test_identifier()
+            return f"{base_key}:test:{test_identifier}"
+    
+    @classmethod
+    def _get_test_identifier(cls) -> str:
+        """获取当前测试用例的唯一标识符"""
+        try:
+            import sys
+            import inspect
+            
+            # 遍历调用栈查找测试函数
+            for frame_info in inspect.stack():
+                frame = frame_info.frame
+                function_name = frame_info.function
+                filename = frame_info.filename
+                
+                # 检查是否是测试函数（函数名以test_开头或在测试文件中）
+                if (function_name.startswith('test_') and 
+                    ('test_' in filename or 'tests/' in filename)):
+                    
+                    # 生成基于测试函数和文件的唯一标识，但不包含行号以确保稳定性
+                    test_id = f"{filename}::{function_name}"
+                    # 使用哈希生成短标识符
+                    import hashlib
+                    return hashlib.md5(test_id.encode()).hexdigest()[:8]
+            
+            # 如果找不到测试函数，使用当前进程ID作为备用方案，这样同一个测试进程内是稳定的
+            import os
+            fallback_id = f"process_{os.getpid()}"
+            import hashlib
+            return hashlib.md5(fallback_id.encode()).hexdigest()[:8]
+            
+        except Exception:
+            # 最后的备用方案：基于进程ID的稳定标识符
+            import os
+            try:
+                process_id = f"process_{os.getpid()}"
+                import hashlib
+                return hashlib.md5(process_id.encode()).hexdigest()[:8]
+            except:
+                return "default"
 
     def __init__(self, config_path: str = None,
                  watch: bool = False, auto_create: bool = False,
@@ -441,8 +485,8 @@ class ConfigManager(ConfigManagerCore):
                 # 直接更新现有配置
                 cls._update_test_config_paths(test_config_path, first_start_time, project_name)
             else:
-                # 复制配置文件
-                shutil.copy2(prod_config_path, test_config_path)
+                # 复制配置文件（添加重试机制处理Windows文件锁定）
+                cls._safe_copy_file(prod_config_path, test_config_path)
                 print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
 
                 # 修改测试配置中的路径信息
@@ -450,6 +494,37 @@ class ConfigManager(ConfigManagerCore):
         else:
             # 如果生产配置不存在，创建空的测试配置
             cls._create_empty_test_config(test_config_path, first_start_time, project_name)
+
+    @classmethod
+    def _safe_copy_file(cls, src_path: str, dst_path: str, max_retries: int = 3):
+        """安全复制文件，处理Windows文件锁定问题"""
+        import time
+        
+        for attempt in range(max_retries):
+            try:
+                # 确保目标目录存在
+                os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                
+                # 先读取源文件内容
+                with open(src_path, 'r', encoding='utf-8') as src_file:
+                    content = src_file.read()
+                
+                # 写入目标文件
+                with open(dst_path, 'w', encoding='utf-8') as dst_file:
+                    dst_file.write(content)
+                
+                return  # 成功复制，退出函数
+                
+            except PermissionError as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️  文件复制失败（尝试 {attempt + 1}/{max_retries}）: {e}")
+                    time.sleep(0.1 * (attempt + 1))  # 递增延迟
+                    continue
+                else:
+                    # 最后一次尝试失败，抛出异常
+                    raise PermissionError(f"无法复制文件（已重试{max_retries}次）: {src_path} -> {dst_path}") from e
+            except Exception as e:
+                raise RuntimeError(f"复制文件时发生未知错误: {e}") from e
 
     @classmethod
     def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None,
@@ -820,8 +895,15 @@ def get_config_manager(
     
     # 测试模式处理
     if test_mode:
-        # 测试模式下，总是调用_setup_test_environment进行路径替换
+        # 测试模式下，先检查缓存，避免重复生成测试环境
         original_config_path = config_path  # 保存原始路径
+        cache_key = ConfigManager._generate_test_cache_key(original_config_path)
+        
+        # 如果缓存中已有实例，直接返回
+        if cache_key in ConfigManager._instances:
+            return ConfigManager._instances[cache_key]
+        
+        # 缓存中没有，才生成测试环境路径
         config_path = ConfigManager._setup_test_environment(original_config_path, first_start_time)
         auto_create = True  # 测试模式强制启用自动创建
         watch = False  # 测试模式禁用文件监视

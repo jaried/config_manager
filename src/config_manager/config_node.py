@@ -199,8 +199,8 @@ class ConfigNode:
         if hasattr(self, '_data'):
             data = super().__getattribute__('_data')
             for key, value in data.items():
-                # 跳过debug_mode，因为它是动态属性，不应该保存到配置文件
-                if key == 'debug_mode':
+                # 跳过debug_mode和_root，因为它们不应该保存到配置文件
+                if key in ('debug_mode', '_root'):
                     continue
                     
                 if isinstance(value, ConfigNode):

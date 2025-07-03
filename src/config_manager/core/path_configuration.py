@@ -225,6 +225,33 @@ class PathGenerator:
         }
         
         return tensorboard_dirs
+    
+    def generate_backup_directory(
+        self, 
+        work_dir: str, 
+        date_str: str, 
+        time_str: str
+    ) -> Dict[str, str]:
+        """生成备份目录路径
+        
+        Args:
+            work_dir: 工作目录
+            date_str: 日期字符串（YYYY-MM-DD格式，将转换为YYYYmmdd）
+            time_str: 时间字符串（HHMMSS）
+            
+        Returns:
+            dict: 备份目录路径字典
+        """
+        work_path = Path(work_dir)
+        
+        # 将日期字符串从YYYY-MM-DD转换为YYYYmmdd格式
+        date_formatted = date_str.replace('-', '')
+        
+        backup_dirs = {
+            'paths.backup_dir': str(work_path / 'backup' / date_formatted / time_str)
+        }
+        
+        return backup_dirs
 
 
 class PathValidator:
@@ -581,13 +608,17 @@ class PathConfigurationManager:
         # 生成日志目录
         log_dirs = self._path_generator.generate_log_directories(work_dir, date_str, time_str)
         
+        # 生成备份目录
+        backup_dirs = self._path_generator.generate_backup_directory(work_dir, date_str, time_str)
+        
         # 合并所有路径配置
         path_configs = {
             'work_dir': work_dir,
             **{k.replace('paths.', ''): v for k, v in checkpoint_dirs.items()},
             **{k.replace('paths.', ''): v for k, v in debug_dirs.items()},
             **{k.replace('paths.', ''): v for k, v in tensorboard_dirs.items()},
-            **{k.replace('paths.', ''): v for k, v in log_dirs.items()}
+            **{k.replace('paths.', ''): v for k, v in log_dirs.items()},
+            **{k.replace('paths.', ''): v for k, v in backup_dirs.items()}
         }
         
         return {'paths': path_configs}
@@ -698,7 +729,11 @@ class PathConfigurationManager:
                 if isinstance(key, str) and key.endswith('_dir') and isinstance(value, str) and value:
                     try:
                         os.makedirs(value, exist_ok=True)
+                    except PermissionError as e:
+                        # 权限错误时记录警告但不抛出异常
+                        print(f"⚠️  跳过目录创建 (权限不足): {value}")
                     except Exception as e:
+                        # 其他错误仍然抛出异常
                         raise DirectoryCreationError(f"目录创建失败: {value}, {e}")
                 elif isinstance(value, dict):
                     _create_dirs_for_fields(value, visited)

@@ -1,0 +1,44 @@
+__data__:
+  project_name: test_project
+  first_start_time: '2025-06-29T09:49:34.493237'
+  test_mode: true
+  concurrency: 5
+  timeout: 30
+  proxy:
+    http: http://localhost:3213
+    https: https://localhost:3214
+    url: http://proxy.example.com:8080
+  headers:
+    Accept: text/html,application/xhtml+xml
+    Content_Type: application/json
+  url_validation:
+    level2_pattern: ^https?://[^/]+/chapter/\d+$
+    exclude_image_patterns:
+      - \.jpg$
+      - \.png$
+      - \.gif$
+  base_dir: /original/base/path
+  work_dir: /original/work/path
+  log_dir: /original/log/path
+  config_file_path: 
+    D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
+  experiment_name: experiment_name
+  paths:
+    work_dir: \original\base\path\test_project\experiment_name
+    checkpoint_dir: \original\base\path\test_project\experiment_name\checkpoint
+    best_checkpoint_dir: 
+      \original\base\path\test_project\experiment_name\checkpoint\best
+    debug_dir: \original\base\path\test_project\experiment_name\debug
+    tensorboard_dir: 
+      \original\base\path\test_project\experiment_name\tensorboard
+    tsb_logs_dir: 
+      \original\base\path\test_project\experiment_name\tsb_logs\2025-06-29\094934
+    log_dir: 
+      \original\base\path\test_project\experiment_name\logs\2025-06-29\094934
+    _root: <circular-reference>
+  missing_config_error: 配置文件中缺少 'titls' 配置项
+  test_async_value: async_test_data
+  scheduler_status: running
+  scheduler_start_time: '2025-06-29T09:40:39.568366'
+  scheduler_progress: completed
+__type_hints__: {}

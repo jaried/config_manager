@@ -1,0 +1,19 @@
+__data__:
+  first_start_time: '2025-06-09T22:01:40.560698'
+  config_file_path: 
+    D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\demo_debug_fix_config.yaml
+  base_dir: d:\demo_logs
+  project_name: demo_project
+  experiment_name: demo_exp
+  paths.work_dir: d:\demo_logs\demo_project\demo_exp
+  paths:
+    work_dir: d:\demo_logs\demo_project\demo_exp
+    checkpoint_dir: d:\demo_logs\demo_project\demo_exp\checkpoint
+    best_checkpoint_dir: d:\demo_logs\demo_project\demo_exp\checkpoint\best
+    tsb_logs_dir: d:\demo_logs\demo_project\demo_exp\tsb_logs\2025-06-09\220140
+    log_dir: d:\demo_logs\demo_project\demo_exp\logs\2025-06-09\220140
+  paths.checkpoint_dir: d:\demo_logs\demo_project\demo_exp\checkpoint
+  paths.best_checkpoint_dir: d:\demo_logs\demo_project\demo_exp\checkpoint\best
+  paths.tsb_logs_dir: d:\demo_logs\demo_project\demo_exp\tsb_logs\2025-06-09\220140
+  paths.log_dir: d:\demo_logs\demo_project\demo_exp\logs\2025-06-09\220140
+__type_hints__: {}

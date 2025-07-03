@@ -144,9 +144,8 @@ class TestCrossPlatformPathManager:
             assert isinstance(result, dict)
             assert result['windows'] == test_path
             assert 'ubuntu' in result
-            # ubuntu路径应该保持在系统临时目录下，不需要/home/tony前缀
-            expected_ubuntu_path = test_path.replace('\\', '/')
-            assert result['ubuntu'] == expected_ubuntu_path
+            # ubuntu路径，对于base_dir从Windows转换时使用默认值 ~/logs
+            assert result['ubuntu'] == '~/logs'
 
     @patch('platform.system', return_value='Linux')
     def test_convert_to_multi_platform_config_linux_path(self, mock_system, tmp_path):

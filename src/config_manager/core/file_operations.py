@@ -175,20 +175,39 @@ class FileOperations:
             # 对于其他类型，直接替换
             return new_data
 
-    def get_backup_path(self, config_path: str, base_time: datetime) -> str:
-        """获取备份路径，基于给定时间生成时间戳"""
+    def get_backup_path(self, config_path: str, base_time: datetime, config_manager=None) -> str:
+        """获取备份路径，基于给定时间生成时间戳
+        
+        Args:
+            config_path: 配置文件路径
+            base_time: 基准时间
+            config_manager: 配置管理器实例（可选）
+            
+        Returns:
+            str: 备份文件路径
+        """
         date_str = base_time.strftime('%Y%m%d')
         time_str = base_time.strftime('%H%M%S')
 
-        # 基于当前配置文件路径生成备份路径
-        config_dir = os.path.dirname(config_path)
         config_name = os.path.basename(config_path)
         name_without_ext = os.path.splitext(config_name)[0]
 
         # 生成备份文件名：filename_yyyymmdd_HHMMSS.yaml
         backup_filename = f"{name_without_ext}_{date_str}_{time_str}.yaml"
 
-        # 生成备份目录结构：原目录/backup/yyyymmdd/HHMMSS/
+        # 尝试使用config.paths.backup_dir，如果不可用则使用传统路径
+        if config_manager:
+            try:
+                backup_dir = config_manager.get('paths.backup_dir')
+                if backup_dir:
+                    backup_path = os.path.join(backup_dir, backup_filename)
+                    return backup_path
+            except (AttributeError, KeyError):
+                # 如果获取backup_dir失败，使用传统方式
+                pass
+        
+        # 备用方案：生成备份目录结构：原目录/backup/yyyymmdd/HHMMSS/
+        config_dir = os.path.dirname(config_path)
         backup_dir = os.path.join(config_dir, 'backup', date_str, time_str)
         backup_path = os.path.join(backup_dir, backup_filename)
         return backup_path

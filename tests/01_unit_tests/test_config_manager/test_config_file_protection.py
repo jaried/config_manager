@@ -143,13 +143,20 @@ __type_hints__: {{}}'''
         assert config is not None
             
         config.set('test_key', 'test_value')
+        
+        # 设置项目路径以生成backup_dir
+        config.setup_project_paths()
         config.save()
+        
+        # 使用新的backup_dir路径
+        backup_dir_path = config.get('paths.backup_dir')
+        assert backup_dir_path is not None, "backup_dir应该被正确生成"
+        
+        backup_dir = Path(backup_dir_path)
+        assert backup_dir.exists(), f"备份目录应该存在: {backup_dir}"
             
-        backup_dir = tmp_path / 'backup'
-        assert backup_dir.exists()
-            
-        backup_files = list(backup_dir.glob('**/*.yaml'))
-        assert len(backup_files) > 0
+        backup_files = list(backup_dir.glob('*.yaml'))
+        assert len(backup_files) > 0, f"应该有备份文件: {list(backup_dir.glob('*'))}"
             
         with open(backup_files[0], 'r', encoding='utf-8') as f:
             backup_content = f.read()

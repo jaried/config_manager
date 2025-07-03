@@ -44,6 +44,11 @@ class ConfigManagerCore(ConfigNode):
         self._first_start_time = None
         self._is_main_program = False  # 新增：标记是否为主程序
         
+        # 多平台和测试模式支持
+        self._base_dir = None  # 内部实际使用的 base_dir
+        self._test_unique_id = None  # 测试模式唯一标识符
+        self._test_mode = False  # 测试模式标志
+        
         # 新增：重复初始化检测
         self._initialized = False
         self._initialization_lock = threading.Lock()
@@ -123,6 +128,9 @@ class ConfigManagerCore(ConfigNode):
         if watch and self._watcher:
             self._watcher.start(self._config_path, self._on_file_changed)
 
+        # 自动初始化路径配置
+        self.setup_project_paths()
+        
         return True
 
     def setup_project_paths(self) -> None:
@@ -192,6 +200,10 @@ class ConfigManagerCore(ConfigNode):
 
             # 标记配置加载成功
             self._config_loaded_successfully = True
+            
+            # 更新 _base_dir
+            self._update_base_dir()
+            
             return True
 
         if ENABLE_CALL_CHAIN_DISPLAY:
@@ -259,7 +271,8 @@ class ConfigManagerCore(ConfigNode):
         """获取备份路径"""
         return self._file_ops.get_backup_path(
             self._config_path,
-            self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
+            self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),
+            self  # 传递配置管理器实例
         )
 
     def _on_file_changed(self):
@@ -295,6 +308,104 @@ class ConfigManagerCore(ConfigNode):
         if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
             self._autosave_manager.schedule_save(self.save)
         return
+
+    def _get_current_platform(self) -> str:
+        """获取当前平台"""
+        from .cross_platform_paths import get_cross_platform_manager
+        manager = get_cross_platform_manager()
+        return manager.get_current_os()
+
+    def _generate_test_unique_id(self) -> str:
+        """生成测试模式唯一标识符"""
+        import uuid
+        return uuid.uuid4().hex[:8]
+
+    def _generate_test_base_dir(self) -> str:
+        """生成跨平台测试模式的 base_dir 路径
+        
+        格式：
+        - Windows: {系统临时目录}\\tests\\{YYYYMMDD}\\{HHMMSS}_{唯一标识符}
+          例如: d:\\temp\\tests\\20250703\\143025_a1b2c3d4
+        - Linux: {系统临时目录}/tests/{YYYYMMDD}/{HHMMSS}_{唯一标识符}
+          例如: /tmp/tests/20250703/143025_a1b2c3d4
+        """
+        import tempfile
+        from datetime import datetime
+        
+        # 获取系统临时目录（自动跨平台）
+        temp_base = tempfile.gettempdir()
+        
+        # 生成时间标识
+        now = datetime.now()
+        date_str = now.strftime('%Y%m%d') 
+        time_str = now.strftime('%H%M%S')
+        
+        # 生成唯一标识符（确保并发安全）
+        if not self._test_unique_id:
+            self._test_unique_id = self._generate_test_unique_id()
+        
+        # 跨平台路径组装：{系统临时目录}/tests/{日期}/{时间}_{UUID}
+        test_path = os.path.join(
+            temp_base, 'tests', date_str,
+            f"{time_str}_{self._test_unique_id}"
+        )
+        
+        # 使用 os.path.normpath 确保路径格式正确
+        return os.path.normpath(test_path)
+
+    def _update_base_dir(self):
+        """更新内部 _base_dir（跨平台支持）"""
+        if self._test_mode:
+            # 测试模式：使用跨平台临时路径
+            self._base_dir = self._generate_test_base_dir()
+            
+            # 设置测试环境变量
+            os.environ['CONFIG_MANAGER_TEST_MODE'] = 'true'
+            os.environ['CONFIG_MANAGER_TEST_BASE_DIR'] = self._base_dir
+            
+            # 创建测试目录（跨平台）
+            os.makedirs(self._base_dir, exist_ok=True)
+            
+            debug(f"测试模式路径: {self._base_dir}")
+        else:
+            # 生产模式：从多平台配置选择当前平台
+            base_dir_config = self._data.get('base_dir')
+            if isinstance(base_dir_config, dict) or hasattr(base_dir_config, 'to_dict'):
+                # 如果是 ConfigNode，转换为普通字典
+                if hasattr(base_dir_config, 'to_dict'):
+                    config_dict = base_dir_config.to_dict()
+                else:
+                    config_dict = base_dir_config
+                platform_path = get_platform_path(config_dict, 'base_dir')
+                current_platform = self._get_current_platform()
+                
+                # 如果当前平台路径为空，使用默认值
+                if not platform_path:
+                    if current_platform in ['ubuntu', 'linux']:
+                        self._base_dir = os.path.expanduser('~/logs')
+                    elif current_platform == 'windows':
+                        self._base_dir = 'd:\\logs'
+                    else:
+                        self._base_dir = None
+                else:
+                    # 展开 ~ 路径（如果是 Linux/Ubuntu）
+                    if current_platform in ['ubuntu', 'linux'] and platform_path.startswith('~'):
+                        self._base_dir = os.path.expanduser(platform_path)
+                    else:
+                        self._base_dir = platform_path
+            else:
+                # 如果不是字典格式，直接使用原始值
+                self._base_dir = base_dir_config
+        
+        # debug_mode 时在 _base_dir 后面加一层 'debug' 路径
+        if hasattr(self, 'debug_mode') and self.debug_mode and self._base_dir:
+            self._base_dir = os.path.join(self._base_dir, 'debug')
+
+    def _regenerate_paths(self):
+        """重新生成 config.paths 下的所有路径"""
+        if hasattr(self, '_path_config_manager') and self._path_config_manager:
+            # 重新设置项目路径
+            self._path_config_manager.setup_project_paths()
 
     def _cleanup(self):
         """清理资源"""
@@ -346,9 +457,21 @@ class ConfigManagerCore(ConfigNode):
                 converted_default = self._convert_type(default, as_type)
                 return converted_default
 
-        # 特殊处理base_dir：如果是多平台格式，返回当前平台的路径
-        if key == 'base_dir' and isinstance(current, dict):
-            current = get_platform_path(current, 'base_dir')
+        # 特殊处理base_dir：总是返回 _base_dir
+        if key == 'base_dir':
+            # 动态更新_base_dir以反映debug_mode变化
+            self._update_base_dir()
+            
+            if hasattr(self, '_base_dir') and self._base_dir is not None:
+                current = self._base_dir
+            elif isinstance(current, dict) or hasattr(current, 'to_dict'):
+                # 如果_base_dir未设置但有多平台配置，临时解析
+                if hasattr(current, 'to_dict'):
+                    config_dict = current.to_dict()
+                else:
+                    config_dict = current
+                current = get_platform_path(config_dict, 'base_dir')
+            # 如果都没有，返回原始值
 
         converted_value = self._convert_type(current, as_type)
         return converted_value
@@ -371,10 +494,34 @@ class ConfigManagerCore(ConfigNode):
             autosave = False
 
         if key == 'base_dir' and isinstance(value, str):
-            try:
-                value = ConfigNode(convert_to_multi_platform_config(value, 'base_dir'), _root=self)
-            except Exception as e:
-                debug(f"将 base_dir 转换为多平台配置失败: {e}, 将其保留为字符串。")
+            # 智能更新base_dir：只更新当前平台的值
+            current_platform = self._get_current_platform()
+            existing_base_dir = self._data.get('base_dir')
+            
+            if isinstance(existing_base_dir, dict) or hasattr(existing_base_dir, 'to_dict'):
+                # 已有多平台配置，只更新当前平台
+                if hasattr(existing_base_dir, 'to_dict'):
+                    config_dict = existing_base_dir.to_dict()
+                else:
+                    config_dict = dict(existing_base_dir)
+                
+                # 更新当前平台的值
+                config_dict[current_platform] = value
+                value = ConfigNode(config_dict, _root=self)
+            else:
+                # 没有多平台配置，创建多平台配置
+                try:
+                    # 为当前平台设置新值，其他平台使用默认值
+                    if current_platform in ['ubuntu', 'linux']:
+                        config_dict = {'ubuntu': value, 'windows': 'd:\\logs'}
+                    elif current_platform == 'windows':
+                        config_dict = {'windows': value, 'ubuntu': '~/logs'}
+                    else:
+                        config_dict = {current_platform: value}
+                    
+                    value = ConfigNode(config_dict, _root=self)
+                except Exception as e:
+                    debug(f"创建多平台base_dir配置失败: {e}, 将其保留为字符串。")
 
         keys = key.split('.')
         current = self
@@ -384,6 +531,15 @@ class ConfigManagerCore(ConfigNode):
             current = current[k]
         
         current[keys[-1]] = value
+        
+        # base_dir 变化时同步更新 _base_dir 和重新生成路径
+        if key == 'base_dir':
+            # 更新内部 _base_dir（测试模式下忽略）
+            if not self._test_mode:
+                self._update_base_dir()
+            
+            # 重新生成 config.paths 下的所有路径
+            self._regenerate_paths()
         
         if type_hint:
             self.set_type_hint(key, type_hint)

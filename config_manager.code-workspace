@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../custom_logger"
+		},
+		{
+			"path": "../is_debug"
+		}
+	],
+	"settings": {}
+}

@@ -25,12 +25,12 @@ def clear_instances_fixture():
 class TestDebugModeDynamic:
     """测试debug_mode属性的动态行为"""
 
-    @pytest.mark.skip(reason="is_debug模块在当前环境不可用")
+
     def test_debug_mode_returns_is_debug_result_true(self, tmp_path: Path):
         """当is_debug()返回True时，测试debug_mode属性"""
         pass
 
-    @pytest.mark.skip(reason="is_debug模块在当前环境不可用")
+
     def test_debug_mode_returns_is_debug_result_false(self, tmp_path: Path):
         """当is_debug()返回False时，测试debug_mode属性"""
         pass
@@ -42,7 +42,7 @@ class TestDebugModeDynamic:
         # 当is_debug不可用时，debug_mode应该返回False
         assert config.debug_mode is False
         
-    @pytest.mark.skip(reason="is_debug模块在当前环境不可用") 
+
     def test_debug_mode_is_dynamic_and_not_cached(self, tmp_path: Path):
         """测试debug_mode属性是否为动态调用，而不是缓存值"""
         pass
@@ -71,12 +71,12 @@ class TestDebugModeIntegration:
         """每个测试方法后的清理"""
         _clear_instances_for_testing()
     
-    @pytest.mark.skip(reason="is_debug模块在当前环境不可用")
+
     def test_path_configuration_with_dynamic_debug_mode(self):
         """测试路径配置与动态debug_mode的集成"""
         pass
     
-    @pytest.mark.skip(reason="is_debug模块在当前环境不可用")
+
     def test_external_module_access_debug_mode(self):
         """测试外部模块访问debug_mode的场景"""
         pass

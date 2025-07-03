@@ -1,0 +1,20 @@
+__data__:
+  first_start_time: '2025-06-09T19:22:59.089931'
+  config_file_path: 
+    D:\Tony\Documents\yunpan\invest\invest2025\project\config_manager\temp_config_3.yaml
+  base_dir: e:\deep_learning
+  project_name: computer_vision
+  experiment_name: object_detection_v2
+  debug_mode: false
+  paths.work_dir: e:\deep_learning\computer_vision\object_detection_v2
+  paths:
+    work_dir: e:\deep_learning\computer_vision\object_detection_v2
+    checkpoint_dir: e:\deep_learning\computer_vision\object_detection_v2\checkpoint
+    best_checkpoint_dir: e:\deep_learning\computer_vision\object_detection_v2\checkpoint\best
+    tsb_logs_dir: e:\deep_learning\computer_vision\object_detection_v2\tsb_logs\2025-06-09\192259
+    log_dir: e:\deep_learning\computer_vision\object_detection_v2\logs\2025-06-09\192259
+  paths.checkpoint_dir: e:\deep_learning\computer_vision\object_detection_v2\checkpoint
+  paths.best_checkpoint_dir: e:\deep_learning\computer_vision\object_detection_v2\checkpoint\best
+  paths.tsb_logs_dir: e:\deep_learning\computer_vision\object_detection_v2\tsb_logs\2025-06-09\192259
+  paths.log_dir: e:\deep_learning\computer_vision\object_detection_v2\logs\2025-06-09\192259
+__type_hints__: {}

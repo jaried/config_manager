@@ -102,6 +102,13 @@ class CrossPlatformPathManager:
             if self._current_os in path_config:
                 return path_config[self._current_os]
             
+            # 优先级1.5：ubuntu和linux互为别名
+            if self._current_os in ['ubuntu', 'linux']:
+                if 'ubuntu' in path_config:
+                    return path_config['ubuntu']
+                elif 'linux' in path_config:
+                    return path_config['linux']
+            
             # 优先级2：操作系统家族的路径
             os_family = self.get_os_family()
             if os_family in path_config:
@@ -141,23 +148,20 @@ class CrossPlatformPathManager:
                 if platform == 'windows':
                     # Windows路径转换
                     if detected_platform in ['ubuntu']:
-                        # 从Unix路径转换为Windows路径
-                        windows_path = path.replace('/', '\\')
-                        if not windows_path.startswith('\\'):
-                            windows_path = 'C:' + windows_path
-                        multi_platform_config[platform] = windows_path
+                        # 从Unix路径转换为Windows路径，默认使用 d:\logs
+                        multi_platform_config[platform] = 'd:\\logs'
                     else:
                         multi_platform_config[platform] = path
                 elif platform == 'ubuntu':
                     # Ubuntu路径转换
                     if detected_platform == 'windows':
-                        # 从Windows路径转换为Linux路径
-                        linux_path = path.replace('\\', '/')
-                        if linux_path.startswith('C:'):
-                            linux_path = linux_path[2:]
-                        if not linux_path.startswith('/'):
-                            linux_path = '/home/tony' + linux_path
-                        multi_platform_config[platform] = linux_path
+                        # 从Windows路径转换为Linux路径，保持原始路径转换逻辑
+                        # 只有在没有配置或者需要默认值时才使用~/logs
+                        if key == 'base_dir':
+                            multi_platform_config[platform] = '~/logs'
+                        else:
+                            # 对于其他路径类型，尝试转换
+                            multi_platform_config[platform] = path.replace('\\', '/').replace('d:', '/tmp')
                     else:
                         multi_platform_config[platform] = path
         
