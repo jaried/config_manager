@@ -1,126 +1,197 @@
 # CLAUDE.md
 
-此文件为 Claude Code (claude.ai/code) 在此代码库中工作时提供指导。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 开发命令
+## Development Commands
 
-### 测试
+### Testing
 ```bash
-# 运行所有测试
+# Run all tests
 pytest
 
-# 运行特定测试文件
+# Run specific test file
 pytest tests/test_config_manager/test_tc0001_001_basic_operations.py
 
-# 运行详细输出的测试
+# Run with verbose output
 pytest -v
 
-# 运行简短回溯的测试
+# Run with short traceback
 pytest --tb=short
+
+# Run only unit tests
+pytest tests/01_unit_tests/
+
+# Run specific test pattern
+pytest -k "test_tc0001"
 ```
 
-### Python 环境
+### Python Environment
 ```bash
-# 如果在 base conda 环境中，激活 python 3.12
-conda deactivate && conda activate base_python3.12
+# Activate the required conda environment
+source /home/tony/programs/miniconda3/etc/profile.d/conda.sh && conda activate base_python3.12
 
-# 运行简单测试
-python simple_test.py
+# Run simple test
+conda run -n base_python3.12 python simple_test.py
 
-# 运行配置收集
-python collect.py
+# Run configuration collection
+conda run -n base_python3.12 python collect.py
+
+# Install dependencies
+conda run -n base_python3.12 pip install -e .
 ```
 
-## 项目架构
+### Linting and Code Quality
+```bash
+# Run ruff linting (preferred over flake8)
+conda run -n base_python3.12 ruff check src/ tests/
 
-### 核心组件
-- **ConfigManager**: 主要的单例配置管理器类（生产模式），支持测试模式下的多实例
-- **ConfigManagerCore**: 继承自 ConfigNode 的核心实现，提供所有配置管理功能
-- **ConfigNode**: 基础配置节点类，支持动态 debug_mode
-- **PathResolver**: 处理路径解析和项目根目录检测
-- **FileOperations**: 使用 ruamel.yaml 管理 YAML 文件操作
-- **AutosaveManager**: 处理线程化的自动配置保存
-- **CallChainTracker**: 跟踪方法调用链进行调试（保留功能）
-- **TestEnvironmentManager**: 管理测试模式隔离和路径替换
+# Auto-fix ruff issues
+conda run -n base_python3.12 ruff check --fix src/ tests/
 
-### 关键设计模式
-- **全局单例**: 生产模式下单实例，测试模式下多实例
-- **线程安全**: 所有操作都是线程安全的，具有适当的锁定
-- **自动持久化**: 配置更改自动保存
-- **类型安全**: 整个代码库完整的类型提示
-- **跨平台**: 支持 Windows 和 Ubuntu（从更广泛的操作系统支持中缩减）
+# Format code with ruff
+conda run -n base_python3.12 ruff format src/ tests/
+```
 
-### 目录结构
-- `src/config_manager/`: 主包源代码
-- `src/config_manager/core/`: 核心实现模块
-- `src/config_manager/logger/`: 最小日志实现
-- `src/config/`: 配置文件（config.yaml，备份）
-- `tests/`: 测试套件，包含 01_unit_tests/ 和集成测试
-- `Docs/`: 需求、架构和设计文档
-- `temp/`: 临时文件（使用后必须清理）
+## Project Architecture
 
-## 配置管理
+### Core Components
+- **ConfigManager**: Main singleton configuration manager class (production mode), supports multi-instance in test mode
+- **ConfigManagerCore**: Core implementation inheriting from ConfigNode, provides all configuration management features
+- **ConfigNode**: Base configuration node class with dynamic debug_mode support
+- **PathResolver**: Handles path resolution and project root detection
+- **FileOperations**: Manages YAML file operations using ruamel.yaml for comment preservation
+- **AutosaveManager**: Handles threaded automatic configuration saving
+- **CallChainTracker**: Tracks method call chains for debugging (retained feature)
+- **TestEnvironmentManager**: Manages test mode isolation and path replacement
 
-### 使用模式
+### Key Design Patterns
+- **Global Singleton**: Single instance in production, multi-instance in test mode
+- **Thread Safety**: All operations are thread-safe with proper locking
+- **Auto Persistence**: Configuration changes are automatically saved
+- **Type Safety**: Complete type hints throughout the codebase
+- **Cross Platform**: Supports Windows and Ubuntu (reduced from broader OS support)
+
+### Directory Structure
+- `src/config_manager/`: Main package source code
+- `src/config_manager/core/`: Core implementation modules
+- `src/config_manager/logger/`: Minimal logging implementation
+- `src/config/`: Configuration files (config.yaml, backups)
+- `tests/`: Test suite with 01_unit_tests/ and integration tests
+- `docs/`: Requirements, architecture and design documentation
+- `temp/`: Temporary files (must be cleaned after use)
+
+## Configuration Management
+
+### Usage Patterns
 ```python
-# 获取配置管理器（启用自动设置）
+# Get configuration manager (auto-setup enabled)
 from config_manager import get_config_manager
 config = get_config_manager()
 
-# 测试模式使用
+# Test mode usage
 config = get_config_manager(test_mode=True)
 
-# 通过属性访问配置（无默认值）
-value = config.some_setting  # 如果未设置将抛出 AttributeError
+# Access configuration via attributes (no default values)
+value = config.some_setting  # Will raise AttributeError if not set
 ```
 
-### 路径处理
-- 只有 `base_dir` 支持单路径到多平台配置的自动转换
-- 以 `_dir` 结尾的字段自动创建目录
-- 测试模式将 `base_dir` 替换为临时目录以实现隔离
-- 使用 `setup_project_paths()` 进行路径配置初始化
+### Path Handling
+- Only `base_dir` supports automatic single-path to multi-platform configuration conversion
+- Fields ending with `_dir` automatically create directories
+- Test mode replaces `base_dir` with temporary directory for isolation
+- Use `setup_project_paths()` for path configuration initialization
 
-## 开发指南
+## Development Guidelines
 
-### 代码标准
-- 使用 4 个空格缩进
-- 函数使用 snake_case，类使用 PascalCase
-- 优先使用 ruamel.yaml 而不是 pyyaml
-- 测试文件必须以 `test_` 开头
-- 在包内使用相对导入
+### Code Standards
+- Use 4 spaces for indentation
+- Function names use snake_case, class names use PascalCase
+- Prefer ruamel.yaml over pyyaml for YAML comment preservation
+- Test files must start with `test_`
+- Use relative imports within the package
+- Files/variables should not contain 'test' except in test cases (to avoid pytest conflicts)
+- Path handling: use `os.path` or `pathlib` for cross-platform compatibility
 
-### 测试要求
-- 提交前所有测试必须通过
-- 测试环境使用 `test_mode=True` 参数
-- 测试文件应隔离在 temp/ 目录中
-- 使用后清理临时文件
-- 使用 `conftest.py` 进行共享测试配置
+### Testing Requirements
+- All tests must pass before committing
+- Test environments use `test_mode=True` parameter
+- Test files should be isolated in temp/ directory
+- Clean up temporary files after use
+- Use `conftest.py` for shared test configuration
+- **Critical**: Always run tests with conda environment activated:
+  ```bash
+  source /home/tony/programs/miniconda3/etc/profile.d/conda.sh && conda activate base_python3.12 && pytest
+  ```
 
-### 文档更新
-代码更改后，更新相关文档：
-- `Docs/01_requirements/` 中的需求文档
-- `Docs/02_architecture/` 中的架构设计
-- `Docs/03_design/` 中的设计文档
-- 删除过时描述以匹配当前实现
+### Function Definition Standards
+- All functions must have explicit `return` statements or `pass` statements
+- All functions must have explicit type signatures
+- Only return single variables, multiple variables, or empty `return` - no expressions
+- Single main return path in primary logic flow
+- Instance methods not using `self` should be converted to static methods
 
-### 错误处理
-- 不对意外错误使用 try-except（错误透明性）
-- 无备用或降级逻辑
-- 属性访问无默认值（自然错误传播）
+### Documentation Updates
+After code changes, update relevant documentation:
+- Requirements documents in `docs/01_requirements/`
+- Architecture design in `docs/02_architecture/`
+- Design documents in `docs/03_design/`
+- Delete outdated descriptions to match current implementation
 
-## 重要说明
+### Error Handling
+- No try-except for unexpected errors (error transparency)
+- No fallback or degradation logic
+- No default values for attribute access (natural error propagation)
 
-### 多进程支持
-- 对于多进程场景使用 `SerializableConfigData` 和 `create_serializable_config()`
-- 配置数据可以被序列化并在进程间共享
+## Important Notes
 
-### 测试模式功能
-- 隔离实例防止测试干扰
-- 自动路径替换到临时目录
-- 为调试保留 CallChainTracker 功能
-- 为 `_dir` 字段自动创建目录
+### Multiprocessing Support
+- Use `SerializableConfigData` and `create_serializable_config()` for multiprocessing scenarios
+- Configuration data can be serialized and shared between processes
 
-### 平台支持
-- 仅支持 Windows 10 和 Ubuntu Linux（缩减范围）
-- 使用 `CrossPlatformPath` 处理跨平台路径
-- 自动平台特定路径转换
+### Test Mode Features
+- Isolated instances prevent test interference
+- Automatic path replacement to temporary directories
+- Retains CallChainTracker functionality for debugging
+- Automatic directory creation for `_dir` fields
+
+### Platform Support
+- Only supports Windows 10 and Ubuntu Linux (reduced scope)
+- Uses `CrossPlatformPath` for cross-platform path handling
+- Automatic platform-specific path conversion
+
+### Environment Configuration
+**Critical**: This project requires conda environment `base_python3.12`:
+```bash
+# Always activate environment before running Python commands
+source /home/tony/programs/miniconda3/etc/profile.d/conda.sh && conda activate base_python3.12
+
+# Or use conda run for single commands
+conda run -n base_python3.12 python your_script.py
+```
+
+### Git Configuration
+- Use email `Tony.xiao@gmail.com` for commits
+- Do not use "claude code" related terms in commit messages
+- Follow conventional commit format for consistency
+
+### Key API Usage
+```python
+# Main application (must provide first_start_time)
+from datetime import datetime
+from config_manager import get_config_manager
+
+start_time = datetime.now()
+config = get_config_manager(first_start_time=start_time)
+
+# Library/module usage (no first_start_time needed)
+config = get_config_manager()
+
+# Test mode usage
+config = get_config_manager(test_mode=True)
+```
+
+### File Naming Conventions
+- Test files: `test_tc{4digits}_{3digits}_{description}.py`
+- Source files: Use descriptive names, avoid 'test' in non-test files
+- Maximum line length: 120 characters
+- File size limit: 300 lines (split if exceeded)
