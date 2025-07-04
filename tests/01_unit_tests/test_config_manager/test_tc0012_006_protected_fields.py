@@ -149,8 +149,12 @@ __type_hints__: {}
             assert 'temp' in normalized_base_dir.lower() or 'tmp' in normalized_base_dir.lower(), f"base_dir应该包含temp或tmp: {normalized_base_dir}"
             assert 'tests' in normalized_base_dir, f"base_dir应该包含tests: {normalized_base_dir}"
             
-            # work_dir和log_dir不再被test_mode自动替换，保持原值
-            assert config_manager.work_dir == "/tmp/original/work/path"
+            # work_dir会因为向后兼容性自动同步paths.work_dir，所以会被测试模式替换
+            # 验证work_dir被替换到测试环境
+            assert config_manager.work_dir != "/tmp/original/work/path", f"work_dir应该因向后兼容而被替换，但仍然是: {config_manager.work_dir}"
+            assert 'tests' in config_manager.work_dir, f"work_dir应该包含tests路径: {config_manager.work_dir}"
+            
+            # log_dir不被test_mode自动替换，保持原值
             assert config_manager.log_dir == "/tmp/original/log/path"
             
             # 验证网络URL没有被替换

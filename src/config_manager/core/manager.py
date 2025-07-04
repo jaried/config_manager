@@ -237,11 +237,20 @@ class ConfigManagerCore(ConfigNode):
             '__type_hints__': self._type_hints
         }
 
+        backup_path = self._file_ops.get_backup_path(
+            self._config_path,
+            self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),
+            self  # 传递配置管理器实例
+        )
         saved = self._file_ops.save_config(
             self._config_path,
             data_to_save,
-            self._get_backup_path()
+            backup_path
         )
+        
+        # 记录实际使用的备份路径
+        if saved:
+            self._last_backup_path = backup_path
 
         if ENABLE_CALL_CHAIN_DISPLAY:
             print(f"保存结果: {saved}")
@@ -267,8 +276,12 @@ class ConfigManagerCore(ConfigNode):
             print(f"重新加载结果: {reloaded}")
         return reloaded
 
-    def _get_backup_path(self) -> str:
-        """获取备份路径"""
+    def get_last_backup_path(self) -> str:
+        """获取最后一次实际备份的路径"""
+        if hasattr(self, '_last_backup_path') and self._last_backup_path:
+            return self._last_backup_path
+        
+        # 如果没有记录的备份路径，计算预期的备份路径
         return self._file_ops.get_backup_path(
             self._config_path,
             self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),

@@ -41,7 +41,7 @@ def test_tc0002_001_001_autosave_basic():
         time.sleep(0.2)
 
         # 验证备份文件存在（现在文件保存到备份路径）
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         file_exists = os.path.exists(backup_path)
         assert file_exists
 
@@ -110,7 +110,7 @@ def test_tc0002_001_003_autosave_delay():
         time.sleep(0.6)
 
         # 验证备份文件存在（现在文件保存到备份路径）
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         file_exists = os.path.exists(backup_path)
         assert file_exists
     return
@@ -133,7 +133,7 @@ def test_tc0002_001_004_backup_path_generation():
         time.sleep(0.2)
 
         # 获取备份路径
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         
         # 验证备份路径格式
         assert backup_path is not None
@@ -222,7 +222,7 @@ def test_tc0002_001_006_backup_filename_format():
         # 等待自动保存
         time.sleep(0.2)
 
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         backup_filename = os.path.basename(backup_path)
         
         # 验证文件名格式：原文件名_yyyymmdd_HHMMSS.yaml
@@ -258,7 +258,7 @@ def test_tc0002_001_007_backup_directory_structure():
         # 等待自动保存
         time.sleep(0.2)
 
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         
         # 验证目录结构：原目录/backup/yyyymmdd/HHMMSS/filename_yyyymmdd_HHMMSS.yaml
         path_parts = backup_path.split(os.sep)
@@ -332,7 +332,7 @@ def test_tc0002_001_008_caller_start_time_detection():
             assert first_start_time == test_start_time
             
             # 验证备份路径包含正确的时间戳
-            backup_path = cfg._get_backup_path()
+            backup_path = cfg.get_last_backup_path()
             expected_date = test_start_time.strftime('%Y%m%d')
             expected_time = test_start_time.strftime('%H%M%S')
             
@@ -464,7 +464,7 @@ def test_tc0002_001_010_fallback_to_current_time():
             assert first_start_time == fallback_time
             
             # 验证备份文件正常创建
-            backup_path = cfg._get_backup_path()
+            backup_path = cfg.get_last_backup_path()
             assert os.path.exists(backup_path)
             
         finally:

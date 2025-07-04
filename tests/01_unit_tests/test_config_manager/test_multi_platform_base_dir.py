@@ -42,8 +42,8 @@ class TestMultiPlatformBaseDir:
         
         config_dict = base_dir_config.to_dict()
         assert 'windows' in config_dict, "应该包含windows配置"
-        assert 'ubuntu' in config_dict, "应该包含ubuntu配置"
-        assert config_dict['ubuntu'] == '/tmp/test_project', "ubuntu路径应该保持原值"
+        assert 'linux' in config_dict, "应该包含linux配置"
+        assert config_dict['linux'] == '/tmp/test_project', "linux路径应该保持原值"
         assert config_dict['windows'] == 'd:\\logs', "windows路径应该使用默认值"
 
     def test_cross_platform_path_selection(self):
@@ -153,7 +153,7 @@ class TestMultiPlatformBaseDir:
         
         # 验证默认值
         assert config_dict['windows'] == 'D:\\Windows\\Project', "Windows路径应该保持原值"
-        assert config_dict['ubuntu'] == '~/logs', "Ubuntu应该使用默认值"
+        assert config_dict['linux'] == '~/logs', "Linux应该使用默认值"
 
     def test_tilde_expansion(self):
         """测试波浪线路径展开"""

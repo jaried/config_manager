@@ -77,7 +77,7 @@ def test_tc0002_002_001_async_main_scheduler_flow():
 
         # 验证备份文件存在
         result_cfg_main.save()  # 确保备份文件创建
-        backup_path = result_cfg_main._get_backup_path()
+        backup_path = result_cfg_main.get_last_backup_path()
         assert os.path.exists(backup_path)
     return
 
@@ -185,8 +185,8 @@ def test_tc0002_002_002_envs_path_simulation():
         cfg1.save()
         cfg2.save()
         
-        backup_path1 = cfg1._get_backup_path()
-        backup_path2 = cfg2._get_backup_path()
+        backup_path1 = cfg1.get_last_backup_path()
+        backup_path2 = cfg2.get_last_backup_path()
 
         assert os.path.exists(backup_path1)
         assert os.path.exists(backup_path2)
@@ -268,7 +268,7 @@ def test_tc0002_002_003_multiple_async_calls_same_path():
 
         # 验证主配置管理器的备份文件存在
         main_cfg.save()  # 确保备份文件创建
-        backup_path = main_cfg._get_backup_path()
+        backup_path = main_cfg.get_last_backup_path()
         assert os.path.exists(backup_path)
         
         # 验证序列化配置是可序列化的
@@ -320,7 +320,7 @@ def test_tc0002_002_004_async_exception_handling():
 
         # 验证备份文件存在
         result_cfg.save()  # 确保备份文件创建
-        backup_path = result_cfg._get_backup_path()
+        backup_path = result_cfg.get_last_backup_path()
         assert os.path.exists(backup_path)
     return
 
@@ -361,7 +361,7 @@ def test_tc0002_002_005_mock_real_scenario():
 
             # 保存main配置的备份路径和数据，用于后续验证
             cfg_main.save()  # 确保备份文件创建
-            main_backup_path = cfg_main._get_backup_path()
+            main_backup_path = cfg_main.get_last_backup_path()
             main_config_path = cfg_main.get_config_path()
             main_data = {
                 'main_startup': cfg_main.get('main_startup'),
@@ -426,7 +426,7 @@ def test_tc0002_002_005_mock_real_scenario():
 
         # 验证备份文件都存在
         cfg_scheduler.save()  # 确保备份文件创建
-        scheduler_backup = cfg_scheduler._get_backup_path()
+        scheduler_backup = cfg_scheduler.get_last_backup_path()
 
         assert os.path.exists(main_backup_path)
         assert os.path.exists(scheduler_backup)
@@ -484,7 +484,7 @@ async def test_tc0002_002_006_pytest_async_decorator():
 
         # 验证备份文件
         cfg1.save()  # 确保备份文件创建
-        backup_path = cfg1._get_backup_path()
+        backup_path = cfg1.get_last_backup_path()
         assert os.path.exists(backup_path)
     return
 

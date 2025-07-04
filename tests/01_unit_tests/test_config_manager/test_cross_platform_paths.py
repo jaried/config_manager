@@ -51,14 +51,14 @@ class TestCrossPlatformPathManager:
         with patch('platform.system', return_value='Linux'), \
              patch('sys.platform', 'linux'):
             manager = CrossPlatformPathManager()
-            assert manager.get_current_os() == 'ubuntu'
+            assert manager.get_current_os() == 'linux'
 
     def test_detect_ubuntu_os(self):
         """测试Ubuntu操作系统检测"""
         with patch('platform.system', return_value='Linux'), \
              patch('sys.platform', 'linux'):
             manager = CrossPlatformPathManager()
-            assert manager.get_current_os() == 'ubuntu'
+            assert manager.get_current_os() == 'linux'
 
     def test_detect_macos_os(self):
         """测试macOS操作系统检测"""
@@ -124,15 +124,15 @@ class TestCrossPlatformPathManager:
             assert result == str(tmp_path / "unix")
 
     def test_get_platform_path_dict_default(self):
-        """测试字典路径获取的默认值"""
+        """测试字典路径获取的严格错误处理"""
         path_config = {
             'unknown_os': '/unknown/path'
         }
         
-        # 测试未知平台使用默认值
+        # 测试未知平台时抛出错误（严格错误处理，不使用默认值）
         with patch.object(self.manager, '_current_os', 'unknown'):
-            result = self.manager.get_platform_path(path_config, 'base_dir')
-            assert result is not None
+            with pytest.raises(ValueError, match="配置中缺少平台 'unknown' 的路径配置"):
+                self.manager.get_platform_path(path_config, 'base_dir')
 
     @patch('platform.system', return_value='Windows')
     def test_convert_to_multi_platform_config_windows_path(self, mock_system, tmp_path):
@@ -143,9 +143,9 @@ class TestCrossPlatformPathManager:
             result = self.manager.convert_to_multi_platform_config(test_path, 'base_dir')
             assert isinstance(result, dict)
             assert result['windows'] == test_path
-            assert 'ubuntu' in result
-            # ubuntu路径，对于base_dir从Windows转换时使用默认值 ~/logs
-            assert result['ubuntu'] == '~/logs'
+            assert 'linux' in result
+            # linux路径，对于base_dir从Windows转换时使用默认值 ~/logs
+            assert result['linux'] == '~/logs'
 
     @patch('platform.system', return_value='Linux')
     def test_convert_to_multi_platform_config_linux_path(self, mock_system, tmp_path):
@@ -169,9 +169,9 @@ class TestCrossPlatformPathManager:
     @patch('platform.system', return_value='Linux')
     def test_detect_path_platform_linux(self, mock_system):
         """测试Linux路径平台类型检测"""
-        with patch.object(self.manager, '_current_os', 'ubuntu'):
-            assert self.manager._detect_path_platform('/home/user/file') == 'ubuntu'
-            assert self.manager._detect_path_platform('relative/path') == 'ubuntu'
+        with patch.object(self.manager, '_current_os', 'linux'):
+            assert self.manager._detect_path_platform('/home/user/file') == 'linux'
+            assert self.manager._detect_path_platform('relative/path') == 'linux'
 
     @patch('platform.system', return_value='Windows')
     def test_detect_path_platform_relative(self, mock_system):
@@ -226,7 +226,7 @@ class TestCrossPlatformPathFunctions:
         windows_path = str(tmp_path)
         result = convert_to_multi_platform_config(windows_path, 'base_dir')
         assert 'windows' in result
-        assert 'ubuntu' in result
+        assert 'linux' in result
 
     def test_get_platform_path_function(self, tmp_path):
         """测试get_platform_path便捷函数"""
@@ -417,13 +417,13 @@ class TestCrossPlatformPathErrorHandling:
         """测试平台路径获取错误处理"""
         manager = get_cross_platform_manager()
         
-        # 测试无效的路径配置
-        result = manager.get_platform_path(None, 'base_dir')
-        assert result is not None
+        # 测试无效的路径配置（None）- 严格错误处理
+        with pytest.raises(ValueError, match="无效的路径配置类型"):
+            manager.get_platform_path(None, 'base_dir')
         
-        # 测试空字典
-        result = manager.get_platform_path({}, 'base_dir')
-        assert result is not None
+        # 测试空字典 - 严格错误处理
+        with pytest.raises(ValueError, match="配置中缺少平台"):
+            manager.get_platform_path({}, 'base_dir')
 
     def test_path_validation_error_handling(self):
         """测试路径验证错误处理"""

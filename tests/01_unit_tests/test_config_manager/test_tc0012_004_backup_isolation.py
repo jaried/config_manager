@@ -26,11 +26,11 @@ class TestTC0012004BackupIsolation:
         
         # 生产环境配置管理器
         prod_cfg = get_config_manager(first_start_time=fixed_time)
-        prod_backup_path = prod_cfg._get_backup_path()
+        prod_backup_path = prod_cfg.get_last_backup_path()
         
         # 测试环境配置管理器
         test_cfg = get_config_manager(test_mode=True, first_start_time=fixed_time)
-        test_backup_path = test_cfg._get_backup_path()
+        test_backup_path = test_cfg.get_last_backup_path()
         
         # 验证备份路径完全不同
         assert prod_backup_path != test_backup_path
@@ -58,18 +58,25 @@ class TestTC0012004BackupIsolation:
         # 生产环境：设置配置并触发备份
         prod_cfg = get_config_manager(first_start_time=fixed_time, autosave_delay=0.1)
         prod_cfg.test_backup_isolation = "production_value"
+        # 明确触发保存以确保备份文件创建
+        prod_cfg.save()
         
         # 测试环境：设置配置并触发备份
         test_cfg = get_config_manager(test_mode=True, first_start_time=fixed_time, autosave_delay=0.1)
         test_cfg.test_backup_isolation = "test_value"
+        # 明确触发保存以确保备份文件创建
+        test_cfg.save()
         
         # 等待自动保存和备份
         import time
         time.sleep(0.3)
         
-        # 获取备份路径
-        prod_backup_path = prod_cfg._get_backup_path()
-        test_backup_path = test_cfg._get_backup_path()
+        # 获取实际的备份路径（使用paths.backup_dir）
+        prod_backup_path = prod_cfg.get_last_backup_path()
+        test_backup_path = test_cfg.get_last_backup_path()
+        
+        print(f"生产环境实际备份路径: {prod_backup_path}")
+        print(f"测试环境实际备份路径: {test_backup_path}")
         
         # 验证备份文件都存在
         assert os.path.exists(prod_backup_path), f"生产环境备份文件不存在: {prod_backup_path}"
@@ -99,7 +106,7 @@ class TestTC0012004BackupIsolation:
         time.sleep(0.3)
         
         # 获取备份路径
-        backup_path = test_cfg._get_backup_path()
+        backup_path = test_cfg.get_last_backup_path()
         
         # 验证备份文件存在
         assert os.path.exists(backup_path)
@@ -138,8 +145,8 @@ class TestTC0012004BackupIsolation:
         time.sleep(0.3)
         
         # 获取备份路径
-        backup_path1 = test_cfg1._get_backup_path()
-        backup_path2 = test_cfg2._get_backup_path()
+        backup_path1 = test_cfg1.get_last_backup_path()
+        backup_path2 = test_cfg2.get_last_backup_path()
         
         # 验证备份路径不同
         assert backup_path1 != backup_path2
@@ -171,9 +178,9 @@ class TestTC0012004BackupIsolation:
         test_cfg = get_config_manager(test_mode=True, first_start_time=fixed_time)
         
         # 多次获取备份路径，应该保持一致
-        backup_path1 = test_cfg._get_backup_path()
-        backup_path2 = test_cfg._get_backup_path()
-        backup_path3 = test_cfg._get_backup_path()
+        backup_path1 = test_cfg.get_last_backup_path()
+        backup_path2 = test_cfg.get_last_backup_path()
+        backup_path3 = test_cfg.get_last_backup_path()
         
         # 验证路径一致性
         assert backup_path1 == backup_path2 == backup_path3
@@ -210,7 +217,7 @@ class TestTC0012004BackupIsolation:
                 first_start_time=fixed_time
             )
             
-            backup_path = test_cfg._get_backup_path()
+            backup_path = test_cfg.get_last_backup_path()
             
             # 验证备份路径基于测试环境路径生成
             assert "temp" in backup_path.lower() or "tests" in backup_path

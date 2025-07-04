@@ -16,7 +16,7 @@ class CrossPlatformPathManager:
     # 支持的操作系统
     SUPPORTED_OS = {
         'windows': ['win32', 'win64', 'windows'],
-        'ubuntu': ['linux', 'linux2']  # Ubuntu是Linux的一个发行版
+        'linux': ['linux', 'linux2', 'ubuntu']  # Linux包括各种发行版（Ubuntu等）
     }
     
     # 默认路径配置
@@ -27,7 +27,7 @@ class CrossPlatformPathManager:
             'tensorboard_dir': os.path.join(tempfile.gettempdir(), 'tensorboard_logs'),
             'temp_dir': tempfile.gettempdir()
         },
-        'ubuntu': {
+        'linux': {
             'base_dir': tempfile.gettempdir(),
             'work_dir': os.path.join(tempfile.gettempdir(), 'work'),
             'tensorboard_dir': os.path.join(tempfile.gettempdir(), 'tensorboard_logs'),
@@ -58,19 +58,18 @@ class CrossPlatformPathManager:
             if system_name == 'windows' or 'win' in sys_platform:
                 self._current_os = 'windows'
             elif system_name == 'linux' or 'linux' in sys_platform:
-                # 所有Linux系统都归为ubuntu
-                self._current_os = 'ubuntu'
+                # 所有Linux系统（包括Ubuntu）都归为linux
+                self._current_os = 'linux'
             else:
-                # 默认使用ubuntu（包括原来的macos和其他系统）
-                self._current_os = 'ubuntu'
+                # 不支持的操作系统，直接抛错
+                raise RuntimeError(f"不支持的操作系统: {system_name} (sys.platform: {sys_platform})")
             
             # 记录检测时间
             self._detection_time = datetime.now()
             
         except Exception as e:
-            # 检测失败时使用默认值
-            self._current_os = 'ubuntu'
-            self._detection_time = datetime.now()
+            # 检测失败时直接抛错，不设置默认值
+            raise RuntimeError(f"平台检测失败: {e}") from e
     
     def get_current_os(self) -> str:
         """获取当前操作系统"""
@@ -85,10 +84,17 @@ class CrossPlatformPathManager:
     
     def get_default_path(self, path_type: str) -> str:
         """获取默认路径"""
-        if self._current_os in self.DEFAULT_PATHS:
-            result = self.DEFAULT_PATHS[self._current_os].get(path_type, '')
-            return result if result is not None else ''
-        return ''
+        if self._current_os not in self.DEFAULT_PATHS:
+            raise RuntimeError(f"不支持的操作系统: {self._current_os}")
+        
+        if path_type not in self.DEFAULT_PATHS[self._current_os]:
+            raise ValueError(f"不支持的路径类型: {path_type}")
+        
+        result = self.DEFAULT_PATHS[self._current_os][path_type]
+        if result is None:
+            raise ValueError(f"路径类型 {path_type} 配置为空")
+        
+        return result
     
     def get_platform_path(self, path_config: Union[str, Dict[str, str]], path_type: str) -> str:
         """根据当前操作系统获取平台特定路径"""
@@ -102,29 +108,31 @@ class CrossPlatformPathManager:
             if self._current_os in path_config:
                 return path_config[self._current_os]
             
-            # 优先级1.5：ubuntu和linux互为别名
-            if self._current_os in ['ubuntu', 'linux']:
-                if 'ubuntu' in path_config:
-                    return path_config['ubuntu']
-                elif 'linux' in path_config:
-                    return path_config['linux']
+            # 不支持ubuntu别名，严格要求使用linux
+            # 如果配置中仍使用ubuntu键，直接报错
+            if self._current_os == 'linux' and 'ubuntu' in path_config and 'linux' not in path_config:
+                raise ValueError(f"配置错误：请将 'ubuntu' 改为 'linux'。当前平台: {self._current_os}")
+            
+            # 仅支持linux键，不支持ubuntu向后兼容
+            if self._current_os == 'linux' and 'linux' in path_config:
+                return path_config['linux']
             
             # 优先级2：操作系统家族的路径
             os_family = self.get_os_family()
             if os_family in path_config:
                 return path_config[os_family]
             
-            # 优先级3：默认路径
-            return self.get_default_path(path_type)
+            # 配置中没有当前平台的路径，直接抛错
+            raise ValueError(f"配置中缺少平台 '{self._current_os}' 的路径配置。可用平台: {list(path_config.keys())}")
         
-        # 其他情况返回默认路径
-        return self.get_default_path(path_type)
+        # 其他情况直接抛错
+        raise ValueError(f"无效的路径配置类型: {type(path_config)}")
     
     def _get_default_paths(self, key: str) -> Dict[str, str]:
         """获取默认路径配置"""
         return {
             'windows': self.DEFAULT_PATHS['windows'].get(key, ''),
-            'ubuntu': self.DEFAULT_PATHS['ubuntu'].get(key, ''),
+            'linux': self.DEFAULT_PATHS['linux'].get(key, ''),
         }
 
     def convert_to_multi_platform_config(self, path: str, key: str) -> Dict[str, str]:
@@ -139,7 +147,7 @@ class CrossPlatformPathManager:
         multi_platform_config = {}
         
         # 为每个支持的平台设置路径
-        for platform in ['windows', 'ubuntu']:
+        for platform in ['windows', 'linux']:
             if platform == detected_platform:
                 # 对于检测到的平台，使用原始路径
                 multi_platform_config[platform] = path
@@ -147,13 +155,13 @@ class CrossPlatformPathManager:
                 # 对于其他平台，生成对应的路径
                 if platform == 'windows':
                     # Windows路径转换
-                    if detected_platform in ['ubuntu']:
+                    if detected_platform in ['linux']:
                         # 从Unix路径转换为Windows路径，默认使用 d:\logs
                         multi_platform_config[platform] = 'd:\\logs'
                     else:
                         multi_platform_config[platform] = path
-                elif platform == 'ubuntu':
-                    # Ubuntu路径转换
+                elif platform == 'linux':
+                    # Linux路径转换
                     if detected_platform == 'windows':
                         # 从Windows路径转换为Linux路径，保持原始路径转换逻辑
                         # 只有在没有配置或者需要默认值时才使用~/logs
@@ -177,25 +185,25 @@ class CrossPlatformPathManager:
         if '\\' in path and '/' not in path:
             return 'windows'
         
-        # 2. 包含正斜杠且不包含反斜杠 - 一定是Unix（ubuntu）
+        # 2. 包含正斜杠且不包含反斜杠 - 一定是Unix（linux）
         if '/' in path and '\\' not in path:
             # 进一步判断Unix类型
             if path.startswith('/'):
-                # 所有Unix绝对路径都归为ubuntu
-                return 'ubuntu'
+                # 所有Unix绝对路径都归为linux
+                return 'linux'
             else:
                 # 相对路径，根据当前操作系统判断
                 if self._current_os == 'windows':
                     return 'windows'
                 else:
-                    return 'ubuntu'
+                    return 'linux'
         
         # 3. 同时包含两种分隔符 - 根据当前操作系统判断
         if '\\' in path and '/' in path:
             if self._current_os == 'windows':
                 return 'windows'
             else:
-                return 'ubuntu'
+                return 'linux'
         
         # Windows路径特征检测
         # 1. 盘符格式 (C:, D:等)

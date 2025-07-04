@@ -173,7 +173,7 @@ def test_tc0005_001_006_backup_loading():
         assert os.path.exists(cfg.get_config_path())
         
         # 验证备份文件也被创建
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         backup_dir = os.path.dirname(backup_path)
         assert os.path.exists(backup_dir), f"备份目录不存在: {backup_dir}"
 
@@ -196,7 +196,7 @@ def test_tc0005_001_006_backup_loading():
 
         # 断言测试环境路径下的备份文件存在
         assert os.path.exists(cfg.get_config_path()), "测试环境路径下的配置文件应存在"
-        backup_path = cfg._get_backup_path()
+        backup_path = cfg.get_last_backup_path()
         backup_dir = os.path.dirname(backup_path)
         assert os.path.exists(backup_dir), "测试环境路径下的备份目录应存在"
     return
