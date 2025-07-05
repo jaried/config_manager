@@ -81,11 +81,11 @@ class TimeProcessor:
             first_start_time: ISO格式的时间字符串
             
         Returns:
-            tuple: (日期字符串, 时间字符串)
+            tuple: (日期字符串YYYYMMDD, 时间字符串HHMMSS)
         """
         try:
             dt = datetime.fromisoformat(first_start_time.replace('Z', '+00:00'))
-            return dt.strftime('%Y-%m-%d'), dt.strftime('%H%M%S')
+            return dt.strftime('%Y%m%d'), dt.strftime('%H%M%S')
         except (ValueError, AttributeError) as e:
             raise TimeParsingError(f"时间解析失败: {first_start_time}, 错误: {e}")
     
@@ -94,10 +94,10 @@ class TimeProcessor:
         """获取当前时间组件
         
         Returns:
-            tuple: (日期字符串, 时间字符串)
+            tuple: (日期字符串YYYYMMDD, 时间字符串HHMMSS)
         """
         now = datetime.now()
-        return now.strftime('%Y-%m-%d'), now.strftime('%H%M%S')
+        return now.strftime('%Y%m%d'), now.strftime('%H%M%S')
 
 
 class PathGenerator:
@@ -177,7 +177,7 @@ class PathGenerator:
         
         Args:
             work_dir: 工作目录
-            date_str: 日期字符串（YYYY-MM-DD）
+            date_str: 日期字符串（YYYYMMDD）
             time_str: 时间字符串（HHMMSS）
             
         Returns:
@@ -236,7 +236,7 @@ class PathGenerator:
         
         Args:
             work_dir: 工作目录
-            date_str: 日期字符串（YYYY-MM-DD格式，将转换为YYYYmmdd）
+            date_str: 日期字符串（YYYYMMDD）
             time_str: 时间字符串（HHMMSS）
             
         Returns:
@@ -244,11 +244,8 @@ class PathGenerator:
         """
         work_path = Path(work_dir)
         
-        # 将日期字符串从YYYY-MM-DD转换为YYYYmmdd格式
-        date_formatted = date_str.replace('-', '')
-        
         backup_dirs = {
-            'paths.backup_dir': str(work_path / 'backup' / date_formatted / time_str)
+            'paths.backup_dir': str(work_path / 'backup' / date_str / time_str)
         }
         
         return backup_dirs
@@ -712,6 +709,12 @@ class PathConfigurationManager:
     
     def setup_project_paths(self) -> None:
         """生成所有路径并自动创建目录，仅对'_dir'结尾的字段自动创建目录"""
+        
+        # 1. 确保向后兼容性：同步work_dir字段并创建目录
+        self._config_manager.work_dir = self._config_manager.paths.work_dir
+        # 创建work_dir目录
+        os.makedirs(self._config_manager.paths.work_dir, exist_ok=True)
+        
         def _create_dirs_for_fields(node, visited=None):
             if visited is None:
                 visited = set()
@@ -741,4 +744,7 @@ class PathConfigurationManager:
                     _create_dirs_for_fields(value, visited)
         # 递归入口直接指向config.paths._data
         if hasattr(self._config_manager, 'paths') and hasattr(self._config_manager.paths, '_data'):
-            _create_dirs_for_fields(self._config_manager.paths._data) 
+            _create_dirs_for_fields(self._config_manager.paths._data)
+        
+        # 2. 路径创建完成后，再次确保work_dir字段同步（防止paths.work_dir在过程中被更新）
+        self._config_manager.work_dir = self._config_manager.paths.work_dir 

@@ -69,7 +69,7 @@ class TestTimeProcessor:
         test_time = '2025-01-08T10:30:45'
         date_str, time_str = TimeProcessor.parse_first_start_time(test_time)
         
-        assert date_str == '2025-01-08'
+        assert date_str == '20250108'
         assert time_str == '103045'
     
     def test_parse_first_start_time_with_z_suffix(self):
@@ -77,7 +77,7 @@ class TestTimeProcessor:
         test_time = '2025-01-08T10:30:45Z'
         date_str, time_str = TimeProcessor.parse_first_start_time(test_time)
         
-        assert date_str == '2025-01-08'
+        assert date_str == '20250108'
         assert time_str == '103045'
     
     def test_parse_first_start_time_invalid_format(self):
@@ -92,10 +92,10 @@ class TestTimeProcessor:
         date_str, time_str = TimeProcessor.get_current_time_components()
         
         # 验证格式
-        assert len(date_str) == 10  # YYYY-MM-DD
+        assert len(date_str) == 8   # YYYYMMDD
         assert len(time_str) == 6   # HHMMSS
-        assert '-' in date_str
-        assert date_str.count('-') == 2
+        assert date_str.isdigit()   # 应该全部是数字
+        assert time_str.isdigit()   # 应该全部是数字
 
 
 
@@ -141,7 +141,7 @@ class TestPathGenerator:
         """测试日志目录生成"""
         generator = PathGenerator()
         work_dir = tmp_path / 'test_project' / 'exp_001'
-        date_str = '2025-01-08'
+        date_str = '20250108'
         time_str = '103045'
         result = generator.generate_log_directories(str(work_dir), date_str, time_str)
         expected = {
