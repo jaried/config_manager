@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue view:*)",
+      "Bash(source:*)",
+      "Bash(conda activate:*)",
+      "Bash(python -m pytest tests/01_unit_tests/test_config_manager/test_tc0013_001_date_format_consistency.py::TestDateFormatConsistency::test_production_mode_issue -v)",
+      "Bash(python -m pytest tests/01_unit_tests/test_config_manager/test_tc0013_001_date_format_consistency.py -v)",
+      "Bash(python:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh issue list:*)",
+      "Bash(ruff check:*)"
+    ],
+    "deny": []
+  }
+}

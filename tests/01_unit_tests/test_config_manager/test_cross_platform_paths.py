@@ -197,6 +197,34 @@ class TestCrossPlatformPathManager:
             # 路径标准化应该处理 .. 引用和多个斜杠
             assert 'test' in result and 'path' in result
 
+    def test_normalize_path_tilde_expansion(self):
+        """测试~路径展开功能"""
+        # 测试在Linux系统上的~路径展开
+        with patch.object(self.manager, '_detect_path_platform', return_value='linux'):
+            # 测试~路径展开
+            result = self.manager.normalize_path('~/test/path')
+            assert not result.startswith('~'), "~路径应该被展开"
+            assert '/test/path' in result, "路径应该包含预期的子路径"
+            
+            # 测试包含~但不在开头的路径
+            result = self.manager.normalize_path('/path/~/test')
+            assert result == '/path/~/test', "中间包含~的路径应该保持原样"
+            
+            # 测试空路径
+            result = self.manager.normalize_path('')
+            assert result == '', "空路径应该返回空字符串"
+            
+            # 测试None路径
+            result = self.manager.normalize_path(None)
+            assert result is None, "None路径应该返回None"
+        
+        # 测试在Windows系统上不进行~路径展开
+        with patch.object(self.manager, '_detect_path_platform', return_value='windows'):
+            result = self.manager.normalize_path('~/test/path')
+            # 在Windows上，~路径应该保持原样（不展开），但分隔符会被标准化
+            assert result.startswith('~'), "在Windows上~路径应该保持不展开"
+            assert 'test' in result and 'path' in result, "路径应该包含预期的子路径"
+
     def test_get_platform_info(self):
         """测试平台信息获取"""
         info = self.manager.get_platform_info()

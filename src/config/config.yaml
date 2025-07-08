@@ -17,13 +17,24 @@ __data__:
       - \.jpg$
       - \.png$
       - \.gif$
-  base_dir:
-    windows: D:\logs
-    ubuntu: ~/logs
+  base_dir: /tmp/original/base/path
+  work_dir: /tmp/original/base/path/test_project/experiment_name
+  log_dir: /tmp/original/log/path
+  config_file_path: 
+    /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
   experiment_name: experiment_name
+  paths:
+    work_dir: /tmp/original/base/path/test_project/experiment_name
+    checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint
+    best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best
+    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug
+    tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/tensorboard
+    tsb_logs_dir: /tmp/original/base/path/test_project/experiment_name/tsb_logs/20250107/181520
+    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520
+    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
-  scheduler_start_time: '2025-07-03T18:34:06.033152'
+  scheduler_start_time: '2025-07-08T11:59:01.770012'
   scheduler_progress: completed
 __type_hints__: {}

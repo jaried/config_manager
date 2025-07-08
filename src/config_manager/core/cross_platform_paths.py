@@ -6,7 +6,7 @@ import os
 import sys
 import platform
 from pathlib import Path
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Any, Union
 import tempfile
 
 
@@ -147,31 +147,31 @@ class CrossPlatformPathManager:
         multi_platform_config = {}
         
         # 为每个支持的平台设置路径
-        for platform in ['windows', 'linux']:
-            if platform == detected_platform:
+        for platform_name in ['windows', 'linux']:
+            if platform_name == detected_platform:
                 # 对于检测到的平台，使用原始路径
-                multi_platform_config[platform] = path
+                multi_platform_config[platform_name] = path
             else:
                 # 对于其他平台，生成对应的路径
-                if platform == 'windows':
+                if platform_name == 'windows':
                     # Windows路径转换
                     if detected_platform in ['linux']:
                         # 从Unix路径转换为Windows路径，默认使用 d:\logs
-                        multi_platform_config[platform] = 'd:\\logs'
+                        multi_platform_config[platform_name] = 'd:\\logs'
                     else:
-                        multi_platform_config[platform] = path
-                elif platform == 'linux':
+                        multi_platform_config[platform_name] = path
+                elif platform_name == 'linux':
                     # Linux路径转换
                     if detected_platform == 'windows':
                         # 从Windows路径转换为Linux路径，保持原始路径转换逻辑
                         # 只有在没有配置或者需要默认值时才使用~/logs
                         if key == 'base_dir':
-                            multi_platform_config[platform] = '~/logs'
+                            multi_platform_config[platform_name] = '~/logs'
                         else:
                             # 对于其他路径类型，尝试转换
-                            multi_platform_config[platform] = path.replace('\\', '/').replace('d:', '/tmp')
+                            multi_platform_config[platform_name] = path.replace('\\', '/').replace('d:', '/tmp')
                     else:
-                        multi_platform_config[platform] = path
+                        multi_platform_config[platform_name] = path
         
         return multi_platform_config
     
@@ -225,6 +225,10 @@ class CrossPlatformPathManager:
         try:
             # 检测路径的平台类型
             path_platform = self._detect_path_platform(path)
+            
+            # 处理~路径展开（仅在Linux/Unix系统上）
+            if path_platform == 'linux' and '~' in path:
+                path = os.path.expanduser(path)
             
             # 根据平台类型进行标准化
             if path_platform == 'windows':

@@ -86,9 +86,7 @@ class TestCrossPlatformConfigManagerIntegration:
             )
             multi_platform_base_dir = {
                 'windows': temp_base_dir,
-                'linux': '/home/tony/multi_logs',
-                'ubuntu': '/home/tony/multi_logs',
-                'macos': '/Users/tony/multi_logs'
+                'linux': '/home/tony/multi_logs'
             }
             config.set('base_dir', multi_platform_base_dir)
             base_dir_value = config._data.get('base_dir')
@@ -112,9 +110,7 @@ class TestCrossPlatformConfigManagerIntegration:
             )
             multi_platform_base_dir = {
                 'windows': temp_base_dir,
-                'linux': '/home/tony/cross_platform_logs',
-                'ubuntu': '/home/tony/cross_platform_logs',
-                'macos': '/Users/tony/cross_platform_logs'
+                'linux': '/home/tony/cross_platform_logs'
             }
             config.set('base_dir', multi_platform_base_dir)
             config.set('project_name', 'cross_platform_test')
@@ -349,7 +345,7 @@ class TestCrossPlatformConfigManagerIntegration:
             # 设置多平台配置
             platform_specific_paths = {
                 'windows': os.path.join(temp_dir, 'windows_specific'),
-                'ubuntu': '/home/tony/ubuntu_specific'
+                'linux': '/home/tony/ubuntu_specific'
             }
             config.set('base_dir', platform_specific_paths)
             
@@ -385,9 +381,7 @@ class TestCrossPlatformPathConfigurationManagerIntegration:
             # 设置多平台base_dir
             multi_platform_base_dir = {
                 'windows': os.path.join(temp_dir, 'path_config_test'),
-                'linux': '/home/tony/path_config_test',
-                'ubuntu': '/home/tony/path_config_test',
-                'macos': '/Users/tony/path_config_test'
+                'linux': '/home/tony/path_config_test'
             }
             config.set('base_dir', multi_platform_base_dir)
             
@@ -420,9 +414,7 @@ class TestCrossPlatformPathConfigurationManagerIntegration:
             # 设置多平台base_dir
             multi_platform_base_dir = {
                 'windows': os.path.join(temp_dir, 'auto_creation_test'),
-                'linux': '/home/tony/auto_creation_test',
-                'ubuntu': '/home/tony/auto_creation_test',
-                'macos': '/Users/tony/auto_creation_test'
+                'linux': '/home/tony/auto_creation_test'
             }
             config.set('base_dir', multi_platform_base_dir)
             
