@@ -7,10 +7,7 @@ start_time = datetime.now()
 import pytest
 import tempfile
 import os
-from pathlib import Path
-import sys
 import shutil
-from unittest.mock import patch, MagicMock
 
 # Add project root to Python path
 # 项目根目录由conftest.py自动配置

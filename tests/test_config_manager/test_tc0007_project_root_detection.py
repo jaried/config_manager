@@ -4,7 +4,6 @@ import os
 import tempfile
 import shutil
 import pytest
-from pathlib import Path
 
 
 class TestProjectRootDetection:
@@ -56,7 +55,7 @@ class TestProjectRootDetection:
 
         # 1. 在项目根目录创建实例
         cm1 = get_config_manager(auto_create=True, test_mode=True)
-        path1 = cm1.get_config_path()
+        cm1.get_config_path()
 
         # 2. 创建临时项目目录
         temp_dir = tempfile.mkdtemp(prefix="test_project_")

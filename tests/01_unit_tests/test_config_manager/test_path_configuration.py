@@ -1,12 +1,9 @@
 # tests/01_unit_tests/test_config_manager/test_path_configuration.py
 from __future__ import annotations
-from datetime import datetime
 from pathlib import Path
 import pytest
 import tempfile
-import os
-from unittest.mock import Mock, patch, MagicMock
-import sys
+from unittest.mock import Mock, patch
 
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
@@ -24,11 +21,7 @@ from src.config_manager.core.path_configuration import (
     TimeProcessor,
     PathGenerator,
     PathValidator,
-    DirectoryCreator,
     ConfigUpdater,
-    PathConfigurationError,
-    InvalidPathError,
-    DirectoryCreationError,
     TimeParsingError
 )
 
@@ -143,12 +136,23 @@ class TestPathGenerator:
         work_dir = tmp_path / 'test_project' / 'exp_001'
         date_str = '20250108'
         time_str = '103045'
+        
+        # 测试不传递first_start_time_str参数的情况（应该使用原有格式）
         result = generator.generate_log_directories(str(work_dir), date_str, time_str)
         expected = {
             'paths.tsb_logs_dir': str(work_dir / 'tsb_logs' / date_str / time_str),
             'paths.log_dir': str(work_dir / 'logs' / date_str / time_str)
         }
         assert result == expected
+        
+        # 测试传递first_start_time_str参数的情况（tsb_logs_dir应该使用新格式）
+        first_start_time = '2025-01-08T10:30:45'
+        result_with_time = generator.generate_log_directories(str(work_dir), date_str, time_str, first_start_time)
+        expected_with_time = {
+            'paths.tsb_logs_dir': str(work_dir / 'tsb_logs' / '2025' / '02' / '01' / '08' / time_str),  # 2025-01-08是第2周
+            'paths.log_dir': str(work_dir / 'logs' / date_str / time_str)  # log_dir保持原有格式
+        }
+        assert result_with_time == expected_with_time
 
 
 

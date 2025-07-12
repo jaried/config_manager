@@ -6,7 +6,7 @@ start_time = datetime.now()
 
 import copy
 from collections.abc import Iterable, Mapping
-from typing import Any, Dict, Optional, Type, Union, List
+from typing import Any, Dict, List
 
 
 class ConfigNode:

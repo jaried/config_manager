@@ -12,7 +12,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 try:
     from config_manager.config_manager import ConfigManager
-    from collections.abc import Mapping, Iterable
 
     print("✓ 导入成功")
 

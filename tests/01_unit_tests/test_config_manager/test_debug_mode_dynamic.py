@@ -1,13 +1,8 @@
 # tests/01_unit_tests/test_config_manager/test_debug_mode_dynamic.py
 from __future__ import annotations
-from datetime import datetime
 
 import pytest
-import tempfile
-import os
-from unittest.mock import patch, MagicMock
 from pathlib import Path
-import sys
 
 # Add project root to Python path
 # 项目根目录由conftest.py自动配置

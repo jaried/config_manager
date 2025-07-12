@@ -5,7 +5,6 @@ from datetime import datetime
 start_time = datetime.now()
 
 import sys
-import os
 from pathlib import Path
 
 # 添加项目根目录到Python路径
@@ -56,12 +55,12 @@ def demonstrate_path_conversion():
     for path in test_paths:
         print(f"\n原始路径: {path}")
         multi_platform_config = convert_to_multi_platform_config(path, 'base_dir')
-        print(f"转换后的多平台配置:")
+        print("转换后的多平台配置:")
         for os_name, os_path in multi_platform_config.items():
             print(f"  {os_name}: {os_path}")
     
     # 测试从多平台配置获取当前平台路径
-    print(f"\n从多平台配置获取当前平台路径:")
+    print("\n从多平台配置获取当前平台路径:")
     multi_config = {
         'windows': 'd:\\demo_logs',
         'linux': '/home/tony/logs',

@@ -9,7 +9,6 @@ import tempfile
 import os
 import sys
 import threading
-import time
 from io import StringIO
 from contextlib import redirect_stdout
 from unittest.mock import patch
@@ -83,7 +82,7 @@ def test_tc0008_003_001_very_long_function_names():
 def test_tc0008_003_002_multithreaded_environment():
     """测试多线程环境下的调用链"""
     with tempfile.TemporaryDirectory() as tmpdir:
-        config_file = os.path.join(tmpdir, 'multithread_test.yaml')
+        os.path.join(tmpdir, 'multithread_test.yaml')
         thread_results = {}
 
         def worker_thread(thread_id: int):
@@ -229,11 +228,12 @@ def test_tc0008_003_005_lambda_functions():
         config_file = os.path.join(tmpdir, 'lambda_test.yaml')
 
         # 使用lambda函数的场景
-        lambda_function = lambda: get_config_manager(
-            config_path=config_file,
-            watch=False,
-            autosave_delay=0.1
-        )
+        def lambda_function():
+            return get_config_manager(
+                    config_path=config_file,
+                    watch=False,
+                    autosave_delay=0.1
+                )
 
         def wrapper_function():
             """包装函数"""

@@ -7,7 +7,7 @@ import threading
 import atexit
 import uuid
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Dict, Optional, Type
 from collections.abc import Iterable, Mapping
 from ..config_node import ConfigNode
 from .path_resolver import PathResolver
@@ -109,7 +109,7 @@ class ConfigManagerCore(ConfigNode):
         # 如果加载失败且配置文件存在，说明是解析错误，不应该覆盖
         if not loaded and os.path.exists(self._config_path):
             print(f"⚠️  配置文件存在但解析失败: {self._config_path}")
-            print(f"⚠️  为保护原始配置，初始化失败")
+            print("⚠️  为保护原始配置，初始化失败")
             return False
 
         # 设置首次启动时间（无论配置是否加载成功都要设置）
@@ -330,7 +330,6 @@ class ConfigManagerCore(ConfigNode):
 
     def _generate_test_unique_id(self) -> str:
         """生成测试模式唯一标识符"""
-        import uuid
         return uuid.uuid4().hex[:8]
 
     def _generate_test_base_dir(self) -> str:

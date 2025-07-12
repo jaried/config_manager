@@ -3,7 +3,6 @@ from __future__ import annotations
 import pickle
 from typing import Any, Dict, Optional, Type
 from pathlib import Path
-from datetime import datetime
 
 
 class SerializableConfigData:

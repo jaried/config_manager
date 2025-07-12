@@ -305,7 +305,7 @@ def test_tc0008_001_008_error_handling():
             finally:
                 inspect.stack = original_stack_func
 
-        except Exception as e:
+        except Exception:
             # 即使发生异常，也不应该影响主要功能
             return "error_handled"
 

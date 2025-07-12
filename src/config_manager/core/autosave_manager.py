@@ -5,7 +5,6 @@ from datetime import datetime
 start_time = datetime.now()
 
 import threading
-import sys
 from typing import Callable
 
 
@@ -57,7 +56,7 @@ class AutosaveManager:
             # 检查是否可以调用gc相关功能
             gc.get_count()
             return False
-        except:
+        except Exception:
             return True
 
     def _perform_autosave(self, save_callback: Callable[[], bool]):

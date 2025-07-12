@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 import tempfile
 import shutil
-import pytest
-from pathlib import Path
 
 
 class TestSingletonPathResolution:
@@ -144,7 +142,7 @@ class TestSingletonPathResolution:
             # 4. 验证结果
             # 测试模式下，不同调用可能创建不同实例，但配置内容应该类似
             # 比较实例类型而不是内容，因为测试路径可能不同
-            assert type(cm1) == type(cm2), "应该创建相同类型的实例"
+            assert type(cm1) is type(cm2), "应该创建相同类型的实例"
             assert cm1.get('project_name') == cm2.get('project_name'), "基本配置应该相同"
             
         finally:

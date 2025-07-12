@@ -36,7 +36,7 @@ def demonstrate_path_configuration():
     print(f"基础目录: {config.base_dir}")
     
     # 3. 显示调试模式状态
-    print(f"\n3. 调试模式状态...")
+    print("\n3. 调试模式状态...")
     try:
         debug_mode = config.debug_mode
         print(f"调试模式: {debug_mode}")
@@ -44,7 +44,7 @@ def demonstrate_path_configuration():
         print("调试模式未设置")
     
     # 4. 显示生成的路径配置
-    print(f"\n4. 生成的路径配置...")
+    print("\n4. 生成的路径配置...")
     try:
         print(f"工作目录: {config.paths.work_dir}")
         print(f"检查点目录: {config.paths.checkpoint_dir}")
@@ -55,7 +55,7 @@ def demonstrate_path_configuration():
         print(f"路径配置访问失败: {e}")
     
     # 5. 获取路径配置信息
-    print(f"\n5. 路径配置详细信息...")
+    print("\n5. 路径配置详细信息...")
     try:
         path_info = config.get_path_configuration_info()
         
@@ -75,7 +75,7 @@ def demonstrate_path_configuration():
         print(f"获取路径配置信息失败: {e}")
     
     # 6. 测试路径目录创建
-    print(f"\n6. 测试路径目录创建...")
+    print("\n6. 测试路径目录创建...")
     try:
         # 创建工作目录
         work_dir_result = config.create_path_directories(create_all=False)
@@ -88,7 +88,7 @@ def demonstrate_path_configuration():
         print(f"目录创建失败: {e}")
     
     # 7. 测试调试模式更新
-    print(f"\n7. 测试调试模式更新...")
+    print("\n7. 测试调试模式更新...")
     try:
         print("更新调试模式...")
         config.update_debug_mode()
@@ -97,7 +97,7 @@ def demonstrate_path_configuration():
         print(f"调试模式更新失败: {e}")
     
     # 8. 显示配置文件内容
-    print(f"\n8. 当前配置文件内容...")
+    print("\n8. 当前配置文件内容...")
     try:
         config_path = config.get_config_path()
         print(f"配置文件路径: {config_path}")

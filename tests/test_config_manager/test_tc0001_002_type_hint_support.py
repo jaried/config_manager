@@ -6,7 +6,6 @@ start_time = datetime.now()
 
 import pytest
 import tempfile
-import time
 import os
 import sys
 

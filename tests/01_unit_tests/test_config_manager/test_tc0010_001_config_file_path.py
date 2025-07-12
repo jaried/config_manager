@@ -332,7 +332,7 @@ if __name__ == "__main__":
         try:
             print(f"\n{i}. 运行 {test_method.__name__}")
             test_method()
-            print(f"   ✓ 测试通过")
+            print("   ✓ 测试通过")
         except Exception as e:
             print(f"   ✗ 测试失败: {e}")
             import traceback

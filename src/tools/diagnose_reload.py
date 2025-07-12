@@ -59,7 +59,7 @@ def diagnose_reload_issue():
                 print("❌ 配置文件不存在")
 
             # 重新加载前的状态
-            print(f"\n重新加载前:")
+            print("\n重新加载前:")
             print(f"  - test_value: {cfg.test_value}")
             print(f"  - nested.deep_value: {cfg.nested.deep_value}")
             print(f"  - _data 内容: {cfg._data}")
@@ -70,7 +70,7 @@ def diagnose_reload_issue():
             print(f"✓ 重新加载结果: {reloaded}")
 
             # 重新加载后的状态
-            print(f"\n重新加载后:")
+            print("\n重新加载后:")
             print(f"  - _data 内容: {cfg._data}")
             print(f"  - _data 键: {list(cfg._data.keys()) if cfg._data else '空'}")
 

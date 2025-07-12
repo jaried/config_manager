@@ -2,8 +2,6 @@
 from __future__ import annotations
 from datetime import datetime
 import os
-import tempfile
-import pytest
 from unittest.mock import patch, MagicMock
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 

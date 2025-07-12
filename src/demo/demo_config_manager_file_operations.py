@@ -8,7 +8,6 @@ import time
 import tempfile
 import os
 import shutil
-from pathlib import Path
 from config_manager import get_config_manager
 
 
@@ -55,7 +54,7 @@ def demo_file_monitoring():
 
         # 读取当前文件内容
         with open(demo_config_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+            f.read()
 
         # 修改内容（添加新的配置项）
         external_config = """__data__:

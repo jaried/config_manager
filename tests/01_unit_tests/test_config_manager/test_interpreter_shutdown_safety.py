@@ -7,7 +7,7 @@ import time
 import os
 import tempfile
 import atexit
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import patch, Mock
 
 from src.config_manager import get_config_manager
 from src.config_manager.core.autosave_manager import AutosaveManager

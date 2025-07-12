@@ -1,16 +1,14 @@
 # src/config_manager/core/path_configuration.py
 from __future__ import annotations
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Union
+from typing import Dict, Any, Tuple, Union
 from pathlib import Path
 import os
-import re
 from ..config_node import ConfigNode
 import tempfile
-import sys
 
 # 导入跨平台路径管理器
-from .cross_platform_paths import get_cross_platform_manager, get_platform_path
+from .cross_platform_paths import get_cross_platform_manager
 from ..logger import debug
 
 
@@ -98,6 +96,40 @@ class TimeProcessor:
         """
         now = datetime.now()
         return now.strftime('%Y%m%d'), now.strftime('%H%M%S')
+    
+    @staticmethod
+    def get_week_number(dt: datetime) -> str:
+        """获取给定日期在一年中的第几周（两位数字格式）
+        
+        Args:
+            dt: datetime对象
+            
+        Returns:
+            str: 周数的两位数字字符串（如：01, 02, ..., 52）
+        """
+        year, week, _ = dt.isocalendar()
+        return f"{week:02d}"
+    
+    @staticmethod
+    def parse_time_with_week(time_str: str) -> Tuple[str, str, str, str, str]:
+        """解析时间字符串，返回年、周、月、日、时间组件
+        
+        Args:
+            time_str: ISO格式的时间字符串
+            
+        Returns:
+            tuple: (年份YYYY, 周数WW, 月份MM, 日期DD, 时间HHMMSS)
+        """
+        try:
+            dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+            year = dt.strftime('%Y')
+            week = TimeProcessor.get_week_number(dt)
+            month = dt.strftime('%m')
+            day = dt.strftime('%d')
+            time = dt.strftime('%H%M%S')
+            return year, week, month, day, time
+        except (ValueError, AttributeError) as e:
+            raise TimeParsingError(f"时间解析失败: {time_str}, 错误: {e}")
 
 
 class PathGenerator:
@@ -171,7 +203,8 @@ class PathGenerator:
         self, 
         work_dir: str, 
         date_str: str, 
-        time_str: str
+        time_str: str,
+        first_start_time_str: str = None
     ) -> Dict[str, str]:
         """生成日志目录路径
         
@@ -179,14 +212,27 @@ class PathGenerator:
             work_dir: 工作目录
             date_str: 日期字符串（YYYYMMDD）
             time_str: 时间字符串（HHMMSS）
+            first_start_time_str: 原始时间字符串（ISO格式），用于计算tsb_logs_dir的周数路径
             
         Returns:
             dict: 日志目录路径字典
         """
         work_path = Path(work_dir)
         
+        # 为tsb_logs_dir使用新的周数格式: yyyy/ww/mm/dd/HHMMSS
+        if first_start_time_str:
+            try:
+                year, week, month, day, time = TimeProcessor.parse_time_with_week(first_start_time_str)
+                tsb_logs_path = str(work_path / 'tsb_logs' / year / week / month / day / time)
+            except Exception:
+                # 如果解析失败，使用原有格式
+                tsb_logs_path = str(work_path / 'tsb_logs' / date_str / time_str)
+        else:
+            # 没有原始时间信息，使用原有格式
+            tsb_logs_path = str(work_path / 'tsb_logs' / date_str / time_str)
+        
         log_dirs = {
-            'paths.tsb_logs_dir': str(work_path / 'tsb_logs' / date_str / time_str),
+            'paths.tsb_logs_dir': tsb_logs_path,
             'paths.log_dir': str(work_path / 'logs' / date_str / time_str)
         }
         
@@ -262,7 +308,7 @@ class PathValidator:
         
         try:
             # 检查路径是否有效
-            path = Path(base_dir)
+            Path(base_dir)
             return True
         except Exception:
             return False
@@ -436,7 +482,7 @@ class PathConfigurationManager:
             debug("⚠️  路径配置初始化部分失败: {}", e)
             # 尝试使用最小配置
             try:
-                current_os = self._cross_platform_manager.get_current_os()
+                self._cross_platform_manager.get_current_os()
                 default_base_dir = self._cross_platform_manager.get_default_path('base_dir')
                 
                 path_configs = {
@@ -490,14 +536,13 @@ class PathConfigurationManager:
     
     def _handle_is_debug_import_error(self) -> None:
         """处理is_debug模块导入错误"""
-        try:
-            from is_debug import is_debug
-        except ImportError:
+        import importlib.util
+        if importlib.util.find_spec("is_debug") is None:
             debug("⚠️  is_debug模块不可用，默认使用生产模式")
     
     def update_debug_mode(self) -> None:
         """更新调试模式"""
-        debug_mode = self._debug_detector.detect_debug_mode()
+        self._debug_detector.detect_debug_mode()
         # debug_mode是动态属性，不需要更新到配置中
     
     def generate_all_paths(self) -> Dict[str, str]:
@@ -603,7 +648,7 @@ class PathConfigurationManager:
             date_str, time_str = self._time_processor.get_current_time_components()
         
         # 生成日志目录
-        log_dirs = self._path_generator.generate_log_directories(work_dir, date_str, time_str)
+        log_dirs = self._path_generator.generate_log_directories(work_dir, date_str, time_str, first_start_time)
         
         # 生成备份目录
         backup_dirs = self._path_generator.generate_backup_directory(work_dir, date_str, time_str)
@@ -732,7 +777,7 @@ class PathConfigurationManager:
                 if isinstance(key, str) and key.endswith('_dir') and isinstance(value, str) and value:
                     try:
                         os.makedirs(value, exist_ok=True)
-                    except PermissionError as e:
+                    except PermissionError:
                         # 权限错误时记录警告但不抛出异常
                         print(f"⚠️  跳过目录创建 (权限不足): {value}")
                     except Exception as e:

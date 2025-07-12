@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import tempfile
-import shutil
 from datetime import datetime
 from src.config_manager import get_config_manager
 

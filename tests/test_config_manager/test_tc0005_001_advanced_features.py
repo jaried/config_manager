@@ -9,7 +9,6 @@ import tempfile
 import os
 import time
 from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
-from pathlib import Path
 
 
 @pytest.fixture(autouse=True)

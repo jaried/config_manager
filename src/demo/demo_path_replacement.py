@@ -1,10 +1,8 @@
 # src/demo/demo_path_replacement.py
 from __future__ import annotations
-from datetime import datetime
 import os
 import tempfile
 import sys
-import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from src.config_manager.config_manager import ConfigManager
 
@@ -77,13 +75,13 @@ def demo_path_replacement():
     }
     
     print(f"  测试环境基础路径: {test_base_dir}")
-    print(f"  原始配置数据:")
+    print("  原始配置数据:")
     print_config_paths(config_data['__data__'], "    ")
     
-    print(f"\n  执行路径替换...")
+    print("\n  执行路径替换...")
     ConfigManager._replace_all_paths_in_config(config_data['__data__'], test_base_dir, temp_base)
     
-    print(f"\n  替换后的配置数据:")
+    print("\n  替换后的配置数据:")
     print_config_paths(config_data['__data__'], "    ")
     
     # 4. 演示路径转换

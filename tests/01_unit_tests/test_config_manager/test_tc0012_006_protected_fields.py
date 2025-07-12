@@ -68,7 +68,7 @@ class TestTC0012006ProtectedFields:
         mock_yaml.return_value = mock_yaml_instance
         
         # 执行
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory():
             config_manager = ConfigManager(test_mode=True)
             
             # 验证网络URL没有被替换
@@ -88,7 +88,7 @@ class TestTC0012006ProtectedFields:
         mock_yaml.return_value = mock_yaml_instance
         
         # 执行
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory():
             config_manager = ConfigManager(test_mode=True)
             
             # 验证HTTP Headers没有被替换
@@ -107,7 +107,7 @@ class TestTC0012006ProtectedFields:
         mock_yaml.return_value = mock_yaml_instance
         
         # 执行
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory():
             config_manager = ConfigManager(test_mode=True)
             
             # 验证正则表达式没有被替换

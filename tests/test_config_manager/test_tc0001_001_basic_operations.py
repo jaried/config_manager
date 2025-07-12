@@ -50,7 +50,8 @@ def test_tc0001_001_002_attribute_error():
         cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
 
         with pytest.raises(AttributeError):
-            value = cfg.non_existent_property
+            # 访问不存在的属性应该抛出AttributeError
+            cfg.nonexistent_attribute
     return
 
 

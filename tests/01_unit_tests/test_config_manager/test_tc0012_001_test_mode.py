@@ -140,7 +140,7 @@ class TestTestMode:
         
         # 获取测试环境信息
         info = TestEnvironmentManager.get_test_environment_info()
-        assert info['is_test_mode'] == True
+        assert info['is_test_mode']
         assert info['test_base_dir'] is not None
         assert info['temp_base'] is not None
         
@@ -243,7 +243,7 @@ __type_hints__: {}
     def test_tc0012_001_009_test_mode_cleanup(self):
         """TC0012-001-009: 测试test_mode清理功能"""
         # 创建测试环境
-        cfg = get_config_manager(test_mode=True)
+        get_config_manager(test_mode=True)
         test_base_dir = os.environ.get('CONFIG_MANAGER_TEST_BASE_DIR')
         
         # 验证测试环境存在
@@ -252,7 +252,7 @@ __type_hints__: {}
         
         # 清理当前测试环境
         cleanup_result = TestEnvironmentManager.cleanup_current_test_environment()
-        assert cleanup_result == True
+        assert cleanup_result
         
         # 验证测试环境被清理
         assert not os.path.exists(test_base_dir)
@@ -263,7 +263,6 @@ __type_hints__: {}
 
     def test_tc0012_001_010_multiple_test_instances(self):
         """TC0012-001-010: 测试多个测试实例的独立性"""
-        import time
         
         # 创建第一个测试实例，使用固定时间
         time1 = datetime(2025, 6, 7, 10, 30, 0)
@@ -364,7 +363,7 @@ __type_hints__: {}
         
         print(f"✓ 路径1: {path1}")
         print(f"✓ 路径2: {path2}")
-        print(f"✓ 日期时间一致性验证通过")
+        print("✓ 日期时间一致性验证通过")
 
     def test_tc0012_001_013_test_mode_without_first_start_time(self):
         """测试：不指定first_start_time时使用当前时间"""
@@ -381,7 +380,7 @@ __type_hints__: {}
             cfg = get_config_manager(config_path=prod_config_path, test_mode=True)
             
             # 记录测试结束时间
-            after_time = datetime.now()
+            datetime.now()
             
             # 从路径中提取时间信息
             path_parts = cfg._config_path.split(os.sep)
@@ -538,7 +537,7 @@ __type_hints__: {}
         
         assert len(date_dirs) >= 3, f"应该有至少3个不同日期的环境，实际: {len(date_dirs)}"
         
-        print(f"✓ 创建的测试路径:")
+        print("✓ 创建的测试路径:")
         for i, path in enumerate(created_paths):
             print(f"  {i+1}. {path}")
         

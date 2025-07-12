@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import tempfile
-import pytest
 from datetime import datetime
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
@@ -23,7 +22,7 @@ class TestFirstStartTimePreservation:
         from src.config_manager.test_environment import TestEnvironmentManager
         try:
             TestEnvironmentManager.cleanup_current_test_environment()
-        except:
+        except Exception:
             pass
         
         # 清理所有实例
@@ -257,7 +256,7 @@ __type_hints__: {{}}
             # 验证运行时长计算合理（应该是一个较大的值，因为original_time是过去的时间）
             assert runtime_seconds > 0, "运行时长应该大于0"
             
-            print(f"✓ Custom Logger集成测试通过")
+            print("✓ Custom Logger集成测试通过")
             print(f"  - 保留的启动时间: {stored_time_str}")
             print(f"  - 计算的运行时长: {runtime_seconds:.2f}秒")
             

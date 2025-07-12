@@ -73,7 +73,7 @@ class CallChainTracker:
                     return f"A:L{loop_id}/T{task_id}({task_name})"
                 else:
                     return f"A:L{loop_id}/NoTask"
-            except:
+            except (AttributeError, TypeError, RuntimeError):
                 return f"A:L{loop_id}/TaskErr"
 
         except RuntimeError:
@@ -142,10 +142,10 @@ class CallChainTracker:
                         return f"usr/{rel_path.replace(os.sep, '/')}"
                     else:
                         return f"ext/{os.path.basename(filepath)}"
-                except:
+                except (OSError, ValueError, TypeError):
                     return f"usr/{os.path.basename(filepath)}"
 
-        except:
+        except Exception:
             return os.path.basename(filepath)
 
     def _get_context_info(self, frame) -> str:
@@ -177,7 +177,7 @@ class CallChainTracker:
 
             return ",".join(context_parts)
 
-        except:
+        except Exception:
             return ""
 
     def get_caller_start_time(self) -> datetime:

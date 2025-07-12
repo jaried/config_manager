@@ -100,8 +100,8 @@ class FileOperations:
             return loaded_data
         except Exception as e:
             print(f"⚠️  YAML解析失败: {str(e)}")
-            print(f"⚠️  为保护原始配置文件，不会自动创建新配置")
-            print(f"⚠️  请检查配置文件格式，特别是Windows路径中的反斜杠")
+            print("⚠️  为保护原始配置文件，不会自动创建新配置")
+            print("⚠️  请检查配置文件格式，特别是Windows路径中的反斜杠")
             return None
 
     def save_config(self, config_path: str, data: Dict[str, Any], backup_path: str = None) -> bool:

@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 import pytest
 import tempfile
-import os
 import re
 from pathlib import Path
 
@@ -55,9 +54,13 @@ first_start_time: '{test_time}'
             # 获取路径配置
             paths = config.paths
             
-            # 定义日期格式的正则表达式
-            yyyymmdd_pattern = re.compile(r'/(\d{8})/')  # 匹配 /20250107/ 格式
-            yyyy_mm_dd_pattern = re.compile(r'/(\d{4}-\d{2}-\d{2})/')  # 匹配 /2025-01-07/ 格式
+            # 定义日期格式的正则表达式（支持跨平台路径分隔符）
+            sep = r'[/\\]'  # 匹配正斜杠或反斜杠
+            yyyymmdd_pattern = re.compile(f'{sep}(\\d{{8}}){sep}')  # 匹配 /20250107/ 或 \20250107\ 格式
+            yyyy_mm_dd_pattern = re.compile(f'{sep}(\\d{{4}}-\\d{{2}}-\\d{{2}}){sep}')  # 匹配 /2025-01-07/ 或 \2025-01-07\ 格式
+            
+            # tsb_logs_dir的新格式: yyyy/ww/mm/dd，其中ww是两位数的周数
+            tsb_logs_pattern = re.compile(f'{sep}(\\d{{4}}){sep}(\\d{{2}}){sep}(\\d{{2}}){sep}(\\d{{2}}){sep}')  # 匹配 /2025/01/01/07/ 或 \2025\01\01\07\ 格式
             
             # 检查所有日期相关的路径
             date_related_paths = {
@@ -66,7 +69,7 @@ first_start_time: '{test_time}'
                 'backup_dir': paths.backup_dir
             }
             
-            print(f"\n=== 测试路径格式 ===")
+            print("\n=== 测试路径格式 ===")
             for path_name, path_value in date_related_paths.items():
                 print(f"{path_name}: {path_value}")
                 
@@ -76,30 +79,59 @@ first_start_time: '{test_time}'
                     pytest.fail(
                         f"{path_name}路径中包含错误的日期格式 'yyyy-mm-dd': {wrong_format_match.group(1)}\n"
                         f"完整路径: {path_value}\n"
-                        f"预期格式应该是 'yyyymmdd'（如：20250107）"
+                        f"预期格式应该是 'yyyymmdd' 或 'yyyy/ww/mm/dd'"
                     )
                 
-                # 检查是否包含yyyymmdd格式（这是期望的）
-                correct_format_match = yyyymmdd_pattern.search(path_value)
-                assert correct_format_match, (
-                    f"{path_name}路径中未找到正确的日期格式 'yyyymmdd'\n"
-                    f"完整路径: {path_value}\n"
-                    f"预期应该包含类似 '20250107' 的格式"
-                )
-                
-                # 验证日期格式具体值
-                date_part = correct_format_match.group(1)
-                assert len(date_part) == 8, f"{path_name}的日期部分长度应该是8位，实际: {len(date_part)}"
-                assert date_part.isdigit(), f"{path_name}的日期部分应该全部是数字，实际: {date_part}"
-                
-                # 验证日期的合理性（年月日格式）
-                year = int(date_part[:4])
-                month = int(date_part[4:6])
-                day = int(date_part[6:8])
-                
-                assert 2020 <= year <= 2030, f"{path_name}的年份不合理: {year}"
-                assert 1 <= month <= 12, f"{path_name}的月份不合理: {month}"
-                assert 1 <= day <= 31, f"{path_name}的日期不合理: {day}"
+                if path_name == 'tsb_logs_dir':
+                    # tsb_logs_dir使用新的yyyy/ww/mm/dd格式
+                    tsb_format_match = tsb_logs_pattern.search(path_value)
+                    assert tsb_format_match, (
+                        f"{path_name}路径中未找到正确的日期格式 'yyyy/ww/mm/dd'\n"
+                        f"完整路径: {path_value}\n"
+                        f"预期应该包含类似 '2025/01/01/07' 的格式（年/周/月/日）"
+                    )
+                    
+                    # 验证tsb_logs_dir的各个组件
+                    year, week, month, day = tsb_format_match.groups()
+                    
+                    assert len(year) == 4, f"{path_name}的年份长度应该是4位，实际: {len(year)}"
+                    assert year.isdigit(), f"{path_name}的年份应该全部是数字，实际: {year}"
+                    assert 2020 <= int(year) <= 2030, f"{path_name}的年份不合理: {year}"
+                    
+                    assert len(week) == 2, f"{path_name}的周数长度应该是2位，实际: {len(week)}"
+                    assert week.isdigit(), f"{path_name}的周数应该全部是数字，实际: {week}"
+                    assert 1 <= int(week) <= 53, f"{path_name}的周数不合理: {week}"
+                    
+                    assert len(month) == 2, f"{path_name}的月份长度应该是2位，实际: {len(month)}"
+                    assert month.isdigit(), f"{path_name}的月份应该全部是数字，实际: {month}"
+                    assert 1 <= int(month) <= 12, f"{path_name}的月份不合理: {month}"
+                    
+                    assert len(day) == 2, f"{path_name}的日期长度应该是2位，实际: {len(day)}"
+                    assert day.isdigit(), f"{path_name}的日期应该全部是数字，实际: {day}"
+                    assert 1 <= int(day) <= 31, f"{path_name}的日期不合理: {day}"
+                    
+                else:
+                    # log_dir 和 backup_dir 保持原有的yyyymmdd格式
+                    correct_format_match = yyyymmdd_pattern.search(path_value)
+                    assert correct_format_match, (
+                        f"{path_name}路径中未找到正确的日期格式 'yyyymmdd'\n"
+                        f"完整路径: {path_value}\n"
+                        f"预期应该包含类似 '20250107' 的格式"
+                    )
+                    
+                    # 验证日期格式具体值
+                    date_part = correct_format_match.group(1)
+                    assert len(date_part) == 8, f"{path_name}的日期部分长度应该是8位，实际: {len(date_part)}"
+                    assert date_part.isdigit(), f"{path_name}的日期部分应该全部是数字，实际: {date_part}"
+                    
+                    # 验证日期的合理性（年月日格式）
+                    year = int(date_part[:4])
+                    month = int(date_part[4:6])
+                    day = int(date_part[6:8])
+                    
+                    assert 2020 <= year <= 2030, f"{path_name}的年份不合理: {year}"
+                    assert 1 <= month <= 12, f"{path_name}的月份不合理: {month}"
+                    assert 1 <= day <= 31, f"{path_name}的日期不合理: {day}"
     
     def test_time_format_consistency_in_paths(self):
         """
@@ -130,8 +162,9 @@ first_start_time: '{test_time}'
             # 获取路径配置
             paths = config.paths
             
-            # 时间格式正则表达式：查找路径末尾的6位数字
-            time_pattern = re.compile(r'/(\d{6})$')
+            # 时间格式正则表达式：查找路径末尾的6位数字（支持跨平台路径分隔符）
+            sep = r'[/\\]'  # 匹配正斜杠或反斜杠
+            time_pattern = re.compile(f'{sep}(\\d{{6}})$')
             
             # 检查包含时间的路径
             time_related_paths = {
@@ -140,7 +173,7 @@ first_start_time: '{test_time}'
                 'backup_dir': paths.backup_dir
             }
             
-            print(f"\n=== 测试时间格式 ===")
+            print("\n=== 测试时间格式 ===")
             for path_name, path_value in time_related_paths.items():
                 print(f"{path_name}: {path_value}")
                 
@@ -197,9 +230,28 @@ first_start_time: '{test_time}'
             expected_date = "20250107"
             expected_time = "181520"
             
-            # 检查tsb_logs_dir
-            assert expected_date in config.paths.tsb_logs_dir, (
-                f"tsb_logs_dir应该包含日期 {expected_date}，"
+            # 检查tsb_logs_dir（使用新的yyyy/ww/mm/dd格式）
+            # 2025-01-07是第1周，所以预期路径包含 2025/01/01/07
+            dt = datetime.fromisoformat(test_time)
+            expected_year = "2025"
+            expected_week = f"{dt.isocalendar()[1]:02d}"  # 获取周数
+            expected_month = "01"
+            expected_day = "07"
+            
+            assert expected_year in config.paths.tsb_logs_dir, (
+                f"tsb_logs_dir应该包含年份 {expected_year}，"
+                f"实际路径: {config.paths.tsb_logs_dir}"
+            )
+            assert expected_week in config.paths.tsb_logs_dir, (
+                f"tsb_logs_dir应该包含周数 {expected_week}，"
+                f"实际路径: {config.paths.tsb_logs_dir}"
+            )
+            assert expected_month in config.paths.tsb_logs_dir, (
+                f"tsb_logs_dir应该包含月份 {expected_month}，"
+                f"实际路径: {config.paths.tsb_logs_dir}"
+            )
+            assert expected_day in config.paths.tsb_logs_dir, (
+                f"tsb_logs_dir应该包含日期 {expected_day}，"
                 f"实际路径: {config.paths.tsb_logs_dir}"
             )
             assert expected_time in config.paths.tsb_logs_dir, (
@@ -229,10 +281,7 @@ first_start_time: '{test_time}'
             
             # 确保不包含错误格式
             wrong_date_format = "2025-01-07"
-            assert wrong_date_format not in config.paths.tsb_logs_dir, (
-                f"tsb_logs_dir不应该包含错误的日期格式 {wrong_date_format}，"
-                f"实际路径: {config.paths.tsb_logs_dir}"
-            )
+            # tsb_logs_dir现在使用新格式，不需要检查这个错误格式
             assert wrong_date_format not in config.paths.log_dir, (
                 f"log_dir不应该包含错误的日期格式 {wrong_date_format}，"
                 f"实际路径: {config.paths.log_dir}"
@@ -268,29 +317,34 @@ first_start_time: '{test_time}'
             
             # 在生产模式下验证路径格式
             expected_date = "20250107"
-            expected_time = "181520"
             wrong_date_format = "2025-01-07"
             
-            print(f"\n=== 生产模式路径格式检查 ===")
+            print("\n=== 生产模式路径格式检查 ===")
             print(f"tsb_logs_dir: {config.paths.tsb_logs_dir}")
             print(f"log_dir: {config.paths.log_dir}")  
             print(f"backup_dir: {config.paths.backup_dir}")
             
-            # 检查不应该包含错误格式
-            assert wrong_date_format not in config.paths.tsb_logs_dir, (
-                f"生产模式下tsb_logs_dir不应该包含错误的日期格式 {wrong_date_format}，"
-                f"实际路径: {config.paths.tsb_logs_dir}"
-            )
+            # 检查不应该包含错误格式（只针对log_dir）
             assert wrong_date_format not in config.paths.log_dir, (
                 f"生产模式下log_dir不应该包含错误的日期格式 {wrong_date_format}，"
                 f"实际路径: {config.paths.log_dir}"
             )
             
-            # 检查应该包含正确格式
-            assert expected_date in config.paths.tsb_logs_dir, (
-                f"生产模式下tsb_logs_dir应该包含正确的日期格式 {expected_date}，"
+            # 检查tsb_logs_dir的新格式（yyyy/ww/mm/dd）
+            dt = datetime.fromisoformat(test_time)
+            expected_year = "2025"
+            expected_week = f"{dt.isocalendar()[1]:02d}"
+            
+            assert expected_year in config.paths.tsb_logs_dir, (
+                f"生产模式下tsb_logs_dir应该包含年份 {expected_year}，"
                 f"实际路径: {config.paths.tsb_logs_dir}"
             )
+            assert expected_week in config.paths.tsb_logs_dir, (
+                f"生产模式下tsb_logs_dir应该包含周数 {expected_week}，"
+                f"实际路径: {config.paths.tsb_logs_dir}"
+            )
+            
+            # 检查log_dir和backup_dir的原有格式
             assert expected_date in config.paths.log_dir, (
                 f"生产模式下log_dir应该包含正确的日期格式 {expected_date}，"
                 f"实际路径: {config.paths.log_dir}"

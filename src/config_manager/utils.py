@@ -4,7 +4,6 @@ from datetime import datetime
 
 start_time = datetime.now()
 
-import os
 import sys
 from typing import Iterable, Any, List
 

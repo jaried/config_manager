@@ -3,9 +3,7 @@ from __future__ import annotations
 import pytest
 import tempfile
 import os
-import sys
 from unittest.mock import patch, MagicMock
-from pathlib import Path
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 # 项目根目录由conftest.py自动配置
@@ -348,7 +346,7 @@ class TestCrossPlatformPathIntegration:
                 path_info = config.get_path_configuration_info()
                 assert 'current_os' in path_info
                 assert 'generated_paths' in path_info
-            except Exception as e:
+            except Exception:
                 # 如果路径配置管理器不可用，至少验证基本功能
                 current_base_dir = config.get('base_dir')
                 assert current_base_dir is not None
@@ -379,7 +377,7 @@ class TestCrossPlatformPathIntegration:
     @patch('config_manager.config_manager.get_config_manager')
     def test_config_manager_integration(self, mock_get_config_manager, tmp_path):
         """测试与ConfigManager的集成"""
-        safe_path = tmp_path / "config.yaml"
+        tmp_path / "config.yaml"
         mock_cm = MagicMock()
         
         # 模拟 set 和 save
@@ -476,7 +474,7 @@ class TestCrossPlatformPathPerformance:
         
         start_time = time.time()
         manager = get_cross_platform_manager()
-        current_os = manager.get_current_os()
+        manager.get_current_os()
         end_time = time.time()
         
         # 检测时间应该在毫秒级
@@ -492,7 +490,7 @@ class TestCrossPlatformPathPerformance:
         
         start_time = time.time()
         for _ in range(100):
-            result = manager.convert_to_multi_platform_config(test_path, 'base_dir')
+            manager.convert_to_multi_platform_config(test_path, 'base_dir')
         end_time = time.time()
         
         # 100次转换应该在毫秒级

@@ -440,7 +440,7 @@ def test_tc0002_001_010_fallback_to_current_time():
             delattr(current_module, 'start_time')
         
         try:
-            before_creation = datetime.now()
+            datetime.now()
             
             # 显式传入当前时间作为first_start_time
             fallback_time = datetime.now()
@@ -451,7 +451,7 @@ def test_tc0002_001_010_fallback_to_current_time():
                 first_start_time=fallback_time
             )
             
-            after_creation = datetime.now()
+            datetime.now()
             
             cfg.fallback_test = "no_start_time_available"
             

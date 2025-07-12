@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 import os
 import tempfile
-import pytest
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
 
@@ -149,7 +148,7 @@ __type_hints__: {}
         # 验证完整路径相同
         assert work_dir1 == work_dir2, f"相同first_start_time应生成相同工作目录，目录1: {work_dir1}，目录2: {work_dir2}"
         
-        print(f"✓ 时间戳一致性验证通过")
+        print("✓ 时间戳一致性验证通过")
         print(f"✓ 工作目录1: {work_dir1}")
         print(f"✓ 工作目录2: {work_dir2}")
 

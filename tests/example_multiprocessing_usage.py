@@ -171,7 +171,7 @@ def test_multiprocessing_config():
         # 3. 测试单个worker
         print("\n🔨 步骤3: 测试单个worker")
         single_result = worker_task_example(serializable_config)
-        print(f"✅ 单worker测试成功:")
+        print("✅ 单worker测试成功:")
         print(f"   - 应用名: {single_result['app_name']}")
         print(f"   - 处理项数: {single_result['processed_items']}")
         print(f"   - 输出目录: {single_result['output_dir']}")

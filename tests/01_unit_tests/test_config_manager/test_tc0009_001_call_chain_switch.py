@@ -7,10 +7,8 @@ start_time = datetime.now()
 import pytest
 import tempfile
 import os
-import sys
 from io import StringIO
 from contextlib import redirect_stdout
-from unittest.mock import patch
 
 # 添加src到路径
 # 项目根目录由conftest.py自动配置
@@ -290,7 +288,7 @@ class TestCallChainSwitch:
 
                 output = StringIO()
                 with redirect_stdout(output):
-                    cfg = level_1_function()
+                    level_1_function()
 
                 captured_output = output.getvalue()
 
@@ -308,7 +306,7 @@ class TestCallChainSwitch:
 
                 output2 = StringIO()
                 with redirect_stdout(output2):
-                    cfg2 = level_1_function()
+                    level_1_function()
 
                 captured_output2 = output2.getvalue()
 

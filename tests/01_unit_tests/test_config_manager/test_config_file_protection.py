@@ -1,10 +1,5 @@
 # tests/01_unit_tests/test_config_manager/test_config_file_protection.py
 from __future__ import annotations
-import tempfile
-import os
-import shutil
-import pytest
-from unittest.mock import patch
 from pathlib import Path
 
 from src.config_manager import get_config_manager, _clear_instances_for_testing

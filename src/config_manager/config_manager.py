@@ -9,12 +9,9 @@ import os
 import threading
 import uuid
 import tempfile
-import shutil
-from typing import Any, Dict
-from .config_node import ConfigNode
+from typing import Any
 from .core.manager import ConfigManagerCore
 from .core.path_resolver import PathResolver
-from .logger import info
 from .core.cross_platform_paths import convert_to_multi_platform_config
 
 # 全局调用链显示开关 - 手工修改这个值来控制调用链显示
@@ -69,7 +66,7 @@ class ConfigManager(ConfigManagerCore):
                     )
                     
                     if not success:
-                        print(f"⚠️  配置管理器初始化失败，返回None")
+                        print("⚠️  配置管理器初始化失败，返回None")
                         return None
                     
                     cls._instances[cache_key] = instance
@@ -96,7 +93,7 @@ class ConfigManager(ConfigManagerCore):
                     )
                     
                     if not success:
-                        print(f"⚠️  配置管理器初始化失败，返回None")
+                        print("⚠️  配置管理器初始化失败，返回None")
                         return None
                     
                     cls._instance = instance
@@ -106,12 +103,12 @@ class ConfigManager(ConfigManagerCore):
             existing_instance = cls._instance
             if (config_path != getattr(existing_instance, '_config_path', None) or
                 cls._test_mode != getattr(existing_instance, '_test_mode', False)):
-                print(f"⚠️  警告：尝试使用不同参数创建ConfigManager实例")
+                print("⚠️  警告：尝试使用不同参数创建ConfigManager实例")
                 print(f"   现有实例配置路径: {getattr(existing_instance, '_config_path', 'None')}")
                 print(f"   新请求配置路径: {config_path}")
                 print(f"   现有实例测试模式: {getattr(existing_instance, '_test_mode', False)}")
                 print(f"   新请求测试模式: {cls._test_mode}")
-                print(f"   返回现有实例，忽略新参数")
+                print("   返回现有实例，忽略新参数")
         
         return cls._instance
 
@@ -136,7 +133,7 @@ class ConfigManager(ConfigManagerCore):
             cache_key = f"{base_key}:test:{test_identifier}"
             
             return cache_key
-        except Exception as e:
+        except Exception:
             # 如果路径解析失败，生成一个基于输入参数的缓存键
             if config_path is not None:
                 base_key = f"explicit:{config_path}"
@@ -151,12 +148,10 @@ class ConfigManager(ConfigManagerCore):
     def _get_test_identifier(cls) -> str:
         """获取当前测试用例的唯一标识符"""
         try:
-            import sys
             import inspect
             
             # 遍历调用栈查找测试函数
             for frame_info in inspect.stack():
-                frame = frame_info.frame
                 function_name = frame_info.function
                 filename = frame_info.filename
                 
@@ -183,7 +178,7 @@ class ConfigManager(ConfigManagerCore):
                 process_id = f"process_{os.getpid()}"
                 import hashlib
                 return hashlib.md5(process_id.encode()).hexdigest()[:8]
-            except:
+            except (ImportError, AttributeError, OSError):
                 return "default"
 
     def __init__(self, config_path: str = None,
@@ -377,7 +372,7 @@ class ConfigManager(ConfigManagerCore):
                 # 修复字符串替换问题
                 time_str = first_start_time.replace('Z', '+00:00')
                 first_start_time = datetime.fromisoformat(time_str)
-            except:
+            except (ValueError, AttributeError, TypeError):
                 first_start_time = datetime.now()
         elif not isinstance(first_start_time, datetime):
             first_start_time = datetime.now()
@@ -412,7 +407,6 @@ class ConfigManager(ConfigManagerCore):
         """检测pytest的tmp_path"""
         try:
             # 检查是否在pytest环境中
-            import pytest
             import inspect
             
             # 获取当前调用栈
@@ -591,7 +585,7 @@ class ConfigManager(ConfigManagerCore):
             print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_base}")
 
             # 确定使用的project_name（优先级：传入参数 > 原配置 > 默认值 'project_name'）
-            final_project_name = project_name or config_data.get('project_name', 'project_name')
+            project_name or config_data.get('project_name', 'project_name')
 
             # 如果传入了project_name，强制更新
             if project_name:
@@ -603,7 +597,11 @@ class ConfigManager(ConfigManagerCore):
 
             # 更新时间信息
             if time_to_use is not None:
-                config_data['first_start_time'] = time_to_use.isoformat()
+                if isinstance(time_to_use, datetime):
+                    config_data['first_start_time'] = time_to_use.isoformat()
+                else:
+                    # time_to_use是字符串，直接使用
+                    config_data['first_start_time'] = str(time_to_use)
             
             config_data['config_file_path'] = test_config_path
 
@@ -890,7 +888,7 @@ def get_config_manager(
     # 测试模式特殊处理：如果当前有实例且不是测试模式，需要清理
     if test_mode and ConfigManager._instance is not None:
         if not getattr(ConfigManager._instance, '_test_mode', False):
-            print(f"⚠️  测试模式：清理现有非测试实例")
+            print("⚠️  测试模式：清理现有非测试实例")
             _clear_instances_for_testing()
     
     # 测试模式处理
@@ -939,7 +937,7 @@ def _clear_instances_for_testing():
             if hasattr(ConfigManager._instance, '_cleanup'):
                 try:
                     ConfigManager._instance._cleanup()
-                except:
+                except Exception:
                     pass  # 忽略清理过程中的错误
         ConfigManager._instance = None
         ConfigManager._initialized = False
@@ -950,7 +948,7 @@ def _clear_instances_for_testing():
             if hasattr(instance, '_cleanup'):
                 try:
                     instance._cleanup()
-                except:
+                except Exception:
                     pass  # 忽略清理过程中的错误
         ConfigManager._instances.clear()
 
@@ -963,7 +961,7 @@ def _clear_instances_for_testing():
 def debug_instances():
     """调试方法：显示当前所有实例信息"""
     with ConfigManager._thread_lock:
-        print(f"=== ConfigManager实例调试信息 ===")
+        print("=== ConfigManager实例调试信息 ===")
         print(f"测试模式: {ConfigManager._test_mode}")
         
         if ConfigManager._test_mode:
@@ -980,14 +978,14 @@ def debug_instances():
             # 生产模式：显示单例信息
             if ConfigManager._instance:
                 instance = ConfigManager._instance
-                print(f"生产模式实例信息:")
+                print("生产模式实例信息:")
                 print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
                 print(f"  已初始化: {getattr(instance, '_initialized', 'N/A')}")
                 print(f"  测试模式: {getattr(instance, '_test_mode', 'N/A')}")
                 print(f"  路径已初始化: {getattr(instance, '_paths_initialized', 'N/A')}")
                 print(f"  实例ID: {id(instance)}")
             else:
-                print(f"当前没有生产模式实例")
+                print("当前没有生产模式实例")
         print()
 
 

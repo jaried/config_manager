@@ -4,12 +4,9 @@ from datetime import datetime
 
 start_time = datetime.now()
 
-import pytest
 import tempfile
 import os
 import time
-from pathlib import Path
-from unittest.mock import Mock, patch
 
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 

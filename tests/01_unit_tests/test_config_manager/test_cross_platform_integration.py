@@ -2,18 +2,13 @@
 import pytest
 import tempfile
 import os
-import sys
-from unittest.mock import patch, MagicMock
-from pathlib import Path
 from datetime import datetime
 
 # 项目根目录由conftest.py自动配置
 
 from src.config_manager import get_config_manager
 from src.config_manager.core.cross_platform_paths import (
-    get_cross_platform_manager,
-    convert_to_multi_platform_config,
-    get_platform_path
+    get_cross_platform_manager
 )
 
 
@@ -125,7 +120,7 @@ class TestCrossPlatformConfigManagerIntegration:
                     current_os = path_info['current_os']
                     expected_base = multi_platform_base_dir.get(current_os, multi_platform_base_dir['windows'])
                     assert expected_base in work_dir
-            except Exception as e:
+            except Exception:
                 # 如果路径配置管理器不可用，检查base_dir是否正确设置
                 base_dir_value = config._data.get('base_dir')
                 assert base_dir_value is not None
@@ -312,13 +307,13 @@ class TestCrossPlatformConfigManagerIntegration:
             config_path = os.path.join(temp_dir, 'test_singleton.yaml')
             
             # 创建多个配置管理器实例
-            config1 = get_config_manager(
+            get_config_manager(
                 config_path=config_path,
                 test_mode=True,
                 first_start_time=self.test_time
             )
             
-            config2 = get_config_manager(
+            get_config_manager(
                 config_path=config_path,
                 test_mode=True,
                 first_start_time=self.test_time
@@ -394,7 +389,7 @@ class TestCrossPlatformPathConfigurationManagerIntegration:
                 path_info = config.get_path_configuration_info()
                 assert 'current_os' in path_info
                 assert 'generated_paths' in path_info
-            except Exception as e:
+            except Exception:
                 # 如果路径配置管理器不可用，至少验证基本功能
                 current_base_dir = config.get('base_dir')
                 assert current_base_dir is not None
@@ -438,7 +433,7 @@ class TestCrossPlatformPathConfigurationManagerIntegration:
                     # 其他平台的路径可能不存在，但应该能被正确处理
                     assert isinstance(current_base_dir, str), "路径应该是字符串"
                     
-            except Exception as e:
+            except Exception:
                 # 如果自动目录创建不可用，至少验证基本功能
                 current_base_dir = config.get('base_dir')
                 assert current_base_dir is not None

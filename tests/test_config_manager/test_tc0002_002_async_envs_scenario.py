@@ -8,9 +8,7 @@ import pytest
 import tempfile
 import asyncio
 import os
-import sys
 from ruamel.yaml import YAML
-from unittest.mock import patch, MagicMock
 from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
 
 # 创建YAML实例用于测试
@@ -264,7 +262,7 @@ def test_tc0002_002_003_multiple_async_calls_same_path():
 
             return results
 
-        results = asyncio.run(test_with_final_wait())
+        asyncio.run(test_with_final_wait())
 
         # 验证主配置管理器的备份文件存在
         main_cfg.save()  # 确保备份文件创建

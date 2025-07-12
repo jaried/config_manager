@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 import re
 import tempfile
-import pytest
 import platform
 from src.config_manager import get_config_manager, TestEnvironmentManager
 from src.config_manager.config_manager import _clear_instances_for_testing

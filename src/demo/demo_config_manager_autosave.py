@@ -54,7 +54,7 @@ def demo_autosave_basic():
         file_exists = os.path.exists(demo_config_path)
         if file_exists:
             file_size = os.path.getsize(demo_config_path)
-            print(f"✓ 配置文件已自动保存")
+            print("✓ 配置文件已自动保存")
             print(f"  文件大小: {file_size:,} 字节")
         else:
             print("❌ 配置文件未找到")
@@ -132,7 +132,7 @@ def demo_autosave_delay_control():
         change1 = cfg_fast.rapid_changes.change1
         change2 = cfg_fast.rapid_changes.change2
         change3 = cfg_fast.rapid_changes.change3
-        print(f"✓ 所有快速修改都已保存:")
+        print("✓ 所有快速修改都已保存:")
         print(f"  变更1: {change1}")
         print(f"  变更2: {change2}")
         print(f"  变更3: {change3}")
@@ -186,7 +186,7 @@ def demo_autosave_performance():
         # 检查文件大小
         if os.path.exists(demo_config_path):
             file_size = os.path.getsize(demo_config_path)
-            print(f"✓ 大量数据保存完成")
+            print("✓ 大量数据保存完成")
             print(f"  保存时长: {save_duration:.2f}秒")
             print(f"  文件大小: {file_size:,} 字节")
 

@@ -39,7 +39,7 @@ def test_config_manager_pickle_issue():
         
         # 尝试pickle序列化
         try:
-            pickled_data = pickle.dumps(config)
+            pickle.dumps(config)
             print("✗ config_manager对象意外地可以被pickle序列化")
             return False
         except (TypeError, AttributeError) as e:

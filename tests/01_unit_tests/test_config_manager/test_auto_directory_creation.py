@@ -3,10 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 import pytest
-import os
-from unittest.mock import Mock, patch, MagicMock
-import sys
-import shutil
+from unittest.mock import patch
 
 from src.config_manager import get_config_manager, _clear_instances_for_testing
 
@@ -54,7 +51,7 @@ class TestAutoDirectoryCreation:
         config_content = f"logging:\n  log_dir: {log_dir.as_posix()}\n  log_path: {log_path.as_posix()}\napplication:\n  data_dir: {data_dir.as_posix()}"
         config_file.write_text(config_content)
 
-        config = get_config_manager(config_path=str(config_file), test_mode=True)
+        get_config_manager(config_path=str(config_file), test_mode=True)
 
         # 只断言'_dir'结尾的路径会被自动创建
         assert log_dir.exists()
@@ -68,7 +65,7 @@ class TestAutoDirectoryCreation:
         config_file = tmp_path / "config.yaml"
         config_file.write_text(config_content)
 
-        config = get_config_manager(config_path=str(config_file), test_mode=True)
+        get_config_manager(config_path=str(config_file), test_mode=True)
 
         assert not output_file.exists()
 
