@@ -761,7 +761,7 @@ class PathConfigurationManager:
         """生成所有路径并自动创建目录，仅对'_dir'结尾的字段自动创建目录"""
         
         # 1. 确保向后兼容性：同步work_dir字段并创建目录
-        self._config_manager.work_dir = self._config_manager.paths.work_dir
+        self._config_manager.set('work_dir', self._config_manager.paths.work_dir, autosave=False)
         # 创建work_dir目录
         os.makedirs(self._config_manager.paths.work_dir, exist_ok=True)
         
@@ -797,4 +797,4 @@ class PathConfigurationManager:
             _create_dirs_for_fields(self._config_manager.paths._data)
         
         # 2. 路径创建完成后，再次确保work_dir字段同步（防止paths.work_dir在过程中被更新）
-        self._config_manager.work_dir = self._config_manager.paths.work_dir 
+        self._config_manager.set('work_dir', self._config_manager.paths.work_dir, autosave=False)

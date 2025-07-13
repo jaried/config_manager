@@ -6,7 +6,7 @@ start_time = datetime.now()
 
 import threading
 from typing import Callable
-from ..logger import info, warning, error
+from ..logger import info, error
 
 
 class AutosaveManager:

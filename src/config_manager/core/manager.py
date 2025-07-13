@@ -231,9 +231,13 @@ class ConfigManagerCore(ConfigNode):
             if raw_data:
                 for key, value in raw_data.items():
                     if isinstance(value, dict):
-                        self._data[key] = ConfigNode(value)
+                        # 递归转换字典中的字符串化数据
+                        converted_dict = self._convert_stringified_data_recursive(value)
+                        self._data[key] = ConfigNode(converted_dict)
                     else:
-                        self._data[key] = value
+                        # 检查并转换字符串化的列表
+                        converted_value = self._convert_stringified_data(value)
+                        self._data[key] = converted_value
 
             if ENABLE_CALL_CHAIN_DISPLAY:
                 debug("配置加载完成")
@@ -268,10 +272,6 @@ class ConfigManagerCore(ConfigNode):
             except Exception as e:
                 debug(f"获取保存调用链失败: {e}")
 
-        # 设置内部保存标志，避免文件监视器触发重新加载
-        if self._watcher:
-            self._watcher.set_internal_save_flag(True)
-
         # 获取可序列化的数据，过滤掉无法序列化的对象
         serializable_data = self._get_serializable_data()
         
@@ -285,11 +285,20 @@ class ConfigManagerCore(ConfigNode):
             self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),
             self  # 传递配置管理器实例
         )
+        
+        # 通知文件监视器即将进行内部保存
+        if self._watcher:
+            self._watcher.set_internal_save_flag(True)
+            
         saved = self._file_ops.save_config(
             self._config_path,
             data_to_save,
             backup_path
         )
+        
+        # 保存完成后重置内部保存标志
+        if self._watcher:
+            self._watcher.set_internal_save_flag(False)
         
         # 记录实际使用的备份路径
         if saved:
@@ -306,10 +315,6 @@ class ConfigManagerCore(ConfigNode):
         if ENABLE_CALL_CHAIN_DISPLAY:
             debug("=== 静默保存配置（无备份） ===")
 
-        # 设置内部保存标志，避免文件监视器触发重新加载
-        if self._watcher:
-            self._watcher.set_internal_save_flag(True)
-
         # 获取可序列化的数据，过滤掉无法序列化的对象
         serializable_data = self._get_serializable_data()
         
@@ -318,11 +323,19 @@ class ConfigManagerCore(ConfigNode):
             '__type_hints__': self._type_hints
         }
 
+        # 通知文件监视器即将进行内部保存
+        if self._watcher:
+            self._watcher.set_internal_save_flag(True)
+        
         # 直接保存到主配置文件，不创建备份
         saved = self._file_ops.save_config_only(
             self._config_path,
             data_to_save
         )
+        
+        # 保存完成后重置内部保存标志
+        if self._watcher:
+            self._watcher.set_internal_save_flag(False)
         
         if ENABLE_CALL_CHAIN_DISPLAY:
             debug(f"静默保存结果: {saved}")
@@ -381,6 +394,10 @@ class ConfigManagerCore(ConfigNode):
     def _create_initialization_backup(self) -> None:
         """在初始化时创建配置备份（一次性完成备份和主配置保存）"""
         try:
+            # 设置内部保存标志，避免文件监视器触发重新加载
+            if self._watcher:
+                self._watcher.set_internal_save_flag(True)
+
             # 使用首次启动时间作为备份时间戳
             backup_time = self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
             backup_path = self._file_ops.get_backup_path(self._config_path, backup_time, self)
@@ -397,6 +414,10 @@ class ConfigManagerCore(ConfigNode):
             # 一次性完成备份和主配置保存
             backup_success = self._file_ops.save_config(self._config_path, data_to_save, backup_path)
             
+            # 保存完成后立即重置内部保存标志
+            if self._watcher:
+                self._watcher.set_internal_save_flag(False)
+            
             if backup_success:
                 self._last_backup_path = backup_path
                 self._initialization_backup_created = True
@@ -404,7 +425,7 @@ class ConfigManagerCore(ConfigNode):
                 self._need_save = False
                 info(f"初始化备份已创建: {backup_path}")
             else:
-                warning(f"初始化备份创建失败")
+                warning("初始化备份创建失败")
         except Exception as e:
             error(f"创建初始化备份时出错: {str(e)}")
 
@@ -455,8 +476,21 @@ class ConfigManagerCore(ConfigNode):
                     (module_name.startswith(('builtins', 'collections', 'ruamel', 'yaml')) or
                      class_name in ('DoubleQuotedScalarString', 'ScalarFloat', 'ScalarInt'))):
                     try:
-                        return convert_to_basic_types(obj.value if hasattr(obj, 'value') else str(obj))
+                        # 特殊处理YAML列表类型（CommentedSeq等）
+                        if class_name in ('CommentedSeq', 'CommentedList') or hasattr(obj, '__iter__'):
+                            # 对于列表类型，递归转换每个元素
+                            if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+                                return [convert_to_basic_types(item) for item in obj]
+                        
+                        # 对于其他YAML类型，尝试获取value属性或转换
+                        return convert_to_basic_types(obj.value if hasattr(obj, 'value') else obj)
                     except:
+                        # 只对非列表类型才回退到字符串
+                        if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+                            try:
+                                return [convert_to_basic_types(item) for item in obj]
+                            except:
+                                return list(obj) if hasattr(obj, '__iter__') else str(obj)
                         return str(obj)
                 
                 # 对于特殊的配置对象，尝试转换为字典
@@ -496,34 +530,89 @@ class ConfigManagerCore(ConfigNode):
                         result.append(converted)
                 return result
             else:
-                # 对于其他类型，先检查是否是YAML安全类型
+                # 先检查是否是可迭代的集合类型（包括特殊的列表类型）
+                if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+                    # 尝试转换为列表（优先处理集合类型）
+                    try:
+                        result = []
+                        for item in obj:
+                            converted = convert_to_basic_types(item)
+                            if converted is not None:
+                                result.append(converted)
+                        return result
+                    except:
+                        pass
+                
+                # 对于其他类型，检查是否是YAML安全类型
                 try:
                     # 先尝试直接转换
                     import yaml
                     yaml.safe_dump(obj)
                     return obj
                 except:
-                    # 如果不是YAML安全类型，检查是否是可转换的集合类型
-                    if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
-                        # 尝试转换为列表
+                    # 只对非集合类型才回退到字符串转换
+                    if not hasattr(obj, '__iter__') or isinstance(obj, (str, bytes)):
                         try:
-                            result = []
-                            for item in obj:
-                                converted = convert_to_basic_types(item)
-                                if converted is not None:
-                                    result.append(converted)
-                            return result
+                            return str(obj)
                         except:
-                            pass
-                    
-                    # 最后回退到字符串转换
-                    try:
-                        return str(obj)
-                    except:
-                        warning(f"跳过无法转换的对象 (类型: {type(obj).__name__})")
+                            warning(f"跳过无法转换的对象 (类型: {type(obj).__name__})")
+                            return None
+                    else:
+                        # 对于集合类型，如果无法转换，则跳过而不是转为字符串
+                        warning(f"跳过无法序列化的集合类型 (类型: {type(obj).__name__})")
                         return None
         
         return convert_to_basic_types(self.to_dict())
+
+    def _convert_stringified_data(self, value):
+        """检测并转换字符串化的数据结构（如字符串化的列表）"""
+        if not isinstance(value, str):
+            return value
+        
+        # 检查是否是字符串化的列表格式
+        stripped = value.strip()
+        if stripped.startswith('[') and stripped.endswith(']'):
+            try:
+                # 尝试安全解析为列表
+                import ast
+                parsed = ast.literal_eval(stripped)
+                if isinstance(parsed, list):
+                    debug(f"检测到字符串化列表并转换: {stripped[:50]}...")
+                    return parsed
+            except (ValueError, SyntaxError):
+                # 解析失败，保持原字符串
+                pass
+        
+        # 检查是否是字符串化的字典格式
+        elif stripped.startswith('{') and stripped.endswith('}'):
+            try:
+                import ast
+                parsed = ast.literal_eval(stripped)
+                if isinstance(parsed, dict):
+                    debug(f"检测到字符串化字典并转换: {stripped[:50]}...")
+                    return parsed
+            except (ValueError, SyntaxError):
+                pass
+        
+        # 其他情况返回原值
+        return value
+
+    def _convert_stringified_data_recursive(self, data):
+        """递归转换嵌套数据结构中的字符串化数据"""
+        if isinstance(data, dict):
+            result = {}
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    result[key] = self._convert_stringified_data_recursive(value)
+                elif isinstance(value, list):
+                    result[key] = [self._convert_stringified_data_recursive(item) for item in value]
+                else:
+                    result[key] = self._convert_stringified_data(value)
+            return result
+        elif isinstance(data, list):
+            return [self._convert_stringified_data_recursive(item) for item in data]
+        else:
+            return self._convert_stringified_data(data)
 
     def _on_file_changed(self):
         """文件变化回调"""

@@ -67,7 +67,8 @@ class FileWatcher:
                             self._last_mtime = current_mtime
                             self._internal_save_flag = False  # 重置标志
                         else:
-                            # 是外部变化，触发回调
+                            # 是外部变化，但需要额外验证：检查文件内容是否真的变化了
+                            # 这可以避免因为时间戳变化但内容相同而误触发的情况
                             self._callback()
                             self._last_mtime = current_mtime
                 time.sleep(1)

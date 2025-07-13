@@ -20,9 +20,9 @@ __data__:
   base_dir:
     windows: D:\Windows\Project
     linux: ~/logs
-  work_dir: /tmp/tests/20250708/115810/b9a7c5a5/test_project/experiment_name
+  work_dir: /tmp/tests/20250714/013405/b9a7c5a5/test_project/experiment_name
   log_dir: /tmp/original/log/path
-  config_file_path: /tmp/tests/20250708/115810/b9a7c5a5/src/config/config.yaml
+  config_file_path: /tmp/tests/20250714/013405/b9a7c5a5/src/config/config.yaml
   experiment_name: experiment_name
   paths:
     work_dir: ~/logs/test_project/experiment_name
@@ -30,12 +30,12 @@ __data__:
     best_checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint/best
     debug_dir: ~/logs/test_project/experiment_name/debug
     tensorboard_dir: ~/logs/test_project/experiment_name/tensorboard
-    tsb_logs_dir: ~/logs/test_project/experiment_name/tsb_logs/20250107/181520
+    tsb_logs_dir: ~/logs/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
     log_dir: ~/logs/test_project/experiment_name/logs/20250107/181520
     backup_dir: ~/logs/test_project/experiment_name/backup/20250107/181520
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
-  scheduler_start_time: '2025-07-08T11:46:48.048553'
+  scheduler_start_time: '2025-07-14T00:50:04.133435'
   scheduler_progress: completed
 __type_hints__: {}

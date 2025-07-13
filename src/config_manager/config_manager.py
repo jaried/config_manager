@@ -20,7 +20,7 @@ ENABLE_CALL_CHAIN_DISPLAY = False  # 默认关闭调用链显示
 
 class ConfigManager(ConfigManagerCore):
     """配置管理器类，支持自动保存和类型提示"""
-    _instance = None  # 全局单例实例（生产模式）
+    _production_instances = {}  # 生产模式实例缓存（基于配置路径）
     _instances = {}  # 多例缓存（测试模式）
     _thread_lock = threading.Lock()
     _global_listeners = []
@@ -40,8 +40,8 @@ class ConfigManager(ConfigManagerCore):
             # 测试模式：使用多例模式
             return cls._create_test_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
         else:
-            # 生产模式：使用全局单例模式
-            return cls._create_singleton_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
+            # 生产模式：使用基于路径的实例缓存模式
+            return cls._create_production_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
 
     @classmethod
     def _create_test_instance(cls, config_path: str, watch: bool, auto_create: bool, 
@@ -74,12 +74,15 @@ class ConfigManager(ConfigManagerCore):
         return cls._instances[cache_key]
 
     @classmethod
-    def _create_singleton_instance(cls, config_path: str, watch: bool, auto_create: bool, 
-                                  autosave_delay: float, first_start_time: datetime):
-        """创建生产模式实例（全局单例模式）"""
-        if cls._instance is None:
+    def _create_production_instance(cls, config_path: str, watch: bool, auto_create: bool, 
+                                   autosave_delay: float, first_start_time: datetime):
+        """创建生产模式实例（基于路径的实例缓存模式）"""
+        # 生成缓存键
+        cache_key = cls._generate_production_cache_key(config_path)
+        
+        if cache_key not in cls._production_instances:
             with cls._thread_lock:
-                if cls._instance is None:
+                if cache_key not in cls._production_instances:
                     # 创建新实例
                     instance = object.__new__(cls)
                     instance.__dict__['_data'] = {}
@@ -93,26 +96,38 @@ class ConfigManager(ConfigManagerCore):
                     )
                     
                     if not success:
-                        print("⚠️  配置管理器初始化失败，返回None")
+                        print("⚠️  配置管理器初始化失败，返图None")
                         return None
                     
-                    cls._instance = instance
+                    cls._production_instances[cache_key] = instance
                     cls._initialized = True
-        else:
-            # 如果实例已存在，检查参数是否一致
-            existing_instance = cls._instance
-            if (config_path != getattr(existing_instance, '_config_path', None) or
-                cls._test_mode != getattr(existing_instance, '_test_mode', False)):
-                print("⚠️  警告：尝试使用不同参数创建ConfigManager实例")
-                print(f"   现有实例配置路径: {getattr(existing_instance, '_config_path', 'None')}")
-                print(f"   新请求配置路径: {config_path}")
-                print(f"   现有实例测试模式: {getattr(existing_instance, '_test_mode', False)}")
-                print(f"   新请求测试模式: {cls._test_mode}")
-                print("   返回现有实例，忽略新参数")
         
-        return cls._instance
-
+        return cls._production_instances[cache_key]
+    
     @classmethod
+    def _generate_production_cache_key(cls, config_path: str) -> str:
+        """生成生产模式的缓存键，基于配置文件的绝对路径"""
+        try:
+            if config_path is not None:
+                # 显式路径：使用绝对路径，标准化路径分隔符
+                abs_path = os.path.abspath(config_path)
+                normalized_path = abs_path.replace('\\', '/')
+                return f"production:{normalized_path}"
+            else:
+                # 默认路径：基于当前工作目录
+                cwd = os.getcwd()
+                default_config_path = os.path.join(cwd, "src", "config", "config.yaml")
+                abs_path = os.path.abspath(default_config_path)
+                normalized_path = abs_path.replace('\\', '/')
+                return f"production:{normalized_path}"
+        except Exception:
+            # 如果路径解析失败，生成一个基于输入参数的缓存键
+            if config_path is not None:
+                return f"production:explicit:{config_path}"
+            else:
+                return f"production:default:{os.getcwd()}"
+
+    @classmethod  
     def _generate_test_cache_key(cls, config_path: str) -> str:
         """生成测试模式的缓存键，同一测试用例内相同路径返回相同键，不同测试用例间隔离"""
         try:
@@ -885,11 +900,10 @@ def get_config_manager(
     Returns:
         ConfigManager 实例，如果初始化失败则返回None
     """
-    # 测试模式特殊处理：如果当前有实例且不是测试模式，需要清理
-    if test_mode and ConfigManager._instance is not None:
-        if not getattr(ConfigManager._instance, '_test_mode', False):
-            print("⚠️  测试模式：清理现有非测试实例")
-            _clear_instances_for_testing()
+    # 测试模式特殊处理：如果当前有生产模式实例，需要清理
+    if test_mode and ConfigManager._production_instances:
+        print("⚠️  测试模式：清理现有生产模式实例")
+        _clear_instances_for_testing()
     
     # 测试模式处理
     if test_mode:
@@ -933,13 +947,13 @@ def _clear_instances_for_testing():
     """清理所有实例，仅用于测试"""
     with ConfigManager._thread_lock:
         # 清理生产模式实例
-        if ConfigManager._instance:
-            if hasattr(ConfigManager._instance, '_cleanup'):
+        for instance in ConfigManager._production_instances.values():
+            if hasattr(instance, '_cleanup'):
                 try:
-                    ConfigManager._instance._cleanup()
+                    instance._cleanup()
                 except Exception:
                     pass  # 忽略清理过程中的错误
-        ConfigManager._instance = None
+        ConfigManager._production_instances.clear()
         ConfigManager._initialized = False
         ConfigManager._paths_initialized = False
         
@@ -975,15 +989,17 @@ def debug_instances():
                 print(f"  路径已初始化: {getattr(instance, '_paths_initialized', 'N/A')}")
                 print(f"  实例ID: {id(instance)}")
         else:
-            # 生产模式：显示单例信息
-            if ConfigManager._instance:
-                instance = ConfigManager._instance
-                print("生产模式实例信息:")
-                print(f"  配置路径: {getattr(instance, '_config_path', 'N/A')}")
-                print(f"  已初始化: {getattr(instance, '_initialized', 'N/A')}")
-                print(f"  测试模式: {getattr(instance, '_test_mode', 'N/A')}")
-                print(f"  路径已初始化: {getattr(instance, '_paths_initialized', 'N/A')}")
-                print(f"  实例ID: {id(instance)}")
+            # 生产模式：显示所有实例信息
+            if ConfigManager._production_instances:
+                print(f"生产模式实例数量: {len(ConfigManager._production_instances)}")
+                for i, (cache_key, instance) in enumerate(ConfigManager._production_instances.items()):
+                    print(f"  实例 {i+1}:")
+                    print(f"    缓存键: {cache_key}")
+                    print(f"    配置路径: {getattr(instance, '_config_path', 'N/A')}")
+                    print(f"    已初始化: {getattr(instance, '_initialized', 'N/A')}")
+                    print(f"    测试模式: {getattr(instance, '_test_mode', 'N/A')}")
+                    print(f"    路径已初始化: {getattr(instance, '_paths_initialized', 'N/A')}")
+                    print(f"    实例ID: {id(instance)}")
             else:
                 print("当前没有生产模式实例")
         print()
@@ -995,7 +1011,7 @@ def get_instance_count():
         if ConfigManager._test_mode:
             return len(ConfigManager._instances)
         else:
-            return 1 if ConfigManager._instance else 0
+            return len(ConfigManager._production_instances)
 
 
 if __name__ == '__main__':
