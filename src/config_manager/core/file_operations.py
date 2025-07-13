@@ -142,6 +142,27 @@ class FileOperations:
             print(f"保存配置失败: {str(e)}")
             return False
 
+    def save_config_only(self, config_path: str, data: Dict[str, Any]) -> bool:
+        """仅保存配置到主文件，不创建备份"""
+        try:
+            # 保存到主配置文件
+            original_dir = os.path.dirname(config_path)
+            if original_dir:
+                os.makedirs(original_dir, exist_ok=True)
+
+            # 准备要保存的数据
+            data_to_save = self._prepare_data_for_save(config_path, data)
+
+            tmp_original_path = f"{config_path}.tmp"
+            with open(tmp_original_path, 'w', encoding='utf-8') as f:
+                self._yaml.dump(data_to_save, f)
+
+            os.replace(tmp_original_path, config_path)
+            return True
+        except Exception as e:
+            print(f"保存配置失败: {str(e)}")
+            return False
+
     def _prepare_data_for_save(self, config_path: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """准备要保存的数据，尽可能保留原始结构和注释"""
         # 如果有原始YAML数据且路径匹配，则更新原始结构

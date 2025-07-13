@@ -58,6 +58,9 @@ class ConfigManagerCore(ConfigNode):
         
         # 初始化状态标志
         self._during_initialization = False
+        
+        # 初始化备份创建标志
+        self._initialization_backup_created = False
 
     def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float,
                    first_start_time: datetime = None) -> bool:
@@ -87,6 +90,9 @@ class ConfigManagerCore(ConfigNode):
         
         # 设置初始化状态
         self._during_initialization = True
+        
+        # 重置初始化备份标志
+        self._initialization_backup_created = False
 
         # 判断是否为主程序（传入了first_start_time参数）
         self._is_main_program = first_start_time is not None
@@ -152,9 +158,14 @@ class ConfigManagerCore(ConfigNode):
             # 结束初始化状态
             self._during_initialization = False
             
-            # 检查是否需要保存，如果需要则保存一次
-            if self._need_save:
+            # 检查是否需要保存
+            # 如果已经创建了初始化备份，就不需要额外保存了
+            if self._need_save and not self._initialization_backup_created:
                 self.save()
+                self._need_save = False
+            elif self._need_save and self._initialization_backup_created:
+                # 如果已经创建了初始化备份，只需要保存主配置文件，不创建额外备份
+                self._save_config_only()
                 self._need_save = False
         
         return True
@@ -285,6 +296,35 @@ class ConfigManagerCore(ConfigNode):
             debug(f"保存结果: {saved}")
         return saved
 
+    def _save_config_only(self):
+        """仅保存配置文件，不创建备份，不触发额外操作"""
+        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            debug("=== 静默保存配置（无备份） ===")
+
+        # 设置内部保存标志，避免文件监视器触发重新加载
+        if self._watcher:
+            self._watcher.set_internal_save_flag(True)
+
+        # 获取可序列化的数据，过滤掉无法序列化的对象
+        serializable_data = self._get_serializable_data()
+        
+        data_to_save = {
+            '__data__': serializable_data,
+            '__type_hints__': self._type_hints
+        }
+
+        # 直接保存到主配置文件，不创建备份
+        saved = self._file_ops.save_config_only(
+            self._config_path,
+            data_to_save
+        )
+        
+        if ENABLE_CALL_CHAIN_DISPLAY:
+            debug(f"静默保存结果: {saved}")
+        return saved
+
     def reload(self):
         """重新加载配置"""
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
@@ -355,6 +395,7 @@ class ConfigManagerCore(ConfigNode):
             success = self._create_backup_file(backup_path, data_to_save)
             if success:
                 self._last_backup_path = backup_path
+                self._initialization_backup_created = True
                 info(f"初始化备份已创建: {backup_path}")
             else:
                 warning("初始化备份创建失败")
