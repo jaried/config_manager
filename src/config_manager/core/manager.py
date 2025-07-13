@@ -17,7 +17,7 @@ from .watcher import FileWatcher
 from .call_chain import CallChainTracker
 from .path_configuration import PathConfigurationManager
 from .cross_platform_paths import convert_to_multi_platform_config, get_platform_path
-from ..logger import debug
+from ..logger import debug, info, warning, error
 
 
 class ConfigManagerCore(ConfigNode):
@@ -52,6 +52,12 @@ class ConfigManagerCore(ConfigNode):
         # 新增：重复初始化检测
         self._initialized = False
         self._initialization_lock = threading.Lock()
+        
+        # 新增：保存需求标志
+        self._need_save = False
+        
+        # 初始化状态标志
+        self._during_initialization = False
 
     def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float,
                    first_start_time: datetime = None) -> bool:
@@ -76,6 +82,12 @@ class ConfigManagerCore(ConfigNode):
         if not hasattr(self, '_type_hints'):
             self._type_hints = {}
 
+        # 重置保存需求标志
+        self._need_save = False
+        
+        # 设置初始化状态
+        self._during_initialization = True
+
         # 判断是否为主程序（传入了first_start_time参数）
         self._is_main_program = first_start_time is not None
 
@@ -88,12 +100,12 @@ class ConfigManagerCore(ConfigNode):
 
         # 根据开关决定是否测试调用链追踪器
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print("=== 调用链追踪器测试 ===")
+            debug("=== 调用链追踪器测试 ===")
             try:
                 test_chain = self._call_chain_tracker.get_call_chain()
-                print(f"初始化时调用链: {test_chain}")
+                debug(f"初始化时调用链: {test_chain}")
             except Exception as e:
-                print(f"调用链追踪器测试失败: {e}")
+                debug(f"调用链追踪器测试失败: {e}")
                 import traceback
                 traceback.print_exc()
 
@@ -103,33 +115,47 @@ class ConfigManagerCore(ConfigNode):
         self._watch = watch
         self._auto_create = auto_create
 
-        # 加载配置
-        loaded = self._load()
+        try:
+            # 加载配置
+            loaded = self._load()
 
-        # 如果加载失败且配置文件存在，说明是解析错误，不应该覆盖
-        if not loaded and os.path.exists(self._config_path):
-            print(f"⚠️  配置文件存在但解析失败: {self._config_path}")
-            print("⚠️  为保护原始配置，初始化失败")
-            return False
+            # 如果加载失败且配置文件存在，说明是解析错误，不应该覆盖
+            if not loaded and os.path.exists(self._config_path):
+                error(f"配置文件存在但解析失败: {self._config_path}")
+                error("为保护原始配置，初始化失败")
+                return False
 
-        # 设置首次启动时间（无论配置是否加载成功都要设置）
-        self._setup_first_start_time(first_start_time)
+            # 将配置文件的绝对路径作为配置数据的一部分存储
+            self._data['config_file_path'] = self._config_path
 
-        # 将配置文件的绝对路径作为配置数据的一部分存储
-        self._data['config_file_path'] = self._config_path
+            if not loaded and not self._auto_create:
+                return False
 
-        if not loaded and not self._auto_create:
-            return False
+            # 设置首次启动时间（只有在auto_create检查通过后才设置）
+            self._setup_first_start_time(first_start_time)
 
-        # 注册清理函数
-        atexit.register(self._cleanup)
+            # 注册清理函数
+            atexit.register(self._cleanup)
 
-        # 启动文件监视
-        if watch and self._watcher:
-            self._watcher.start(self._config_path, self._on_file_changed)
+            # 启动文件监视
+            if watch and self._watcher:
+                self._watcher.start(self._config_path, self._on_file_changed)
 
-        # 自动初始化路径配置
-        self.setup_project_paths()
+            # 检查是否需要路径配置（避免对简单配置文件意外修改）
+            if self._should_setup_paths():
+                # 自动初始化路径配置
+                self.setup_project_paths()
+                
+                # 在paths目录创建后生成初始化备份
+                self._create_initialization_backup()
+        finally:
+            # 结束初始化状态
+            self._during_initialization = False
+            
+            # 检查是否需要保存，如果需要则保存一次
+            if self._need_save:
+                self.save()
+                self._need_save = False
         
         return True
 
@@ -149,15 +175,15 @@ class ConfigManagerCore(ConfigNode):
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print(f"=== 开始加载配置文件: {self._config_path} ===")
+            debug(f"=== 开始加载配置文件: {self._config_path} ===")
 
         # 根据开关决定是否显示调用链
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 load_call_chain = self._call_chain_tracker.get_call_chain()
-                print(f"加载配置时的调用链: {load_call_chain}")
+                debug(f"加载配置时的调用链: {load_call_chain}")
             except Exception as e:
-                print(f"获取加载调用链失败: {e}")
+                debug(f"获取加载调用链失败: {e}")
 
         loaded = self._file_ops.load_config(
             self._config_path,
@@ -175,7 +201,7 @@ class ConfigManagerCore(ConfigNode):
                 raw_data = loaded.get('__data__', {})
                 self._type_hints = loaded.get('__type_hints__', {})
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    print("检测到标准格式，加载__data__节点")
+                    debug("检测到标准格式，加载__data__节点")
             else:
                 # 原始格式：直接使用整个loaded数据，但排除内部键
                 raw_data = {}
@@ -185,7 +211,7 @@ class ConfigManagerCore(ConfigNode):
                         raw_data[key] = value
                 self._type_hints = {}
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    print("检测到原始格式，直接加载配置数据")
+                    debug("检测到原始格式，直接加载配置数据")
 
             # 重建数据结构
             if raw_data:
@@ -196,7 +222,7 @@ class ConfigManagerCore(ConfigNode):
                         self._data[key] = value
 
             if ENABLE_CALL_CHAIN_DISPLAY:
-                print("配置加载完成")
+                debug("配置加载完成")
 
             # 标记配置加载成功
             self._config_loaded_successfully = True
@@ -207,7 +233,7 @@ class ConfigManagerCore(ConfigNode):
             return True
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print("配置加载失败")
+            debug("配置加载失败")
 
         # 标记配置加载失败
         self._config_loaded_successfully = False
@@ -218,22 +244,25 @@ class ConfigManagerCore(ConfigNode):
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print("=== 开始保存配置 ===")
+            debug("=== 开始保存配置 ===")
 
         # 根据开关决定是否显示保存时的调用链
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 save_call_chain = self._call_chain_tracker.get_call_chain()
-                print(f"保存配置时的调用链: {save_call_chain}")
+                debug(f"保存配置时的调用链: {save_call_chain}")
             except Exception as e:
-                print(f"获取保存调用链失败: {e}")
+                debug(f"获取保存调用链失败: {e}")
 
         # 设置内部保存标志，避免文件监视器触发重新加载
         if self._watcher:
             self._watcher.set_internal_save_flag(True)
 
+        # 获取可序列化的数据，过滤掉无法序列化的对象
+        serializable_data = self._get_serializable_data()
+        
         data_to_save = {
-            '__data__': self.to_dict(),
+            '__data__': serializable_data,
             '__type_hints__': self._type_hints
         }
 
@@ -253,7 +282,7 @@ class ConfigManagerCore(ConfigNode):
             self._last_backup_path = backup_path
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print(f"保存结果: {saved}")
+            debug(f"保存结果: {saved}")
         return saved
 
     def reload(self):
@@ -261,19 +290,19 @@ class ConfigManagerCore(ConfigNode):
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print("=== 重新加载配置 ===")
+            debug("=== 重新加载配置 ===")
 
         # 根据开关决定是否显示重新加载时的调用链
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 reload_call_chain = self._call_chain_tracker.get_call_chain()
-                print(f"重新加载配置时的调用链: {reload_call_chain}")
+                debug(f"重新加载配置时的调用链: {reload_call_chain}")
             except Exception as e:
-                print(f"获取重新加载调用链失败: {e}")
+                debug(f"获取重新加载调用链失败: {e}")
 
         reloaded = self._load()
         if ENABLE_CALL_CHAIN_DISPLAY:
-            print(f"重新加载结果: {reloaded}")
+            debug(f"重新加载结果: {reloaded}")
         return reloaded
 
     def get_last_backup_path(self) -> str:
@@ -287,6 +316,153 @@ class ConfigManagerCore(ConfigNode):
             self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),
             self  # 传递配置管理器实例
         )
+
+    def _should_setup_paths(self) -> bool:
+        """判断是否需要设置路径配置"""
+        # 测试模式下总是需要路径配置
+        if hasattr(self, '_test_mode') and self._test_mode:
+            return True
+            
+        # 检查配置中是否包含路径相关字段
+        path_indicators = [
+            'project_name', 'base_dir', 'paths', 'experiment_name',
+            'work_dir', 'log_dir', 'checkpoint_dir'
+        ]
+        
+        for indicator in path_indicators:
+            if indicator in self._data:
+                return True
+                
+        return False
+
+    def _create_initialization_backup(self) -> None:
+        """在初始化时创建配置备份"""
+        try:
+            # 使用首次启动时间作为备份时间戳
+            backup_time = self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
+            backup_path = self._file_ops.get_backup_path(self._config_path, backup_time, self)
+            
+            # 获取可序列化的数据，过滤掉无法序列化的对象
+            serializable_data = self._get_serializable_data()
+            
+            # 准备要保存的数据，与save方法保持一致
+            data_to_save = {
+                '__data__': serializable_data,
+                '__type_hints__': self._type_hints
+            }
+            
+            # 创建备份（直接保存到备份位置，不修改主配置文件）
+            success = self._create_backup_file(backup_path, data_to_save)
+            if success:
+                self._last_backup_path = backup_path
+                info(f"初始化备份已创建: {backup_path}")
+            else:
+                warning("初始化备份创建失败")
+        except Exception as e:
+            error(f"创建初始化备份时出错: {str(e)}")
+
+    def _create_backup_file(self, backup_path: str, data: dict) -> bool:
+        """创建备份文件，不输出额外信息"""
+        try:
+            import os
+            backup_dir = os.path.dirname(backup_path)
+            if backup_dir:
+                os.makedirs(backup_dir, exist_ok=True)
+
+            tmp_backup_path = f"{backup_path}.tmp"
+            with open(tmp_backup_path, 'w', encoding='utf-8') as f:
+                self._file_ops._yaml.dump(data, f)
+
+            os.replace(tmp_backup_path, backup_path)
+            return True
+        except Exception as e:
+            warning(f"备份文件创建失败: {str(e)}")
+            return False
+
+    def _can_safely_serialize(self) -> bool:
+        """检查配置数据是否可以安全序列化"""
+        try:
+            # 尝试序列化to_dict()的结果
+            import yaml
+            test_data = self.to_dict()
+            yaml.safe_dump(test_data)
+            return True
+        except Exception:
+            return False
+
+    def _get_serializable_data(self) -> dict:
+        """获取可序列化的配置数据，将数据转换为基础Python类型"""
+        def convert_to_basic_types(obj):
+            """递归将对象转换为基础Python类型"""
+            if obj is None:
+                return None
+            elif isinstance(obj, (bool, int, float, str)):
+                return obj
+            elif hasattr(obj, '__dict__') and hasattr(obj.__class__, '__module__'):
+                # 检查是否是复杂的自定义对象
+                module_name = obj.__class__.__module__
+                class_name = obj.__class__.__name__
+                
+                # 对于YAML内部类型，直接转换
+                if (module_name and 
+                    (module_name.startswith(('builtins', 'collections', 'ruamel', 'yaml')) or
+                     class_name in ('DoubleQuotedScalarString', 'ScalarFloat', 'ScalarInt'))):
+                    try:
+                        return convert_to_basic_types(obj.value if hasattr(obj, 'value') else str(obj))
+                    except:
+                        return str(obj)
+                
+                # 对于特殊的配置对象，尝试转换为字典
+                elif class_name in ('LoggerConfig', 'Config') or hasattr(obj, '__dict__'):
+                    try:
+                        # 尝试将对象的属性转换为字典
+                        result = {}
+                        for attr_name in dir(obj):
+                            if not attr_name.startswith('_') and not callable(getattr(obj, attr_name, None)):
+                                try:
+                                    attr_value = getattr(obj, attr_name)
+                                    converted_value = convert_to_basic_types(attr_value)
+                                    if converted_value is not None:
+                                        result[attr_name] = converted_value
+                                except:
+                                    continue
+                        return result if result else None
+                    except:
+                        warning(f"跳过无法序列化的配置项 (类型: {class_name})")
+                        return None
+                else:
+                    warning(f"跳过无法序列化的配置项 (类型: {class_name})")
+                    return None
+            elif isinstance(obj, dict):
+                result = {}
+                for key, value in obj.items():
+                    converted_key = convert_to_basic_types(key)
+                    converted_value = convert_to_basic_types(value)
+                    if converted_value is not None:
+                        result[str(converted_key)] = converted_value
+                return result
+            elif isinstance(obj, (list, tuple)):
+                result = []
+                for item in obj:
+                    converted = convert_to_basic_types(item)
+                    if converted is not None:
+                        result.append(converted)
+                return result
+            else:
+                # 对于其他类型，尝试转换为字符串
+                try:
+                    # 先尝试直接转换
+                    import yaml
+                    yaml.safe_dump(obj)
+                    return obj
+                except:
+                    try:
+                        return str(obj)
+                    except:
+                        warning(f"跳过无法转换的对象 (类型: {type(obj).__name__})")
+                        return None
+        
+        return convert_to_basic_types(self.to_dict())
 
     def _on_file_changed(self):
         """文件变化回调"""
@@ -306,20 +482,26 @@ class ConfigManagerCore(ConfigNode):
         return
 
     def _schedule_autosave(self):
-        """安排自动保存"""
+        """安排自动保存或标记需要保存"""
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         # 根据开关决定是否显示自动保存调度时的调用链
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 autosave_call_chain = self._call_chain_tracker.get_call_chain()
-                print(f"安排自动保存时的调用链: {autosave_call_chain}")
+                action = "标记需要保存" if getattr(self, '_during_initialization', False) else "安排自动保存"
+                print(f"{action}时的调用链: {autosave_call_chain}")
             except Exception as e:
-                print(f"获取自动保存调用链失败: {e}")
+                print(f"获取调用链失败: {e}")
 
-        # 只有在成功加载过配置的情况下才安排自动保存
+        # 只有在成功加载过配置的情况下才进行保存操作
         if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
-            self._autosave_manager.schedule_save(self.save)
+            # 在初始化期间只标记需要保存，初始化完成后正常调度自动保存
+            if getattr(self, '_during_initialization', False):
+                self._need_save = True
+            else:
+                # 初始化完成后的正常自动保存
+                self._autosave_manager.schedule_save(self.save)
         return
 
     def _get_current_platform(self) -> str:
@@ -733,8 +915,11 @@ class ConfigManagerCore(ConfigNode):
         # 保存到配置中
         self._data['first_start_time'] = self._first_start_time.isoformat()
 
-        # 移除立即保存配置的调用，避免在初始化过程中重复保存
-        # self.save()
+        # 根据初始化状态决定保存策略
+        if getattr(self, '_during_initialization', False):
+            self._need_save = True
+        else:
+            self._schedule_autosave()
 
         return
 

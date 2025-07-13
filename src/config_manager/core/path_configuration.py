@@ -532,7 +532,12 @@ class PathConfigurationManager:
         except AttributeError:
             # 属性不存在，设置当前时间
             current_time = datetime.now().isoformat()
-            self._config_manager.set('first_start_time', current_time)
+            self._config_manager.set('first_start_time', current_time, autosave=False)
+            # 根据初始化状态决定保存策略
+            if getattr(self._config_manager, '_during_initialization', False):
+                self._config_manager._need_save = True
+            else:
+                self._config_manager._schedule_autosave()
     
     def _handle_is_debug_import_error(self) -> None:
         """处理is_debug模块导入错误"""
