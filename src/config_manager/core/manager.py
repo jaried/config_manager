@@ -143,10 +143,6 @@ class ConfigManagerCore(ConfigNode):
             # 注册清理函数
             atexit.register(self._cleanup)
 
-            # 启动文件监视
-            if watch and self._watcher:
-                self._watcher.start(self._config_path, self._on_file_changed)
-
             # 检查是否需要路径配置（避免对简单配置文件意外修改）
             if self._should_setup_paths():
                 # 自动初始化路径配置
@@ -159,14 +155,21 @@ class ConfigManagerCore(ConfigNode):
             self._during_initialization = False
             
             # 检查是否需要保存
-            # 如果已经创建了初始化备份，就不需要额外保存了
-            if self._need_save and not self._initialization_backup_created:
-                self.save()
-                self._need_save = False
-            elif self._need_save and self._initialization_backup_created:
-                # 如果已经创建了初始化备份，只需要保存主配置文件，不创建额外备份
-                self._save_config_only()
-                self._need_save = False
+            if self._need_save:
+                # 如果已经创建了初始化备份，则不需要任何额外保存
+                # 初始化备份已经包含了所有必要的配置信息
+                if self._initialization_backup_created:
+                    debug("已创建初始化备份，跳过额外保存操作")
+                    self._need_save = False
+                else:
+                    # 没有创建初始化备份的情况下才进行保存
+                    debug("执行保存操作")
+                    self._save_config_only()  # 直接使用静默保存，避免重复备份
+                    self._need_save = False
+            
+            # 启动文件监视（在所有初始化完成后）
+            if watch and self._watcher:
+                self._watcher.start(self._config_path, self._on_file_changed)
         
         return True
 
@@ -376,7 +379,7 @@ class ConfigManagerCore(ConfigNode):
         return False
 
     def _create_initialization_backup(self) -> None:
-        """在初始化时创建配置备份"""
+        """在初始化时创建配置备份（一次性完成备份和主配置保存）"""
         try:
             # 使用首次启动时间作为备份时间戳
             backup_time = self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
@@ -391,14 +394,17 @@ class ConfigManagerCore(ConfigNode):
                 '__type_hints__': self._type_hints
             }
             
-            # 创建备份（直接保存到备份位置，不修改主配置文件）
-            success = self._create_backup_file(backup_path, data_to_save)
-            if success:
+            # 一次性完成备份和主配置保存
+            backup_success = self._file_ops.save_config(self._config_path, data_to_save, backup_path)
+            
+            if backup_success:
                 self._last_backup_path = backup_path
                 self._initialization_backup_created = True
+                # 重置保存需求标志，因为所有必要的保存已经完成
+                self._need_save = False
                 info(f"初始化备份已创建: {backup_path}")
             else:
-                warning("初始化备份创建失败")
+                warning(f"初始化备份创建失败")
         except Exception as e:
             error(f"创建初始化备份时出错: {str(e)}")
 
@@ -490,13 +496,27 @@ class ConfigManagerCore(ConfigNode):
                         result.append(converted)
                 return result
             else:
-                # 对于其他类型，尝试转换为字符串
+                # 对于其他类型，先检查是否是YAML安全类型
                 try:
                     # 先尝试直接转换
                     import yaml
                     yaml.safe_dump(obj)
                     return obj
                 except:
+                    # 如果不是YAML安全类型，检查是否是可转换的集合类型
+                    if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+                        # 尝试转换为列表
+                        try:
+                            result = []
+                            for item in obj:
+                                converted = convert_to_basic_types(item)
+                                if converted is not None:
+                                    result.append(converted)
+                            return result
+                        except:
+                            pass
+                    
+                    # 最后回退到字符串转换
                     try:
                         return str(obj)
                     except:
