@@ -2,11 +2,11 @@
 from __future__ import annotations
 from datetime import datetime
 
-start_time = datetime.now()
-
 import copy
 from collections.abc import Iterable, Mapping
 from typing import Any, Dict, List
+
+start_time = datetime.now()
 
 
 class ConfigNode:
@@ -49,7 +49,13 @@ class ConfigNode:
                 return False
 
         if name in data:
-            return data[name]
+            value = data[name]
+            # 如果是ConfigNode且只包含一个基本类型值，自动解包
+            if isinstance(value, ConfigNode) and len(value._data) == 1:
+                single_value = next(iter(value._data.values()))
+                if isinstance(single_value, (int, float, str, bool)):
+                    return single_value
+            return value
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def __setattr__(self, name: str, value: Any):
@@ -124,6 +130,104 @@ class ConfigNode:
         """返回迭代器（返回自身）"""
         iterator = iter([self])
         return iterator
+
+    def __float__(self) -> float:
+        """将ConfigNode转换为float（如果包含单个数值）"""
+        if len(self._data) == 1:
+            value = next(iter(self._data.values()))
+            if isinstance(value, (int, float)):
+                return float(value)
+        # 提供更详细的错误信息
+        raise TypeError(
+            f"无法将ConfigNode转换为float。ConfigNode内容: {self._data}\n"
+            f"提示：ConfigNode应该包含单个数值才能进行数学运算。"
+        )
+
+    def __int__(self) -> int:
+        """将ConfigNode转换为int（如果包含单个数值）"""
+        if len(self._data) == 1:
+            value = next(iter(self._data.values()))
+            if isinstance(value, (int, float)):
+                return int(value)
+        # 提供更详细的错误信息
+        raise TypeError(
+            f"无法将ConfigNode转换为int。ConfigNode内容: {self._data}\n"
+            f"提示：ConfigNode应该包含单个数值才能进行数学运算。"
+        )
+
+    def __mul__(self, other):
+        """支持乘法运算"""
+        try:
+            return float(self) * other
+        except TypeError as e:
+            raise TypeError(
+                f"ConfigNode乘法运算失败: {self._data} * {other}\n"
+                f"原因: {str(e)}\n"
+                f"提示：请检查配置值是否为正确的数值类型。"
+            )
+
+    def __rmul__(self, other):
+        """支持右乘法运算"""
+        return self.__mul__(other)
+
+    def __add__(self, other):
+        """支持加法运算"""
+        try:
+            return float(self) + other
+        except TypeError as e:
+            raise TypeError(
+                f"ConfigNode加法运算失败: {self._data} + {other}\n"
+                f"原因: {str(e)}\n"
+                f"提示：请检查配置值是否为正确的数值类型。"
+            )
+
+    def __radd__(self, other):
+        """支持右加法运算"""
+        return self.__add__(other)
+
+    def __sub__(self, other):
+        """支持减法运算"""
+        try:
+            return float(self) - other
+        except TypeError as e:
+            raise TypeError(
+                f"ConfigNode减法运算失败: {self._data} - {other}\n"
+                f"原因: {str(e)}\n"
+                f"提示：请检查配置值是否为正确的数值类型。"
+            )
+
+    def __rsub__(self, other):
+        """支持右减法运算"""
+        try:
+            return other - float(self)
+        except TypeError as e:
+            raise TypeError(
+                f"ConfigNode右减法运算失败: {other} - {self._data}\n"
+                f"原因: {str(e)}\n"
+                f"提示：请检查配置值是否为正确的数值类型。"
+            )
+
+    def __truediv__(self, other):
+        """支持除法运算"""
+        try:
+            return float(self) / other
+        except TypeError as e:
+            raise TypeError(
+                f"ConfigNode除法运算失败: {self._data} / {other}\n"
+                f"原因: {str(e)}\n"
+                f"提示：请检查配置值是否为正确的数值类型。"
+            )
+
+    def __rtruediv__(self, other):
+        """支持右除法运算"""
+        try:
+            return other / float(self)
+        except TypeError as e:
+            raise TypeError(
+                f"ConfigNode右除法运算失败: {other} / {self._data}\n"
+                f"原因: {str(e)}\n"
+                f"提示：请检查配置值是否为正确的数值类型。"
+            )
 
     def __deepcopy__(self, memo: Dict) -> ConfigNode:
         """深拷贝方法"""
