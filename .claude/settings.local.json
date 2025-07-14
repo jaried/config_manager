@@ -14,7 +14,8 @@
       "Bash(gh issue list:*)",
       "Bash(ruff check:*)",
       "Bash(curl:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

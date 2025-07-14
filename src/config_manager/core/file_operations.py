@@ -75,6 +75,9 @@ class FileOperations:
 
                     # 加载修复后的YAML数据
                     loaded_data = self._yaml.load(content) or {}
+                    
+                    # 验证YAML数据类型的正确性
+                    self._validate_yaml_types(loaded_data, config_path)
 
                     # 保存原始YAML结构和路径，用于后续保存时保留注释
                     self._original_yaml_data = loaded_data
@@ -98,6 +101,9 @@ class FileOperations:
                         print(f"获取调试信息也失败: {debug_e}")
 
             return loaded_data
+        except TypeError:
+            # 类型验证错误应该直接抛出，不要捕获
+            raise
         except Exception as e:
             print(f"⚠️  YAML解析失败: {str(e)}")
             print("⚠️  为保护原始配置文件，不会自动创建新配置")
@@ -232,3 +238,97 @@ class FileOperations:
         backup_dir = os.path.join(config_dir, 'backup', date_str, time_str)
         backup_path = os.path.join(backup_dir, backup_filename)
         return backup_path
+
+    def _validate_yaml_types(self, data: Dict[str, Any], config_path: str) -> None:
+        """验证YAML数据的类型正确性，确保严格区分字符串和数字
+        
+        Args:
+            data: 加载的YAML数据
+            config_path: 配置文件路径
+            
+        Raises:
+            TypeError: 当发现类型不一致时抛出异常
+        """
+        try:
+            self._validate_data_recursive(data, config_path, "")
+        except Exception as e:
+            raise TypeError(f"配置文件 {config_path} 类型验证失败: {str(e)}")
+    
+    def _validate_data_recursive(self, data: Any, config_path: str, path: str) -> None:
+        """递归验证数据类型
+        
+        Args:
+            data: 要验证的数据
+            config_path: 配置文件路径
+            path: 当前验证路径
+        """
+        if isinstance(data, dict):
+            for key, value in data.items():
+                current_path = f"{path}.{key}" if path else key
+                # 对于__data__键，需要继续验证其内容，但跳过其他内部键
+                if key.startswith('__') and key != '__data__':
+                    continue
+                self._validate_data_recursive(value, config_path, current_path)
+        elif isinstance(data, list):
+            for i, item in enumerate(data):
+                current_path = f"{path}[{i}]"
+                self._validate_data_recursive(item, config_path, current_path)
+        else:
+            # 对基础类型进行验证
+            self._validate_basic_type(data, config_path, path)
+    
+    def _validate_basic_type(self, value: Any, config_path: str, path: str) -> None:
+        """验证基础类型的正确性
+        
+        Args:
+            value: 要验证的值
+            config_path: 配置文件路径
+            path: 当前验证路径
+        """
+        # 检查是否是字符串类型（包括ruamel.yaml的特殊字符串类型）
+        is_string_type = (isinstance(value, str) or 
+                         hasattr(value, '__class__') and 
+                         value.__class__.__module__ and
+                         'ruamel.yaml.scalarstring' in value.__class__.__module__)
+        
+        if is_string_type:
+            # 获取字符串值
+            str_value = str(value)
+            
+            # 检查是否是纯数字字符串（可能是误用）
+            if str_value.isdigit():
+                raise TypeError(
+                    f"在 {path} 处发现可能的类型错误:\n"
+                    f"值 '{str_value}' 是字符串类型，但看起来像数字。\n"
+                    f"如果您想要数字，请在YAML文件中去掉引号：{str_value}\n"
+                    f"如果您想要字符串，请确认这是预期的。\n"
+                    f"配置文件路径: {config_path}"
+                )
+            
+            # 检查是否是浮点数字符串
+            try:
+                float(str_value)
+                if '.' in str_value:
+                    raise TypeError(
+                        f"在 {path} 处发现可能的类型错误:\n"
+                        f"值 '{str_value}' 是字符串类型，但看起来像浮点数。\n"
+                        f"如果您想要浮点数，请在YAML文件中去掉引号：{str_value}\n"
+                        f"如果您想要字符串，请确认这是预期的。\n"
+                        f"配置文件路径: {config_path}"
+                    )
+            except ValueError:
+                # 不是数字字符串，正常
+                pass
+            
+            # 检查是否是布尔值字符串
+            if str_value.lower() in ('true', 'false'):
+                raise TypeError(
+                    f"在 {path} 处发现可能的类型错误:\n"
+                    f"值 '{str_value}' 是字符串类型，但看起来像布尔值。\n"
+                    f"如果您想要布尔值，请在YAML文件中去掉引号：{str_value.lower()}\n"
+                    f"如果您想要字符串，请确认这是预期的。\n"
+                    f"配置文件路径: {config_path}"
+                )
+        
+        # 对于其他类型，目前不做额外验证，相信YAML解析器的结果
+        pass
