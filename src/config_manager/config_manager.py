@@ -47,8 +47,8 @@ class ConfigManager(ConfigManagerCore):
     def _create_test_instance(cls, config_path: str, watch: bool, auto_create: bool, 
                              autosave_delay: float, first_start_time: datetime):
         """创建测试模式实例（多例模式）"""
-        # 生成缓存键
-        cache_key = cls._generate_test_cache_key(config_path)
+        # 生成缓存键，包含first_start_time信息以区分不同时间的测试实例
+        cache_key = cls._generate_test_cache_key(config_path, first_start_time)
         
         if cache_key not in cls._instances:
             with cls._thread_lock:
@@ -128,36 +128,54 @@ class ConfigManager(ConfigManagerCore):
                 return f"production:default:{os.getcwd()}"
 
     @classmethod  
-    def _generate_test_cache_key(cls, config_path: str) -> str:
+    def _generate_test_cache_key(cls, config_path: str, first_start_time: datetime = None) -> str:
         """生成测试模式的缓存键，同一测试用例内相同路径返回相同键，不同测试用例间隔离"""
         try:
-            # 生成基础键
-            if config_path is not None:
-                # 显式路径：使用绝对路径，但标准化路径分隔符
-                abs_path = os.path.abspath(config_path)
-                normalized_path = abs_path.replace('\\', '/')
-                base_key = f"explicit:{normalized_path}"
-            else:
-                # 自动路径：基于当前工作目录
-                cwd = os.getcwd()
-                normalized_cwd = cwd.replace('\\', '/')
-                base_key = f"auto:{normalized_cwd}"
-            
             # 获取测试用例标识符实现测试间隔离
             test_identifier = cls._get_test_identifier()
-            cache_key = f"{base_key}:test:{test_identifier}"
             
-            return cache_key
-        except Exception:
-            # 如果路径解析失败，生成一个基于输入参数的缓存键
+            # 如果提供了first_start_time，添加到缓存键中以区分不同时间的实例
+            time_suffix = ""
+            if first_start_time is not None:
+                time_suffix = f":{first_start_time.strftime('%Y%m%d_%H%M%S')}"
+            
+            # 对于测试模式，缓存键主要基于测试标识符，而不是具体的配置路径
+            # 这样同一个测试中的多次调用会使用相同的缓存键
             if config_path is not None:
-                base_key = f"explicit:{config_path}"
+                # 如果明确指定了配置路径，检查是否是测试环境路径
+                if '/tmp/tests/' in config_path or '\\temp\\tests\\' in config_path.lower():
+                    # 是测试环境路径，使用explicit前缀和完整路径
+                    abs_path = os.path.abspath(config_path)
+                    normalized_path = abs_path.replace('\\', '/')
+                    base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
+                else:
+                    # 是显式指定的路径，包含路径信息
+                    abs_path = os.path.abspath(config_path)
+                    normalized_path = abs_path.replace('\\', '/')
+                    base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
             else:
-                base_key = f"default:{os.getcwd()}"
+                # 自动路径：生成测试环境路径并使用explicit前缀
+                try:
+                    _, test_config_path = cls._generate_test_environment_path(first_start_time)
+                    normalized_path = os.path.abspath(test_config_path).replace('\\', '/')
+                    base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
+                except Exception:
+                    # 如果生成测试环境路径失败，使用当前工作目录
+                    current_dir = os.getcwd()
+                    normalized_dir = os.path.abspath(current_dir).replace('\\', '/')
+                    base_key = f"auto:{normalized_dir}:test:{test_identifier}{time_suffix}"
             
-            # 即使出错也要添加测试标识符
+            return base_key
+        except Exception:
+            # 如果出错，生成一个基于测试标识符的缓存键
             test_identifier = cls._get_test_identifier()
-            return f"{base_key}:test:{test_identifier}"
+            time_suffix = ""
+            if first_start_time is not None:
+                try:
+                    time_suffix = f":{first_start_time.strftime('%Y%m%d_%H%M%S')}"
+                except:
+                    pass
+            return f"fallback:test:{test_identifier}{time_suffix}"
     
     @classmethod
     def _get_test_identifier(cls) -> str:
@@ -481,25 +499,55 @@ class ConfigManager(ConfigManagerCore):
         return None
 
     @classmethod
+    def _is_production_config_path(cls, config_path: str) -> bool:
+        """判断配置路径是否是生产配置路径"""
+        if not config_path:
+            return False
+            
+        abs_config_path = os.path.abspath(config_path)
+        
+        # 检查是否在临时目录中（临时配置文件）
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        if abs_config_path.startswith(temp_dir):
+            return False
+            
+        # 检查是否是标准的项目配置路径（包含src/config结构）
+        if 'src/config/config.yaml' in abs_config_path.replace('\\', '/'):
+            return True
+            
+        # 检查是否在项目根目录的config目录中
+        if abs_config_path.endswith('/config/config.yaml') or abs_config_path.endswith('\\config\\config.yaml'):
+            return True
+            
+        return False
+
+    @classmethod
     def _copy_production_config_to_test(cls, prod_config_path: str, test_config_path: str,
                                         first_start_time: datetime = None, project_name: str = None):
         """将生产配置复制到测试环境"""
         # 确保测试目录存在
         os.makedirs(os.path.dirname(test_config_path), exist_ok=True)
 
+        # 判断是否是真正的生产配置（在项目标准位置）
+        is_production_config = cls._is_production_config_path(prod_config_path)
+
         if os.path.exists(prod_config_path):
             # 检查源路径和目标路径是否相同
             if os.path.abspath(prod_config_path) == os.path.abspath(test_config_path):
                 print(f"✓ 源路径和目标路径相同，跳过复制: {prod_config_path}")
                 # 直接更新现有配置
-                cls._update_test_config_paths(test_config_path, first_start_time, project_name)
+                cls._update_test_config_paths(test_config_path, first_start_time, project_name, from_production=is_production_config)
             else:
                 # 复制配置文件（添加重试机制处理Windows文件锁定）
                 cls._safe_copy_file(prod_config_path, test_config_path)
-                print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
+                if is_production_config:
+                    print(f"✓ 已从生产环境复制配置: {prod_config_path} -> {test_config_path}")
+                else:
+                    print(f"✓ 已从自定义配置复制: {prod_config_path} -> {test_config_path}")
 
                 # 修改测试配置中的路径信息
-                cls._update_test_config_paths(test_config_path, first_start_time, project_name)
+                cls._update_test_config_paths(test_config_path, first_start_time, project_name, from_production=is_production_config)
         else:
             # 如果生产配置不存在，创建空的测试配置
             cls._create_empty_test_config(test_config_path, first_start_time, project_name)
@@ -537,7 +585,7 @@ class ConfigManager(ConfigManagerCore):
 
     @classmethod
     def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None,
-                                  project_name: str = None):
+                                  project_name: str = None, from_production: bool = False):
         """更新测试配置中的路径信息"""
         try:
             from ruamel.yaml import YAML
@@ -600,11 +648,14 @@ class ConfigManager(ConfigManagerCore):
             print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_base}")
 
             # 确定使用的project_name（优先级：传入参数 > 原配置 > 默认值 'project_name'）
-            project_name or config_data.get('project_name', 'project_name')
-
+            current_project_name = config_data.get('project_name', 'project_name')
+            
             # 如果传入了project_name，强制更新
             if project_name:
                 config_data['project_name'] = project_name
+            # 只有从生产配置复制且project_name是默认的'project_name'时，才替换为'test_project'
+            elif from_production and current_project_name == 'project_name':
+                config_data['project_name'] = 'test_project'
             
             # 根据任务6：简化test_mode逻辑，只设置base_dir
             # 只修改base_dir，其他路径字段保持原值
@@ -875,7 +926,22 @@ __type_hints__:
         if autosave:
             self._schedule_autosave()
 
-
+    def __getattr__(self, name: str) -> Any:
+        """ConfigManager的属性访问，支持选择性自动解包
+        
+        对于ConfigManager的顶级属性访问，支持单值ConfigNode的自动解包
+        但只对特定键名进行解包，避免破坏嵌套结构
+        """
+        # 先调用父类方法获取值
+        value = super().__getattr__(name)
+        
+        # 对于ConfigNode，检查是否应该自动解包
+        from .config_node import ConfigNode
+        if isinstance(value, ConfigNode):
+            # 只对顶级属性进行自动解包，不对嵌套结构进行解包
+            return value._get_auto_unpacked_value()
+        
+        return value
 
 
 def get_config_manager(

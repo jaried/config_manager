@@ -50,11 +50,11 @@ class ConfigNode:
 
         if name in data:
             value = data[name]
-            # 如果是ConfigNode且只包含一个基本类型值，自动解包
-            if isinstance(value, ConfigNode) and len(value._data) == 1:
-                single_value = next(iter(value._data.values()))
-                if isinstance(single_value, (int, float, str, bool)):
-                    return single_value
+            # 确保嵌套字典被转换为ConfigNode对象
+            if isinstance(value, dict) and not isinstance(value, ConfigNode):
+                built_value = ConfigNode.build(value)
+                data[name] = built_value
+                return built_value
             return value
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
@@ -81,7 +81,11 @@ class ConfigNode:
 
         # 如果这是ConfigManager实例，触发自动保存
         if hasattr(self, '_schedule_autosave'):
-            self._schedule_autosave()
+            # 增加额外的保护，避免在保存过程中触发递归
+            if (not getattr(self, '_saving', False) and 
+                not getattr(self, '_delayed_saving', False) and
+                not getattr(self, '_serializing', False)):
+                self._schedule_autosave()
         return
 
     def __delattr__(self, name: str):
@@ -229,6 +233,20 @@ class ConfigNode:
                 f"提示：请检查配置值是否为正确的数值类型。"
             )
 
+    def __eq__(self, other) -> bool:
+        """等值比较，支持自动解包"""
+        # 如果是单值ConfigNode，尝试与解包后的值比较
+        if len(self._data) == 1:
+            value = next(iter(self._data.values()))
+            if not isinstance(value, (dict, list, ConfigNode)):
+                return value == other
+        
+        # 否则比较ConfigNode对象本身
+        if isinstance(other, ConfigNode):
+            return self._data == other._data
+        
+        return False
+
     def __deepcopy__(self, memo: Dict) -> ConfigNode:
         """深拷贝方法"""
         new_node = self.__class__()
@@ -236,6 +254,26 @@ class ConfigNode:
         for key, value in self._data.items():
             new_node[key] = copy.deepcopy(value, memo)
         return new_node
+
+    def _get_auto_unpacked_value(self) -> Any:
+        """获取自动解包后的值
+        
+        仅当ConfigNode包含单个值且键名表示这是值包装器时才解包
+        只有特定键名（如'single'）才会触发自动解包，避免破坏正常的嵌套结构
+        """
+        if len(self._data) == 1:
+            key = next(iter(self._data.keys()))
+            value = next(iter(self._data.values()))
+            
+            # 只有'single'键名才触发自动解包，避免破坏正常的嵌套结构
+            # 'value'、'data'、'content'等键名应该保持为ConfigNode以支持嵌套结构
+            auto_unpack_keys = {'single'}
+            
+            if key in auto_unpack_keys and not isinstance(value, (dict, list, ConfigNode)):
+                return value
+        
+        # 否则返回自身（不解包）
+        return self
 
     def get(self, key: str, default: Any = None) -> Any:
         """安全获取值"""

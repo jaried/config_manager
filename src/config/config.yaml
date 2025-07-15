@@ -18,7 +18,7 @@ __data__:
       - \.png$
       - \.gif$
   base_dir: /tmp/original/base/path
-  work_dir: /tmp/original/base/path/test_project/experiment_name
+  work_dir: /tmp/original/work/path
   log_dir: /tmp/original/log/path
   config_file_path: 
     /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
@@ -36,6 +36,6 @@ __data__:
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
-  scheduler_start_time: '2025-07-14T01:34:59.388311'
+  scheduler_start_time: '2025-07-16T02:51:06.969297'
   scheduler_progress: completed
 __type_hints__: {}
