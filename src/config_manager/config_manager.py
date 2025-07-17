@@ -631,9 +631,14 @@ class ConfigManager(ConfigManagerCore):
                 time_to_use = first_start_time
                 print(f"✓ 使用传入的first_start_time: {first_start_time}")
             elif original_first_start_time:
-                # 保留原配置中的时间，不需要更新
+                # 保留原配置中的时间，但需要确保类型注释正确
                 print(f"✓ 保留原配置中的first_start_time: {original_first_start_time}")
-                time_to_use = None  # 标记不需要更新
+                time_to_use = None  # 标记不需要更新时间值
+                
+                # 确保 __type_hints__ 中包含 first_start_time 的类型注释
+                if '__type_hints__' not in config_data:
+                    config_data['__type_hints__'] = {}
+                config_data['__type_hints__']['first_start_time'] = 'datetime'
             else:
                 # 只有在都没有的情况下才使用当前时间
                 time_to_use = datetime.now()

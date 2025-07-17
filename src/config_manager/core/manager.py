@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 import threading
 import atexit
+import time
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional, Type
@@ -55,12 +56,30 @@ class ConfigManagerCore(ConfigNode):
         
         # 新增：保存需求标志
         self._need_save = False
+        # 新增：备份需求标志
+        self._need_backup = False
         
         # 初始化状态标志
         self._during_initialization = False
         
-        # 初始化备份创建标志
-        self._initialization_backup_created = False
+        # 延迟保存标志
+        self._delayed_saving = False
+        
+        # 自动保存计数器和时间戳，用于防止频繁调用
+        self._autosave_count = 0
+        self._autosave_last_time = time.time()
+
+    def __getattr__(self, name: str) -> Any:
+        """重写__getattr__方法，在根配置管理器中检查work_dir弃用"""
+        # 检查是否是已弃用的属性
+        if name == 'work_dir':
+            raise AttributeError(
+                f"config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
+                f"这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
+            )
+        
+        # 调用父类的__getattr__方法
+        return super().__getattr__(name)
 
     def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float,
                    first_start_time: datetime = None) -> bool:
@@ -85,14 +104,12 @@ class ConfigManagerCore(ConfigNode):
         if not hasattr(self, '_type_hints'):
             self._type_hints = {}
 
-        # 重置保存需求标志
+        # 重置保存和备份需求标志
         self._need_save = False
+        self._need_backup = False
         
         # 设置初始化状态
         self._during_initialization = True
-        
-        # 重置初始化备份标志
-        self._initialization_backup_created = False
 
         # 判断是否为主程序（传入了first_start_time参数）
         self._is_main_program = first_start_time is not None
@@ -154,18 +171,20 @@ class ConfigManagerCore(ConfigNode):
             # 结束初始化状态
             self._during_initialization = False
             
-            # 检查是否需要保存
-            if self._need_save:
-                # 如果已经创建了初始化备份，则不需要任何额外保存
-                # 初始化备份已经包含了所有必要的配置信息
-                if self._initialization_backup_created:
-                    debug("已创建初始化备份，跳过额外保存操作")
-                    self._need_save = False
-                else:
-                    # 没有创建初始化备份的情况下才进行保存
-                    debug("执行保存操作")
-                    self._save_config_only()  # 直接使用静默保存，避免重复备份
-                    self._need_save = False
+            # 统一处理保存和备份，只在初始化结束后执行一次
+            if self._need_save or self._need_backup:
+                # 在初始化期间，统一使用 _save_config_only 避免递归
+                debug("执行初始化保存操作")
+                self._save_config_only()
+                
+                # 如果需要备份，单独创建备份
+                if self._need_backup:
+                    debug("执行初始化备份操作")
+                    self._perform_initialization_backup()
+                
+                # 重置标志
+                self._need_save = False
+                self._need_backup = False
             
             # 启动文件监视（在所有初始化完成后）
             if watch and self._watcher:
@@ -259,54 +278,82 @@ class ConfigManagerCore(ConfigNode):
 
     def save(self):
         """保存配置到文件"""
-        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
-
-        if ENABLE_CALL_CHAIN_DISPLAY:
-            debug("=== 开始保存配置 ===")
-
-        # 根据开关决定是否显示保存时的调用链
-        if ENABLE_CALL_CHAIN_DISPLAY:
-            try:
-                save_call_chain = self._call_chain_tracker.get_call_chain()
-                debug(f"保存配置时的调用链: {save_call_chain}")
-            except Exception as e:
-                debug(f"获取保存调用链失败: {e}")
-
-        # 获取可序列化的数据，过滤掉无法序列化的对象
-        serializable_data = self._get_serializable_data()
+        # 添加递归保护机制
+        if hasattr(self, '_saving') and self._saving:
+            return False
         
-        data_to_save = {
-            '__data__': serializable_data,
-            '__type_hints__': self._type_hints
-        }
-
-        backup_path = self._file_ops.get_backup_path(
-            self._config_path,
-            self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),
-            self  # 传递配置管理器实例
-        )
+        self._saving = True
+        # 注意：不在这里设置_serializing标志，因为那会导致_get_serializable_data返回空数据
         
-        # 通知文件监视器即将进行内部保存
-        if self._watcher:
-            self._watcher.set_internal_save_flag(True)
+        try:
+            from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                debug("=== 开始保存配置 ===")
+
+            # 根据开关决定是否显示保存时的调用链
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                try:
+                    save_call_chain = self._call_chain_tracker.get_call_chain()
+                    debug(f"保存配置时的调用链: {save_call_chain}")
+                except Exception as e:
+                    debug(f"获取保存调用链失败: {e}")
+
+            # 获取可序列化的数据，过滤掉无法序列化的对象
+            serializable_data = self._get_serializable_data()
             
-        saved = self._file_ops.save_config(
-            self._config_path,
-            data_to_save,
-            backup_path
-        )
-        
-        # 保存完成后重置内部保存标志
-        if self._watcher:
-            self._watcher.set_internal_save_flag(False)
-        
-        # 记录实际使用的备份路径
-        if saved:
-            self._last_backup_path = backup_path
+            data_to_save = {
+                '__data__': serializable_data,
+                '__type_hints__': self._type_hints
+            }
 
-        if ENABLE_CALL_CHAIN_DISPLAY:
-            debug(f"保存结果: {saved}")
-        return saved
+            backup_path = self._file_ops.get_backup_path(
+                self._config_path,
+                self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now(),
+                self  # 传递配置管理器实例
+            )
+            
+            # 通知文件监视器即将进行内部保存
+            if self._watcher:
+                self._watcher.set_internal_save_flag(True)
+                
+            saved = self._file_ops.save_config(
+                self._config_path,
+                data_to_save,
+                backup_path
+            )
+            
+            # 保存完成后不立即重置内部保存标志，让文件监视器检测后再重置
+            
+            # 记录实际使用的备份路径
+            if saved:
+                self._last_backup_path = backup_path
+
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                debug(f"保存结果: {saved}")
+            return saved
+        finally:
+            self._saving = False
+            # 注意：不在这里重置内部保存标志，让文件监视器检测到变化后自行重置
+            # 这样避免竞态条件导致的递归保存问题
+
+    def _delayed_save(self):
+        """延迟保存方法，用于自动保存场景"""
+        # 添加延迟保存标志检查
+        if hasattr(self, '_delayed_saving') and self._delayed_saving:
+            return False
+        
+        self._delayed_saving = True
+        # 注意：不设置_serializing标志，避免序列化数据为空
+        try:
+            # 检查是否有其他保存操作正在进行
+            if hasattr(self, '_saving') and self._saving:
+                return False
+            
+            # 执行保存操作
+            return self.save()
+        finally:
+            self._delayed_saving = False
 
     def _save_config_only(self):
         """仅保存配置文件，不创建备份，不触发额外操作"""
@@ -333,9 +380,8 @@ class ConfigManagerCore(ConfigNode):
             data_to_save
         )
         
-        # 保存完成后重置内部保存标志
-        if self._watcher:
-            self._watcher.set_internal_save_flag(False)
+        # 注意：不在这里重置内部保存标志，让文件监视器检测到变化后自行重置
+        # 这样避免竞态条件导致的递归保存问题
         
         if ENABLE_CALL_CHAIN_DISPLAY:
             debug(f"静默保存结果: {saved}")
@@ -392,42 +438,51 @@ class ConfigManagerCore(ConfigNode):
         return False
 
     def _create_initialization_backup(self) -> None:
-        """在初始化时创建配置备份（一次性完成备份和主配置保存）"""
+        """标记需要在初始化时创建配置备份（不立即执行）"""
+        # 标记需要创建备份
+        self._need_backup = True
+        # 记录备份时间
+        self._backup_time = self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
+        debug("已标记需要创建初始化备份")
+
+    def _perform_initialization_backup(self) -> None:
+        """执行初始化备份操作（只创建备份，不保存配置文件）"""
         try:
             # 设置内部保存标志，避免文件监视器触发重新加载
             if self._watcher:
                 self._watcher.set_internal_save_flag(True)
 
-            # 使用首次启动时间作为备份时间戳
-            backup_time = self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
+            # 使用记录的备份时间
+            backup_time = getattr(self, '_backup_time', datetime.now())
             backup_path = self._file_ops.get_backup_path(self._config_path, backup_time, self)
             
-            # 获取可序列化的数据，过滤掉无法序列化的对象
+            # 获取可序列化的数据
             serializable_data = self._get_serializable_data()
             
-            # 准备要保存的数据，与save方法保持一致
-            data_to_save = {
+            # 准备要备份的数据
+            data_to_backup = {
                 '__data__': serializable_data,
                 '__type_hints__': self._type_hints
             }
             
-            # 一次性完成备份和主配置保存
-            backup_success = self._file_ops.save_config(self._config_path, data_to_save, backup_path)
+            # 只创建备份文件，不保存主配置文件
+            backup_success = self._file_ops.create_backup_only(backup_path, data_to_backup)
             
-            # 保存完成后立即重置内部保存标志
+            # 重置内部保存标志
             if self._watcher:
                 self._watcher.set_internal_save_flag(False)
             
             if backup_success:
                 self._last_backup_path = backup_path
-                self._initialization_backup_created = True
-                # 重置保存需求标志，因为所有必要的保存已经完成
-                self._need_save = False
                 info(f"初始化备份已创建: {backup_path}")
             else:
                 warning("初始化备份创建失败")
+                
         except Exception as e:
-            error(f"创建初始化备份时出错: {str(e)}")
+            error(f"初始化备份操作失败: {str(e)}")
+            # 确保重置内部保存标志
+            if self._watcher:
+                self._watcher.set_internal_save_flag(False)
 
     def _create_backup_file(self, backup_path: str, data: dict) -> bool:
         """创建备份文件，不输出额外信息"""
@@ -459,110 +514,27 @@ class ConfigManagerCore(ConfigNode):
             return False
 
     def _get_serializable_data(self) -> dict:
-        """获取可序列化的配置数据，将数据转换为基础Python类型"""
-        def convert_to_basic_types(obj):
-            """递归将对象转换为基础Python类型"""
-            if obj is None:
-                return None
-            elif isinstance(obj, (bool, int, float, str)):
-                return obj
-            elif hasattr(obj, '__dict__') and hasattr(obj.__class__, '__module__'):
-                # 检查是否是复杂的自定义对象
-                module_name = obj.__class__.__module__
-                class_name = obj.__class__.__name__
-                
-                # 对于YAML内部类型，直接转换
-                if (module_name and 
-                    (module_name.startswith(('builtins', 'collections', 'ruamel', 'yaml')) or
-                     class_name in ('DoubleQuotedScalarString', 'ScalarFloat', 'ScalarInt'))):
-                    try:
-                        # 特殊处理YAML列表类型（CommentedSeq等）
-                        if class_name in ('CommentedSeq', 'CommentedList') or hasattr(obj, '__iter__'):
-                            # 对于列表类型，递归转换每个元素
-                            if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
-                                return [convert_to_basic_types(item) for item in obj]
-                        
-                        # 对于其他YAML类型，尝试获取value属性或转换
-                        return convert_to_basic_types(obj.value if hasattr(obj, 'value') else obj)
-                    except:
-                        # 只对非列表类型才回退到字符串
-                        if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
-                            try:
-                                return [convert_to_basic_types(item) for item in obj]
-                            except:
-                                return list(obj) if hasattr(obj, '__iter__') else str(obj)
-                        return str(obj)
-                
-                # 对于特殊的配置对象，尝试转换为字典
-                elif class_name in ('LoggerConfig', 'Config') or hasattr(obj, '__dict__'):
-                    try:
-                        # 尝试将对象的属性转换为字典
-                        result = {}
-                        for attr_name in dir(obj):
-                            if not attr_name.startswith('_') and not callable(getattr(obj, attr_name, None)):
-                                try:
-                                    attr_value = getattr(obj, attr_name)
-                                    converted_value = convert_to_basic_types(attr_value)
-                                    if converted_value is not None:
-                                        result[attr_name] = converted_value
-                                except:
-                                    continue
-                        return result if result else None
-                    except:
-                        warning(f"跳过无法序列化的配置项 (类型: {class_name})")
-                        return None
-                else:
-                    warning(f"跳过无法序列化的配置项 (类型: {class_name})")
-                    return None
-            elif isinstance(obj, dict):
-                result = {}
-                for key, value in obj.items():
-                    converted_key = convert_to_basic_types(key)
-                    converted_value = convert_to_basic_types(value)
-                    if converted_value is not None:
-                        result[str(converted_key)] = converted_value
-                return result
-            elif isinstance(obj, (list, tuple)):
-                result = []
-                for item in obj:
-                    converted = convert_to_basic_types(item)
-                    if converted is not None:
-                        result.append(converted)
-                return result
-            else:
-                # 先检查是否是可迭代的集合类型（包括特殊的列表类型）
-                if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
-                    # 尝试转换为列表（优先处理集合类型）
-                    try:
-                        result = []
-                        for item in obj:
-                            converted = convert_to_basic_types(item)
-                            if converted is not None:
-                                result.append(converted)
-                        return result
-                    except:
-                        pass
-                
-                # 对于其他类型，检查是否是YAML安全类型
-                try:
-                    # 先尝试直接转换
-                    import yaml
-                    yaml.safe_dump(obj)
-                    return obj
-                except:
-                    # 只对非集合类型才回退到字符串转换
-                    if not hasattr(obj, '__iter__') or isinstance(obj, (str, bytes)):
-                        try:
-                            return str(obj)
-                        except:
-                            warning(f"跳过无法转换的对象 (类型: {type(obj).__name__})")
-                            return None
-                    else:
-                        # 对于集合类型，如果无法转换，则跳过而不是转为字符串
-                        warning(f"跳过无法序列化的集合类型 (类型: {type(obj).__name__})")
-                        return None
+        """获取可序列化的配置数据，使用简化的方法避免递归"""
+        # 设置序列化标志，防止在序列化过程中触发配置修改
+        if not hasattr(self, '_serializing'):
+            self._serializing = False
         
-        return convert_to_basic_types(self.to_dict())
+        if self._serializing:
+            return {}
+        
+        self._serializing = True
+        try:
+            # 使用ConfigNode的to_dict方法，这个方法已经有防护机制
+            if hasattr(self, '_data'):
+                return self.to_dict()
+            else:
+                return {}
+        except Exception as e:
+            warning(f"获取序列化数据失败: {e}")
+            # 如果to_dict失败，返回空字典而不是失败
+            return {}
+        finally:
+            self._serializing = False
 
     def _convert_stringified_data(self, value):
         """检测并转换字符串化的数据结构（如字符串化的列表）"""
@@ -633,25 +605,54 @@ class ConfigManagerCore(ConfigNode):
 
     def _schedule_autosave(self):
         """安排自动保存或标记需要保存"""
-        from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
+        # 添加递归保护机制
+        if hasattr(self, '_scheduling_autosave') and self._scheduling_autosave:
+            print("🔄 检测到递归调用，跳过自动保存调度")
+            return
+        
+        # 如果正在保存过程中，不要再次调度自动保存
+        if (hasattr(self, '_saving') and self._saving) or (hasattr(self, '_delayed_saving') and self._delayed_saving):
+            print("💾 正在保存，跳过自动保存调度")
+            return
+            
+        # 添加频繁调用保护：如果1秒内调用超过10次，直接退出
+        current_time = time.time()
+        if current_time - self._autosave_last_time < 1.0:
+            self._autosave_count += 1
+            print(f"📊 自动保存调度频率计数: {self._autosave_count}")
+            if self._autosave_count > 10:
+                print(f"⚠️  自动保存调度频率过高，跳过调度 (第{self._autosave_count}次)")
+                return
+        else:
+            # 重置计数器
+            self._autosave_count = 1
+            self._autosave_last_time = current_time
+            print("🔄 重置自动保存调度计数器")
+            
+        self._scheduling_autosave = True
+        
+        try:
+            from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
-        # 根据开关决定是否显示自动保存调度时的调用链
-        if ENABLE_CALL_CHAIN_DISPLAY:
-            try:
-                autosave_call_chain = self._call_chain_tracker.get_call_chain()
-                action = "标记需要保存" if getattr(self, '_during_initialization', False) else "安排自动保存"
-                print(f"{action}时的调用链: {autosave_call_chain}")
-            except Exception as e:
-                print(f"获取调用链失败: {e}")
+            # 根据开关决定是否显示自动保存调度时的调用链
+            if ENABLE_CALL_CHAIN_DISPLAY:
+                try:
+                    autosave_call_chain = self._call_chain_tracker.get_call_chain()
+                    action = "标记需要保存" if getattr(self, '_during_initialization', False) else "安排自动保存"
+                    print(f"{action}时的调用链: {autosave_call_chain}")
+                except Exception as e:
+                    print(f"获取调用链失败: {e}")
 
-        # 只有在成功加载过配置的情况下才进行保存操作
-        if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
-            # 在初始化期间只标记需要保存，初始化完成后正常调度自动保存
-            if getattr(self, '_during_initialization', False):
-                self._need_save = True
-            else:
-                # 初始化完成后的正常自动保存
-                self._autosave_manager.schedule_save(self.save)
+            # 只有在成功加载过配置的情况下才进行保存操作
+            if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
+                # 在初始化期间只标记需要保存，初始化完成后正常调度自动保存
+                if getattr(self, '_during_initialization', False):
+                    self._need_save = True
+                else:
+                    # 初始化完成后的正常自动保存，使用延迟保存
+                    self._autosave_manager.schedule_save(self._delayed_save)
+        finally:
+            self._scheduling_autosave = False
         return
 
     def _get_current_platform(self) -> str:
@@ -699,51 +700,66 @@ class ConfigManagerCore(ConfigNode):
 
     def _update_base_dir(self):
         """更新内部 _base_dir（跨平台支持）"""
-        if self._test_mode:
-            # 测试模式：使用跨平台临时路径
-            self._base_dir = self._generate_test_base_dir()
-            
-            # 设置测试环境变量
-            os.environ['CONFIG_MANAGER_TEST_MODE'] = 'true'
-            os.environ['CONFIG_MANAGER_TEST_BASE_DIR'] = self._base_dir
-            
-            # 创建测试目录（跨平台）
-            os.makedirs(self._base_dir, exist_ok=True)
-            
-            debug(f"测试模式路径: {self._base_dir}")
-        else:
-            # 生产模式：从多平台配置选择当前平台
-            base_dir_config = self._data.get('base_dir')
-            if isinstance(base_dir_config, dict) or hasattr(base_dir_config, 'to_dict'):
-                # 如果是 ConfigNode，转换为普通字典
-                if hasattr(base_dir_config, 'to_dict'):
-                    config_dict = base_dir_config.to_dict()
-                else:
-                    config_dict = base_dir_config
-                platform_path = get_platform_path(config_dict, 'base_dir')
-                current_platform = self._get_current_platform()
-                
-                # 如果当前平台路径为空，使用默认值
-                if not platform_path:
-                    if current_platform in ['ubuntu', 'linux']:
-                        self._base_dir = os.path.expanduser('~/logs')
-                    elif current_platform == 'windows':
-                        self._base_dir = 'd:\\logs'
-                    else:
-                        self._base_dir = None
-                else:
-                    # 展开 ~ 路径（如果是 Linux/Ubuntu）
-                    if current_platform in ['ubuntu', 'linux'] and platform_path.startswith('~'):
-                        self._base_dir = os.path.expanduser(platform_path)
-                    else:
-                        self._base_dir = platform_path
-            else:
-                # 如果不是字典格式，直接使用原始值
-                self._base_dir = base_dir_config
+        # 添加循环检测机制
+        if hasattr(self, '_updating_base_dir') and self._updating_base_dir:
+            return
         
-        # debug_mode 时在 _base_dir 后面加一层 'debug' 路径
-        if hasattr(self, 'debug_mode') and self.debug_mode and self._base_dir:
-            self._base_dir = os.path.join(self._base_dir, 'debug')
+        self._updating_base_dir = True
+        
+        try:
+            if self._test_mode:
+                # 测试模式：使用跨平台临时路径
+                self._base_dir = self._generate_test_base_dir()
+                
+                # 设置测试环境变量
+                os.environ['CONFIG_MANAGER_TEST_MODE'] = 'true'
+                os.environ['CONFIG_MANAGER_TEST_BASE_DIR'] = self._base_dir
+                
+                # 创建测试目录（跨平台）
+                os.makedirs(self._base_dir, exist_ok=True)
+                
+                debug(f"测试模式路径: {self._base_dir}")
+            else:
+                # 生产模式：从多平台配置选择当前平台
+                # 直接访问_data字典避免触发__getattr__循环
+                base_dir_config = self._data.get('base_dir')
+                if isinstance(base_dir_config, dict) or hasattr(base_dir_config, 'to_dict'):
+                    # 如果是 ConfigNode，转换为普通字典
+                    if hasattr(base_dir_config, 'to_dict'):
+                        config_dict = base_dir_config.to_dict()
+                    else:
+                        config_dict = base_dir_config
+                    platform_path = get_platform_path(config_dict, 'base_dir')
+                    current_platform = self._get_current_platform()
+                    
+                    # 如果当前平台路径为空，使用默认值
+                    if not platform_path:
+                        if current_platform in ['ubuntu', 'linux']:
+                            self._base_dir = os.path.expanduser('~/logs')
+                        elif current_platform == 'windows':
+                            self._base_dir = 'd:\\logs'
+                        else:
+                            self._base_dir = None
+                    else:
+                        # 展开 ~ 路径（如果是 Linux/Ubuntu）
+                        if current_platform in ['ubuntu', 'linux'] and platform_path.startswith('~'):
+                            self._base_dir = os.path.expanduser(platform_path)
+                        else:
+                            self._base_dir = platform_path
+                else:
+                    # 如果不是字典格式，直接使用原始值
+                    self._base_dir = base_dir_config
+        
+            # debug_mode 时在 _base_dir 后面加一层 'debug' 路径
+            # 直接检查is_debug()避免触发__getattr__循环
+            try:
+                from is_debug import is_debug
+                if is_debug() and self._base_dir:
+                    self._base_dir = os.path.join(self._base_dir, 'debug')
+            except ImportError:
+                pass
+        finally:
+            self._updating_base_dir = False
 
     def _regenerate_paths(self):
         """重新生成 config.paths 下的所有路径"""
@@ -803,13 +819,15 @@ class ConfigManagerCore(ConfigNode):
 
         # 特殊处理base_dir：总是返回 _base_dir
         if key == 'base_dir':
-            # 动态更新_base_dir以反映debug_mode变化
-            self._update_base_dir()
+            # 避免在_update_base_dir期间再次调用造成循环
+            if not (hasattr(self, '_updating_base_dir') and self._updating_base_dir):
+                # 动态更新_base_dir以反映debug_mode变化
+                self._update_base_dir()
             
             if hasattr(self, '_base_dir') and self._base_dir is not None:
                 current = self._base_dir
             elif isinstance(current, dict) or hasattr(current, 'to_dict'):
-                # 如果_base_dir未设置但有多平台配置，临时解析
+                # 如枟_base_dir未设置但有多平台配置，临时解析
                 if hasattr(current, 'to_dict'):
                     config_dict = current.to_dict()
                 else:
@@ -826,6 +844,13 @@ class ConfigManagerCore(ConfigNode):
         if key == 'debug_mode':
             # 静默忽略debug_mode的设置，因为它应该总是动态获取
             return
+
+        # 特殊处理work_dir：不允许设置，已弃用
+        if key == 'work_dir':
+            raise AttributeError(
+                f"config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
+                f"这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
+            )
 
         # 特殊处理first_start_time：如果只是first_start_time变化，不应该触发自动保存
         if key == 'first_start_time':
@@ -1036,7 +1061,9 @@ class ConfigManagerCore(ConfigNode):
         if existing_time_str and first_start_time is None:
             # 如果配置中已经有时间，解析并使用它
             try:
-                self._first_start_time = datetime.fromisoformat(existing_time_str)
+                # 确保时间字符串是标准字符串类型（处理SingleQuotedScalarString）
+                time_str = str(existing_time_str)
+                self._first_start_time = datetime.fromisoformat(time_str)
                 if ENABLE_CALL_CHAIN_DISPLAY:
                     print(f"从配置中读取首次启动时间: {self._first_start_time}")
                 return
@@ -1064,6 +1091,11 @@ class ConfigManagerCore(ConfigNode):
 
         # 保存到配置中
         self._data['first_start_time'] = self._first_start_time.isoformat()
+        
+        # 确保类型注释中包含 first_start_time 的类型
+        if '__type_hints__' not in self._data:
+            self._data['__type_hints__'] = {}
+        self._data['__type_hints__']['first_start_time'] = 'datetime'
 
         # 根据初始化状态决定保存策略
         if getattr(self, '_during_initialization', False):

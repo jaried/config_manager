@@ -50,6 +50,23 @@ class ConfigNode:
 
         if name in data:
             value = data[name]
+            
+            # 特殊处理first_start_time：根据类型注释进行类型转换
+            if name == 'first_start_time':
+                type_hints = data.get('__type_hints__', {})
+                if type_hints.get('first_start_time') == 'datetime':
+                    # 检查是否需要转换为datetime对象
+                    from datetime import datetime
+                    if not isinstance(value, datetime):
+                        try:
+                            # 尝试转换为datetime对象
+                            time_str = str(value)
+                            converted_value = datetime.fromisoformat(time_str)
+                            return converted_value
+                        except (ValueError, TypeError):
+                            # 如果转换失败，返回原始值
+                            pass
+            
             # 确保嵌套字典被转换为ConfigNode对象
             if isinstance(value, dict) and not isinstance(value, ConfigNode):
                 built_value = ConfigNode.build(value)
