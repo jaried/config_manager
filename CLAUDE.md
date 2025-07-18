@@ -180,8 +180,7 @@ src/config_manager/
 │   ├── path_resolver.py       # 路径解析
 │   ├── path_configuration.py  # 路径配置
 │   └── cross_platform_paths.py # 跨平台路径
-└── logger/                    # 日志模块
-    └── minimal_logger.py      # 最小化日志器
+# 注意：日志记录使用Python标准logging模块
 ```
 
 ## 关键特性

@@ -6,7 +6,9 @@ start_time = datetime.now()
 
 import threading
 from typing import Callable
-from ..logger import info, error
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AutosaveManager:
@@ -69,11 +71,11 @@ class AutosaveManager:
                 
             saved = save_callback()
             if saved:
-                info("配置已自动保存")
+                logger.info("配置已自动保存")
             else:
-                info("自动保存跳过：无数据")
+                logger.info("自动保存跳过：无数据")
         except Exception as e:
-            error(f"自动保存失败: {str(e)}")
+            logger.error(f"自动保存失败: {str(e)}")
         finally:
             with self._autosave_lock:
                 self._autosave_timer = None

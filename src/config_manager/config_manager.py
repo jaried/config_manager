@@ -554,21 +554,17 @@ class ConfigManager(ConfigManagerCore):
 
     @classmethod
     def _safe_copy_file(cls, src_path: str, dst_path: str, max_retries: int = 3):
-        """安全复制文件，处理Windows文件锁定问题"""
+        """安全复制文件，处理Windows文件锁定问题，保留YAML注释"""
         import time
+        import shutil
         
         for attempt in range(max_retries):
             try:
                 # 确保目标目录存在
                 os.makedirs(os.path.dirname(dst_path), exist_ok=True)
                 
-                # 先读取源文件内容
-                with open(src_path, 'r', encoding='utf-8') as src_file:
-                    content = src_file.read()
-                
-                # 写入目标文件
-                with open(dst_path, 'w', encoding='utf-8') as dst_file:
-                    dst_file.write(content)
+                # 使用shutil.copy2来保留文件的完整格式（包括注释）
+                shutil.copy2(src_path, dst_path)
                 
                 return  # 成功复制，退出函数
                 
@@ -584,13 +580,45 @@ class ConfigManager(ConfigManagerCore):
                 raise RuntimeError(f"复制文件时发生未知错误: {e}") from e
 
     @classmethod
+    def _deep_update_yaml_data(cls, original, new_data):
+        """深度更新YAML数据，保留原始结构和注释"""
+        if isinstance(original, dict) and isinstance(new_data, dict):
+            # 创建新的字典来存储合并结果，确保不修改原始数据
+            result = {}
+            
+            # 首先复制原始数据中的所有键值（保留注释等格式信息）
+            for key, value in original.items():
+                if key in new_data:
+                    # 如果新数据中也有这个键，递归合并
+                    result[key] = cls._deep_update_yaml_data(value, new_data[key])
+                else:
+                    # 如果新数据中没有这个键，保留原始值
+                    result[key] = value
+            
+            # 然后添加新数据中的新键
+            for key, value in new_data.items():
+                if key not in original:
+                    result[key] = value
+            
+            return result
+        elif isinstance(original, list) and isinstance(new_data, list):
+            # 对于列表，直接替换（保持简单）
+            return new_data
+        else:
+            # 对于其他类型，直接替换
+            return new_data
+
+    @classmethod
     def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None,
                                   project_name: str = None, from_production: bool = False):
-        """更新测试配置中的路径信息"""
+        """更新测试配置中的路径信息，保留YAML注释"""
         try:
             from ruamel.yaml import YAML
             yaml = YAML()
             yaml.preserve_quotes = True
+            yaml.map_indent = 2
+            yaml.sequence_indent = 4
+            yaml.sequence_dash_offset = 2
             yaml.default_flow_style = False
 
             # 读取配置文件并处理Windows路径转义问题
@@ -608,21 +636,11 @@ class ConfigManager(ConfigManagerCore):
             # 修复常见的Windows路径转义问题
             content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
 
-            # 解析修复后的YAML内容
+            # 解析修复后的YAML内容，保留注释结构
             loaded_data = yaml.load(content) or {}
 
-            # 判断是否为标准格式（包含__data__节点）
-            if '__data__' in loaded_data:
-                # 标准格式：提取__data__中的内容
-                config_data = loaded_data['__data__']
-                type_hints = loaded_data.get('__type_hints__', {})
-            else:
-                # 原始格式：直接使用
-                config_data = loaded_data
-                type_hints = {}
-
             # 获取原配置中的first_start_time
-            original_first_start_time = config_data.get('first_start_time')
+            original_first_start_time = loaded_data.get('first_start_time')
 
             # 确定最终使用的时间（优先级：传入参数 > 原配置 > 当前时间）
             time_to_use = None
@@ -636,9 +654,9 @@ class ConfigManager(ConfigManagerCore):
                 time_to_use = None  # 标记不需要更新时间值
                 
                 # 确保 __type_hints__ 中包含 first_start_time 的类型注释
-                if '__type_hints__' not in config_data:
-                    config_data['__type_hints__'] = {}
-                config_data['__type_hints__']['first_start_time'] = 'datetime'
+                if '__type_hints__' not in loaded_data:
+                    loaded_data['__type_hints__'] = {}
+                loaded_data['__type_hints__']['first_start_time'] = 'datetime'
             else:
                 # 只有在都没有的情况下才使用当前时间
                 time_to_use = datetime.now()
@@ -652,39 +670,44 @@ class ConfigManager(ConfigManagerCore):
             # 无论如何都要执行路径替换
             print(f"✓ 开始执行路径替换，test_base_dir: {test_base_dir}, temp_base: {temp_base}")
 
+            # 直接在原始的YAML数据上进行更新，保留注释
             # 确定使用的project_name（优先级：传入参数 > 原配置 > 默认值 'project_name'）
-            current_project_name = config_data.get('project_name', 'project_name')
+            current_project_name = loaded_data.get('project_name', 'project_name')
             
             # 如果传入了project_name，强制更新
             if project_name:
-                config_data['project_name'] = project_name
+                loaded_data['project_name'] = project_name
+                # 同时更新__data__节点中的project_name
+                if '__data__' in loaded_data and isinstance(loaded_data['__data__'], dict):
+                    loaded_data['__data__']['project_name'] = project_name
             # 只有从生产配置复制且project_name是默认的'project_name'时，才替换为'test_project'
             elif from_production and current_project_name == 'project_name':
-                config_data['project_name'] = 'test_project'
+                loaded_data['project_name'] = 'test_project'
+                # 同时更新__data__节点中的project_name
+                if '__data__' in loaded_data and isinstance(loaded_data['__data__'], dict):
+                    loaded_data['__data__']['project_name'] = 'test_project'
             
             # 根据任务6：简化test_mode逻辑，只设置base_dir
             # 只修改base_dir，其他路径字段保持原值
-            config_data['base_dir'] = test_base_dir
+            loaded_data['base_dir'] = test_base_dir
+            
+            # 如果有__data__节点，也需要更新其中的base_dir
+            if '__data__' in loaded_data and isinstance(loaded_data['__data__'], dict):
+                loaded_data['__data__']['base_dir'] = test_base_dir
 
             # 更新时间信息
             if time_to_use is not None:
                 if isinstance(time_to_use, datetime):
-                    config_data['first_start_time'] = time_to_use.isoformat()
+                    loaded_data['first_start_time'] = time_to_use.isoformat()
                 else:
                     # time_to_use是字符串，直接使用
-                    config_data['first_start_time'] = str(time_to_use)
+                    loaded_data['first_start_time'] = str(time_to_use)
             
-            config_data['config_file_path'] = test_config_path
+            loaded_data['config_file_path'] = test_config_path
 
-            # 将清理后的数据转换为标准格式
-            data_to_save = {
-                '__data__': config_data,
-                '__type_hints__': type_hints
-            }
-
-            # 保存更新后的配置
+            # 保存更新后的配置，直接使用原始数据以保留注释
             with open(test_config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(data_to_save, f)
+                yaml.dump(loaded_data, f)
 
         except Exception as e:
             print(f"⚠️  更新测试配置路径失败: {e}")
@@ -841,7 +864,7 @@ __type_hints__:
                     # 过滤掉ConfigManager自动添加的字段
                     filtered_data = {}
                     for key, value in original_data.items():
-                        if key not in ['config_file_path', 'first_start_time', 'paths']:
+                        if key not in ['config_file_path', 'first_start_time', 'paths', '__type_hints__']:
                             filtered_data[key] = value
                     
                     # 如果有用户数据，重新生成为YAML格式
@@ -854,8 +877,21 @@ __type_hints__:
                         # 没有用户数据，返回空
                         return ""
                 else:
-                    # 是原始格式，直接返回内容
-                    return content
+                    # 是原始格式，需要过滤掉自动添加的字段
+                    filtered_data = {}
+                    for key, value in parsed_content.items():
+                        if key not in ['config_file_path', 'first_start_time', 'paths', '__type_hints__']:
+                            filtered_data[key] = value
+                    
+                    # 如果有用户数据，重新生成为YAML格式
+                    if filtered_data:
+                        from io import StringIO
+                        output = StringIO()
+                        yaml.dump(filtered_data, output)
+                        return output.getvalue()
+                    else:
+                        # 没有用户数据，返回空
+                        return ""
             except Exception:
                 # 解析失败，直接返回原始内容
                 return content

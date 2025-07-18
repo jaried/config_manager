@@ -13,7 +13,7 @@ __data__:
     Content_Type: application/json
   url_validation:
     level2_pattern: ^https?://[^/]+/chapter/\d+$
-    exclude_image_patterns:
+    exclude_image_patterns: &id001
       - \.jpg$
       - \.png$
       - \.gif$
@@ -36,6 +36,32 @@ __data__:
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
-  scheduler_start_time: '2025-07-16T02:51:06.969297'
+  scheduler_start_time: '2025-07-19T02:11:54.420678'
   scheduler_progress: completed
+  __type_hints__:
+    first_start_time: datetime
+  test_backup_isolation: production_value
 __type_hints__: {}
+project_name: test_project
+test_mode: true
+concurrency: 5
+timeout: 30
+proxy:
+  http: http://localhost:3213
+  https: https://localhost:3214
+  url: http://proxy.example.com:8080
+headers:
+  Accept: text/html,application/xhtml+xml
+  Content_Type: application/json
+url_validation:
+  level2_pattern: ^https?://[^/]+/chapter/\d+$
+  exclude_image_patterns: *id001
+work_dir: /tmp/original/work/path
+log_dir: /tmp/original/log/path
+experiment_name: experiment_name
+missing_config_error: 配置文件中缺少 'titls' 配置项
+test_async_value: async_test_data
+scheduler_status: running
+scheduler_start_time: '2025-07-19T02:11:54.420678'
+scheduler_progress: completed
+test_backup_isolation: production_value

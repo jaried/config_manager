@@ -169,6 +169,25 @@ class FileOperations:
             print(f"保存配置失败: {str(e)}")
             return False
 
+    def create_backup_only(self, backup_path: str, data: Dict[str, Any]) -> bool:
+        """仅创建备份文件，不保存主配置"""
+        try:
+            # 创建备份目录
+            backup_dir = os.path.dirname(backup_path)
+            if backup_dir:
+                os.makedirs(backup_dir, exist_ok=True)
+
+            # 直接使用传入的数据创建备份（不需要准备数据，因为不涉及主配置文件）
+            tmp_backup_path = f"{backup_path}.tmp"
+            with open(tmp_backup_path, 'w', encoding='utf-8') as f:
+                self._yaml.dump(data, f)
+
+            os.replace(tmp_backup_path, backup_path)
+            return True
+        except Exception as e:
+            print(f"创建备份失败: {str(e)}")
+            return False
+
     def _prepare_data_for_save(self, config_path: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """准备要保存的数据，尽可能保留原始结构和注释"""
         # 如果有原始YAML数据且路径匹配，则更新原始结构
@@ -177,23 +196,62 @@ class FileOperations:
                 isinstance(self._original_yaml_data, dict)):
 
             # 深度更新原始数据结构
-            updated_data = self._deep_update_yaml_data(self._original_yaml_data, data)
+            updated_data = self._deep_update_yaml_data(self._original_yaml_data.copy(), data)
             return updated_data
         else:
+            # 没有原始结构，但如果路径不同，尝试重新加载原始数据
+            if config_path != self._config_path:
+                self._try_reload_original_data(config_path)
+                # 重新尝试更新
+                if (self._original_yaml_data is not None and
+                        isinstance(self._original_yaml_data, dict)):
+                    updated_data = self._deep_update_yaml_data(self._original_yaml_data.copy(), data)
+                    return updated_data
+            
             # 没有原始结构，直接返回新数据
             return data
 
     def _deep_update_yaml_data(self, original: Any, new_data: Any) -> Any:
         """深度更新YAML数据，保留原始结构和注释"""
         if isinstance(original, dict) and isinstance(new_data, dict):
-            # 对于字典，逐个更新键值
+            # 对于字典，深度合并并保留注释
+            # 直接在原始字典上更新，以保留ruamel.yaml的注释信息
             for key, value in new_data.items():
-                if key in original:
-                    # 递归更新已存在的键
-                    original[key] = self._deep_update_yaml_data(original[key], value)
+                # 跳过内部键，避免在顶层结构中添加内部数据
+                if key.startswith('__') and key != '__data__':
+                    continue
+                    
+                if key in original and isinstance(original[key], dict) and isinstance(value, dict):
+                    # 递归合并嵌套字典
+                    self._deep_update_yaml_data(original[key], value)
                 else:
-                    # 添加新键
+                    # 直接更新值（包括新键）
                     original[key] = value
+            
+            # 如果新数据中有__data__，需要确保顶层结构也包含__data__中的用户定义键
+            if '__data__' in new_data and isinstance(new_data['__data__'], dict):
+                data_section = new_data['__data__']
+                # 系统字段列表，这些字段不应该在顶层结构中重复
+                system_fields = {
+                    'base_dir', 'first_start_time', 'config_file_path', 'paths', 
+                    '__type_hints__', 'debug_mode'
+                }
+                
+                for key, value in data_section.items():
+                    # 跳过系统字段和内部键
+                    if key.startswith('__') or key in system_fields:
+                        continue
+                    
+                    # 这是用户定义的键，需要在顶层结构中添加
+                    if key not in original:
+                        original[key] = value
+                    elif isinstance(original[key], dict) and isinstance(value, dict):
+                        # 递归合并嵌套字典
+                        self._deep_update_yaml_data(original[key], value)
+                    else:
+                        # 更新值
+                        original[key] = value
+            
             return original
         elif isinstance(original, list) and isinstance(new_data, list):
             # 对于列表，直接替换（保持简单）
@@ -201,6 +259,34 @@ class FileOperations:
         else:
             # 对于其他类型，直接替换
             return new_data
+    
+    def _try_reload_original_data(self, config_path: str):
+        """尝试重新加载原始数据（用于路径变化的情况）"""
+        try:
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    
+                    # 处理Windows路径中的反斜杠转义问题
+                    import re
+                    def fix_windows_path(match):
+                        path = match.group(1)
+                        fixed_path = path.replace('\\\\', '/').replace('\\', '/')
+                        return f'"{fixed_path}"'
+                    
+                    content = re.sub(r'"([a-zA-Z]:[\\\\][^"]*)"', fix_windows_path, content)
+                    content = re.sub(r'"([\\\\][^"]*)"', fix_windows_path, content)
+                    content = re.sub(r'"(\.[\\\\][^"]*)"', fix_windows_path, content)
+                    
+                    # 加载YAML数据
+                    loaded_data = self._yaml.load(content) or {}
+                    
+                    # 更新原始数据和路径
+                    self._original_yaml_data = loaded_data
+                    self._config_path = config_path
+                    
+        except Exception as e:
+            print(f"重新加载原始数据失败: {str(e)}")
 
     def get_backup_path(self, config_path: str, base_time: datetime, config_manager=None) -> str:
         """获取备份路径，基于给定时间生成时间戳
@@ -266,7 +352,8 @@ class FileOperations:
             for key, value in data.items():
                 current_path = f"{path}.{key}" if path else key
                 # 对于__data__键，需要继续验证其内容，但跳过其他内部键
-                if key.startswith('__') and key != '__data__':
+                # 确保key是字符串类型才调用startswith
+                if isinstance(key, str) and key.startswith('__') and key != '__data__':
                     continue
                 self._validate_data_recursive(value, config_path, current_path)
         elif isinstance(data, list):
@@ -278,57 +365,12 @@ class FileOperations:
             self._validate_basic_type(data, config_path, path)
     
     def _validate_basic_type(self, value: Any, config_path: str, path: str) -> None:
-        """验证基础类型的正确性
+        """验证基础类型的正确性 - 已禁用验证，加引号的就是字符串，原样处理
         
         Args:
             value: 要验证的值
             config_path: 配置文件路径
             path: 当前验证路径
         """
-        # 检查是否是字符串类型（包括ruamel.yaml的特殊字符串类型）
-        is_string_type = (isinstance(value, str) or 
-                         hasattr(value, '__class__') and 
-                         value.__class__.__module__ and
-                         'ruamel.yaml.scalarstring' in value.__class__.__module__)
-        
-        if is_string_type:
-            # 获取字符串值
-            str_value = str(value)
-            
-            # 检查是否是纯数字字符串（可能是误用）
-            if str_value.isdigit():
-                raise TypeError(
-                    f"在 {path} 处发现可能的类型错误:\n"
-                    f"值 '{str_value}' 是字符串类型，但看起来像数字。\n"
-                    f"如果您想要数字，请在YAML文件中去掉引号：{str_value}\n"
-                    f"如果您想要字符串，请确认这是预期的。\n"
-                    f"配置文件路径: {config_path}"
-                )
-            
-            # 检查是否是浮点数字符串
-            try:
-                float(str_value)
-                if '.' in str_value:
-                    raise TypeError(
-                        f"在 {path} 处发现可能的类型错误:\n"
-                        f"值 '{str_value}' 是字符串类型，但看起来像浮点数。\n"
-                        f"如果您想要浮点数，请在YAML文件中去掉引号：{str_value}\n"
-                        f"如果您想要字符串，请确认这是预期的。\n"
-                        f"配置文件路径: {config_path}"
-                    )
-            except ValueError:
-                # 不是数字字符串，正常
-                pass
-            
-            # 检查是否是布尔值字符串
-            if str_value.lower() in ('true', 'false'):
-                raise TypeError(
-                    f"在 {path} 处发现可能的类型错误:\n"
-                    f"值 '{str_value}' 是字符串类型，但看起来像布尔值。\n"
-                    f"如果您想要布尔值，请在YAML文件中去掉引号：{str_value.lower()}\n"
-                    f"如果您想要字符串，请确认这是预期的。\n"
-                    f"配置文件路径: {config_path}"
-                )
-        
-        # 对于其他类型，目前不做额外验证，相信YAML解析器的结果
+        # 移除类型验证逻辑，加引号的就是字符串，原样处理
         pass

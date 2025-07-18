@@ -1,7 +1,7 @@
 __data__:
   project_name: test_project
   first_start_time: '2025-01-07T18:15:20'
-  test_mode: true
+  test_mode: false
   concurrency: 5
   timeout: 30
   proxy:
@@ -13,16 +13,16 @@ __data__:
     Content_Type: application/json
   url_validation:
     level2_pattern: ^https?://[^/]+/chapter/\d+$
-    exclude_image_patterns:
+    exclude_image_patterns: &id001
       - \.jpg$
       - \.png$
       - \.gif$
   base_dir:
     windows: D:\Windows\Project
     linux: ~/logs
-  work_dir: /tmp/tests/20250714/013405/b9a7c5a5/test_project/experiment_name
+  work_dir: /tmp/original/work/path
   log_dir: /tmp/original/log/path
-  config_file_path: /tmp/tests/20250714/013405/b9a7c5a5/src/config/config.yaml
+  config_file_path: /tmp/tests/20250719/021052/b9a7c5a5/src/config/config.yaml
   experiment_name: experiment_name
   paths:
     work_dir: ~/logs/test_project/experiment_name
@@ -36,6 +36,35 @@ __data__:
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
-  scheduler_start_time: '2025-07-14T00:50:04.133435'
+  scheduler_start_time: '2025-07-19T00:07:53.379890'
   scheduler_progress: completed
+  __type_hints__:
+    first_start_time: datetime
+  test_backup_isolation: production_value
 __type_hints__: {}
+project_name: test_project
+base_dir: /tmp/tests/20250719/021052/b9a7c5a5
+first_start_time: '2025-07-19T02:10:52.725445'
+config_file_path: /tmp/tests/20250719/021052/b9a7c5a5/src/config/config.yaml
+test_mode: false
+concurrency: 5
+timeout: 30
+proxy:
+  http: http://localhost:3213
+  https: https://localhost:3214
+  url: http://proxy.example.com:8080
+headers:
+  Accept: text/html,application/xhtml+xml
+  Content_Type: application/json
+url_validation:
+  level2_pattern: ^https?://[^/]+/chapter/\d+$
+  exclude_image_patterns: *id001
+work_dir: /tmp/original/work/path
+log_dir: /tmp/original/log/path
+experiment_name: experiment_name
+missing_config_error: 配置文件中缺少 'titls' 配置项
+test_async_value: async_test_data
+scheduler_status: running
+scheduler_start_time: '2025-07-19T00:07:53.379890'
+scheduler_progress: completed
+test_backup_isolation: production_value

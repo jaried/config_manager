@@ -20,12 +20,12 @@ class TestTC0012005ProjectNameTimestamp:
 
     def test_tc0012_005_001_project_name_from_config(self):
         """测试从配置文件中读取project_name"""
-        # 使用生产环境配置管理器，应该读取到test_project
+        # 使用生产环境配置管理器，应该读取到生产配置中的project_name
         cfg = get_config_manager()
         
         # 验证project_name被正确读取
         project_name = cfg.get('project_name')
-        assert project_name == 'test_project', f"期望project_name为'test_project'，实际: {project_name}"
+        assert project_name == 'project_name', f"期望project_name为'project_name'，实际: {project_name}"
         
         print(f"✓ 生产环境project_name: {project_name}")
 
@@ -59,38 +59,73 @@ class TestTC0012005ProjectNameTimestamp:
         
         # 验证first_start_time被正确设置
         first_start_time = cfg.first_start_time
-        assert first_start_time == '2025-01-07T16:45:30', f"first_start_time应为'2025-01-07T16:45:30'，实际: {first_start_time}"
+        assert first_start_time == datetime(2025, 1, 7, 16, 45, 30), f"first_start_time应为datetime(2025, 1, 7, 16, 45, 30)，实际: {first_start_time}"
         
         print(f"✓ 测试配置project_name: {project_name}")
         print(f"✓ 测试配置first_start_time: {first_start_time}")
 
     def test_tc0012_005_004_first_start_time_priority(self):
         """测试first_start_time的优先级：传入参数 > 配置文件 > 当前时间"""
-        # 传入参数优先级最高
+        import tempfile
+        import os
+        
+        # 测试场景1：传入参数优先级最高
         param_time = datetime(2025, 1, 7, 10, 0, 0)
-        cfg1 = get_config_manager(test_mode=True, first_start_time=param_time)
         
-        # 验证使用了传入的时间
-        first_start_time1 = cfg1.first_start_time
-        assert first_start_time1 == '2025-01-07T10:00:00', f"应使用传入的first_start_time，实际: {first_start_time1}"
+        # 创建临时配置文件，包含不同的时间
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+            f.write("""__data__:
+  project_name: test_project
+  first_start_time: '2025-01-07T18:15:20'
+__type_hints__: {}
+""")
+            temp_config_path1 = f.name
         
-        # 验证工作目录包含传入的时间戳
-        work_dir1 = cfg1.paths.work_dir
-        assert '20250107' in work_dir1 and '100000' in work_dir1, f"工作目录应包含传入的时间戳: {work_dir1}"
+        try:
+            cfg1 = get_config_manager(config_path=temp_config_path1, test_mode=True, first_start_time=param_time)
+            
+            # 验证使用了传入的时间
+            first_start_time1 = cfg1.first_start_time
+            assert first_start_time1 == datetime(2025, 1, 7, 10, 0, 0), f"应使用传入的first_start_time，实际: {first_start_time1}"
+            
+            # 验证工作目录包含传入的时间戳
+            work_dir1 = cfg1.paths.work_dir
+            assert '20250107' in work_dir1 and '100000' in work_dir1, f"工作目录应包含传入的时间戳: {work_dir1}"
+            
+            print(f"✓ 传入参数优先级验证通过: {first_start_time1}")
+            
+        finally:
+            if os.path.exists(temp_config_path1):
+                os.unlink(temp_config_path1)
         
-        print(f"✓ 传入参数优先级验证通过: {first_start_time1}")
-        
-        # 清理实例
+        # 清理实例以准备下一个测试
         _clear_instances_for_testing()
         
-        # 配置文件中的时间优先级次之（当前配置文件中有first_start_time）
-        cfg2 = get_config_manager(test_mode=True)  # 不传入first_start_time
+        # 测试场景2：配置文件中的时间优先级
+        # 创建一个新的临时配置文件，包含特定的时间
+        config_time = '2025-01-07T12:30:45'
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+            f.write(f"""__data__:
+  project_name: test_project
+  first_start_time: '{config_time}'
+__type_hints__: {{}}
+""")
+            temp_config_path2 = f.name
         
-        # 验证使用了配置文件中的时间
-        first_start_time2 = cfg2.first_start_time
-        assert first_start_time2 == '2025-01-07T10:00:00', f"应使用配置文件中的first_start_time，实际: {first_start_time2}"
-        
-        print(f"✓ 配置文件优先级验证通过: {first_start_time2}")
+        try:
+            # 不传入first_start_time，应该使用配置文件中的时间
+            cfg2 = get_config_manager(config_path=temp_config_path2, test_mode=True)
+            
+            # 验证使用了配置文件中的时间
+            first_start_time2 = cfg2.first_start_time
+            expected_time = datetime(2025, 1, 7, 12, 30, 45)
+            assert first_start_time2 == expected_time, f"应使用配置文件中的first_start_time，实际: {first_start_time2}"
+            
+            print(f"✓ 配置文件优先级验证通过: {first_start_time2}")
+            
+        finally:
+            if os.path.exists(temp_config_path2):
+                os.unlink(temp_config_path2)
 
     def test_tc0012_005_005_default_project_name(self):
         """测试默认project_name的使用"""

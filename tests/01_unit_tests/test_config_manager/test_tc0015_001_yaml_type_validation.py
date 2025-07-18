@@ -1,4 +1,10 @@
 # tests/01_unit_tests/test_config_manager/test_tc0015_001_yaml_type_validation.py
+"""
+类型验证相关测试
+
+注意：根据用户明确要求"不要验证，如果加引号，就是字符串，原样返回"，
+类型验证功能已被禁用。这些测试现在验证引号包围的值被正确保留为字符串。
+"""
 from __future__ import annotations
 from datetime import datetime
 
@@ -26,16 +32,16 @@ def cleanup_instances():
     pass
 
 
-def test_tc0015_001_001_detect_quoted_integer_string():
-    """测试检测引号包围的整数字符串并抛出错误"""
+def test_tc0015_001_001_quoted_integer_string_preserved():
+    """测试引号包围的整数字符串被正确保留为字符串（按用户要求：加引号的就是字符串）"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
-        # 创建包含错误类型的配置文件：引号包围的数字
+        # 创建包含引号包围的数字的配置文件
         config_data = {
             '__data__': {
-                'port': "8080",  # 错误：应该是数字 8080
-                'name': "test_app"  # 正确：字符串
+                'port': "8080",  # 引号包围：应该保留为字符串
+                'name': "test_app"  # 正常字符串
             },
             '__type_hints__': {}
         }
@@ -43,27 +49,28 @@ def test_tc0015_001_001_detect_quoted_integer_string():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f)
         
-        # 尝试加载配置，应该抛出TypeError
-        with pytest.raises(TypeError) as exc_info:
-            get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        # 加载配置，应该成功且保留字符串类型
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
         
-        error_message = str(exc_info.value)
-        assert "port" in error_message
-        assert "8080" in error_message
-        assert "字符串类型，但看起来像数字" in error_message
+        # 验证引号包围的数字保留为字符串
+        assert cfg.port == "8080"
+        assert isinstance(cfg.port, str)
+        
+        assert cfg.name == "test_app"
+        assert isinstance(cfg.name, str)
     pass
 
 
-def test_tc0015_001_002_detect_quoted_float_string():
-    """测试检测引号包围的浮点数字符串并抛出错误"""
+def test_tc0015_001_002_quoted_float_string_preserved():
+    """测试引号包围的浮点数字符串被正确保留为字符串（按用户要求：加引号的就是字符串）"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
-        # 创建包含错误类型的配置文件：引号包围的浮点数
+        # 创建包含引号包围的浮点数的配置文件
         config_data = {
             '__data__': {
-                'version': "1.2",  # 错误：应该是浮点数 1.2
-                'name': "test_app"  # 正确：字符串
+                'version': "1.2",  # 引号包围：应该保留为字符串
+                'name': "test_app"  # 正常字符串
             },
             '__type_hints__': {}
         }
@@ -71,27 +78,28 @@ def test_tc0015_001_002_detect_quoted_float_string():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f)
         
-        # 尝试加载配置，应该抛出TypeError
-        with pytest.raises(TypeError) as exc_info:
-            get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        # 加载配置，应该成功且保留字符串类型
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
         
-        error_message = str(exc_info.value)
-        assert "version" in error_message
-        assert "1.2" in error_message
-        assert "字符串类型，但看起来像浮点数" in error_message
+        # 验证引号包围的浮点数保留为字符串
+        assert cfg.version == "1.2"
+        assert isinstance(cfg.version, str)
+        
+        assert cfg.name == "test_app"
+        assert isinstance(cfg.name, str)
     pass
 
 
-def test_tc0015_001_003_detect_quoted_boolean_string():
-    """测试检测引号包围的布尔值字符串并抛出错误"""
+def test_tc0015_001_003_quoted_boolean_string_preserved():
+    """测试引号包围的布尔值字符串被正确保留为字符串（按用户要求：加引号的就是字符串）"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
-        # 创建包含错误类型的配置文件：引号包围的布尔值
+        # 创建包含引号包围的布尔值的配置文件
         config_data = {
             '__data__': {
-                'enabled': "true",  # 错误：应该是布尔值 true
-                'name': "test_app"  # 正确：字符串
+                'enabled': "true",  # 引号包围：应该保留为字符串
+                'name': "test_app"  # 正常字符串
             },
             '__type_hints__': {}
         }
@@ -99,27 +107,28 @@ def test_tc0015_001_003_detect_quoted_boolean_string():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f)
         
-        # 尝试加载配置，应该抛出TypeError
-        with pytest.raises(TypeError) as exc_info:
-            get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        # 加载配置，应该成功且保留字符串类型
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
         
-        error_message = str(exc_info.value)
-        assert "enabled" in error_message
-        assert "true" in error_message
-        assert "字符串类型，但看起来像布尔值" in error_message
+        # 验证引号包围的布尔值保留为字符串
+        assert cfg.enabled == "true"
+        assert isinstance(cfg.enabled, str)
+        
+        assert cfg.name == "test_app"
+        assert isinstance(cfg.name, str)
     pass
 
 
-def test_tc0015_001_004_detect_quoted_false_boolean_string():
-    """测试检测引号包围的false布尔值字符串并抛出错误"""
+def test_tc0015_001_004_quoted_false_boolean_string_preserved():
+    """测试引号包围的false布尔值字符串被正确保留为字符串（按用户要求：加引号的就是字符串）"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
-        # 创建包含错误类型的配置文件：引号包围的false
+        # 创建包含引号包围的false的配置文件
         config_data = {
             '__data__': {
-                'disabled': "false",  # 错误：应该是布尔值 false
-                'name': "test_app"    # 正确：字符串
+                'disabled': "false",  # 引号包围：应该保留为字符串
+                'name': "test_app"    # 正常字符串
             },
             '__type_hints__': {}
         }
@@ -127,14 +136,15 @@ def test_tc0015_001_004_detect_quoted_false_boolean_string():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f)
         
-        # 尝试加载配置，应该抛出TypeError
-        with pytest.raises(TypeError) as exc_info:
-            get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        # 加载配置，应该成功且保留字符串类型
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
         
-        error_message = str(exc_info.value)
-        assert "disabled" in error_message
-        assert "false" in error_message
-        assert "字符串类型，但看起来像布尔值" in error_message
+        # 验证引号包围的false保留为字符串
+        assert cfg.disabled == "false"
+        assert isinstance(cfg.disabled, str)
+        
+        assert cfg.name == "test_app"
+        assert isinstance(cfg.name, str)
     pass
 
 
@@ -183,20 +193,20 @@ def test_tc0015_001_005_correct_types_load_successfully():
     pass
 
 
-def test_tc0015_001_006_nested_structure_type_validation():
-    """测试嵌套结构中的类型验证"""
+def test_tc0015_001_006_nested_structure_string_preservation():
+    """测试嵌套结构中的引号字符串被正确保留（按用户要求：加引号的就是字符串）"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
-        # 创建包含嵌套结构错误类型的配置文件
+        # 创建包含嵌套结构的配置文件
         config_data = {
             '__data__': {
                 'database': {
-                    'host': "localhost",  # 正确：字符串
-                    'port': "5432",       # 错误：应该是数字 5432
-                    'timeout': 30         # 正确：数字
+                    'host': "localhost",  # 正常字符串
+                    'port': "5432",       # 引号包围：应该保留为字符串
+                    'timeout': 30         # 正常数字
                 },
-                'name': "test_app"        # 正确：字符串
+                'name': "test_app"        # 正常字符串
             },
             '__type_hints__': {}
         }
@@ -204,27 +214,34 @@ def test_tc0015_001_006_nested_structure_type_validation():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f)
         
-        # 尝试加载配置，应该抛出TypeError
-        with pytest.raises(TypeError) as exc_info:
-            get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        # 加载配置，应该成功且保留字符串类型
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
         
-        error_message = str(exc_info.value)
-        assert "database.port" in error_message
-        assert "5432" in error_message
-        assert "字符串类型，但看起来像数字" in error_message
+        # 验证嵌套结构中的引号包围值保留为字符串
+        assert cfg.database.host == "localhost"
+        assert isinstance(cfg.database.host, str)
+        
+        assert cfg.database.port == "5432"  # 引号包围的数字保留为字符串
+        assert isinstance(cfg.database.port, str)
+        
+        assert cfg.database.timeout == 30  # 正常数字保持为数字
+        assert isinstance(cfg.database.timeout, int)
+        
+        assert cfg.name == "test_app"
+        assert isinstance(cfg.name, str)
     pass
 
 
-def test_tc0015_001_007_list_structure_type_validation():
-    """测试列表结构中的类型验证"""
+def test_tc0015_001_007_list_structure_string_preservation():
+    """测试列表结构中的引号字符串被正确保留（按用户要求：加引号的就是字符串）"""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_file = os.path.join(tmpdir, 'test_config.yaml')
         
-        # 创建包含列表结构错误类型的配置文件
+        # 创建包含列表结构的配置文件
         config_data = {
             '__data__': {
-                'ports': [8080, "8081", 8082],  # 错误：中间的应该是数字 8081
-                'name': "test_app"              # 正确：字符串
+                'ports': [8080, "8081", 8082],  # 混合类型：数字和引号包围的字符串
+                'name': "test_app"              # 正常字符串
             },
             '__type_hints__': {}
         }
@@ -232,14 +249,21 @@ def test_tc0015_001_007_list_structure_type_validation():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f)
         
-        # 尝试加载配置，应该抛出TypeError
-        with pytest.raises(TypeError) as exc_info:
-            get_config_manager(config_path=config_file, watch=False, test_mode=True)
+        # 加载配置，应该成功且保留各自的类型
+        cfg = get_config_manager(config_path=config_file, watch=False, test_mode=True)
         
-        error_message = str(exc_info.value)
-        assert "ports[1]" in error_message
-        assert "8081" in error_message
-        assert "字符串类型，但看起来像数字" in error_message
+        # 验证列表中的类型
+        assert cfg.ports[0] == 8080  # 正常数字保持为数字
+        assert isinstance(cfg.ports[0], int)
+        
+        assert cfg.ports[1] == "8081"  # 引号包围的数字保留为字符串
+        assert isinstance(cfg.ports[1], str)
+        
+        assert cfg.ports[2] == 8082  # 正常数字保持为数字
+        assert isinstance(cfg.ports[2], int)
+        
+        assert cfg.name == "test_app"
+        assert isinstance(cfg.name, str)
     pass
 
 

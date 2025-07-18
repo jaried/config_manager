@@ -9,7 +9,9 @@ import tempfile
 
 # 导入跨平台路径管理器
 from .cross_platform_paths import get_cross_platform_manager
-from ..logger import debug
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PathConfigurationError(Exception):
@@ -72,17 +74,20 @@ class TimeProcessor:
     """时间处理器"""
     
     @staticmethod
-    def parse_first_start_time(first_start_time: str) -> Tuple[str, str]:
+    def parse_first_start_time(first_start_time) -> Tuple[str, str]:
         """解析首次启动时间
         
         Args:
-            first_start_time: ISO格式的时间字符串
+            first_start_time: ISO格式的时间字符串或datetime对象
             
         Returns:
             tuple: (日期字符串YYYYMMDD, 时间字符串HHMMSS)
         """
         try:
-            dt = datetime.fromisoformat(first_start_time.replace('Z', '+00:00'))
+            if isinstance(first_start_time, datetime):
+                dt = first_start_time
+            else:
+                dt = datetime.fromisoformat(first_start_time.replace('Z', '+00:00'))
             return dt.strftime('%Y%m%d'), dt.strftime('%H%M%S')
         except (ValueError, AttributeError) as e:
             raise TimeParsingError(f"时间解析失败: {first_start_time}, 错误: {e}")
@@ -111,17 +116,20 @@ class TimeProcessor:
         return f"{week:02d}"
     
     @staticmethod
-    def parse_time_with_week(time_str: str) -> Tuple[str, str, str, str, str]:
+    def parse_time_with_week(time_str) -> Tuple[str, str, str, str, str]:
         """解析时间字符串，返回年、周、月、日、时间组件
         
         Args:
-            time_str: ISO格式的时间字符串
+            time_str: ISO格式的时间字符串或datetime对象
             
         Returns:
             tuple: (年份YYYY, 周数WW, 月份MM, 日期DD, 时间HHMMSS)
         """
         try:
-            dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+            if isinstance(time_str, datetime):
+                dt = time_str
+            else:
+                dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
             year = dt.strftime('%Y')
             week = TimeProcessor.get_week_number(dt)
             month = dt.strftime('%m')
@@ -479,7 +487,7 @@ class PathConfigurationManager:
 
         except Exception as e:
             # 其他错误，不影响主流程
-            debug("⚠️  路径配置初始化部分失败: {}", e)
+            logger.debug("⚠️  路径配置初始化部分失败: {}", e)
             # 尝试使用最小配置
             try:
                 self._cross_platform_manager.get_current_os()
@@ -492,7 +500,7 @@ class PathConfigurationManager:
                 }
                 self._config_updater.update_path_configurations(path_configs)
             except Exception as fallback_e:
-                debug("⚠️  备用路径配置也失败: {}", fallback_e)
+                logger.debug("⚠️  备用路径配置也失败: {}", fallback_e)
     
     def _set_default_values(self) -> None:
         """设置默认配置值"""
@@ -543,7 +551,7 @@ class PathConfigurationManager:
         """处理is_debug模块导入错误"""
         import importlib.util
         if importlib.util.find_spec("is_debug") is None:
-            debug("⚠️  is_debug模块不可用，默认使用生产模式")
+            logger.debug("⚠️  is_debug模块不可用，默认使用生产模式")
     
     def update_debug_mode(self) -> None:
         """更新调试模式"""
@@ -574,6 +582,8 @@ class PathConfigurationManager:
             except AttributeError:
                 base_dir = '/tmp/tests'
             try:
+                # 在测试模式下，直接使用配置中的project_name值
+                # 配置管理器已经在更新配置时处理了生产/自定义配置的区别
                 project_name = self._config_manager.project_name
             except AttributeError:
                 project_name = 'test_project'
@@ -646,7 +656,8 @@ class PathConfigurationManager:
         if first_start_time:
             try:
                 date_str, time_str = self._time_processor.parse_first_start_time(first_start_time)
-            except Exception:
+            except Exception as e:
+                print(f"⚠️ 时间解析失败: {e}，使用当前时间")
                 # 如果时间解析失败，使用当前时间
                 date_str, time_str = self._time_processor.get_current_time_components()
         else:
@@ -760,11 +771,6 @@ class PathConfigurationManager:
     def setup_project_paths(self) -> None:
         """生成所有路径并自动创建目录，仅对'_dir'结尾的字段自动创建目录"""
         
-        # 1. 确保向后兼容性：同步work_dir字段并创建目录
-        self._config_manager.set('work_dir', self._config_manager.paths.work_dir, autosave=False)
-        # 创建work_dir目录
-        os.makedirs(self._config_manager.paths.work_dir, exist_ok=True)
-        
         def _create_dirs_for_fields(node, visited=None):
             if visited is None:
                 visited = set()
@@ -795,6 +801,3 @@ class PathConfigurationManager:
         # 递归入口直接指向config.paths._data
         if hasattr(self._config_manager, 'paths') and hasattr(self._config_manager.paths, '_data'):
             _create_dirs_for_fields(self._config_manager.paths._data)
-        
-        # 2. 路径创建完成后，再次确保work_dir字段同步（防止paths.work_dir在过程中被更新）
-        self._config_manager.set('work_dir', self._config_manager.paths.work_dir, autosave=False)

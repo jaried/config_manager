@@ -143,16 +143,17 @@ class TestCrossPlatformConfigManagerIntegration:
                 test_mode=True,
                 first_start_time=self.test_time
             )
-            config.set('work_dir', temp_work_dir)
+            config.set('paths.work_dir', temp_work_dir)
             config.set('tensorboard_dir', temp_tensorboard_dir)
             config.set('data_dir', temp_data_dir)
-            work_dir = config.get('work_dir')
+            work_dir = config.get('paths.work_dir')
             tensorboard_dir = config.get('tensorboard_dir')
             data_dir = config.get('data_dir')
             assert work_dir == temp_work_dir
             assert tensorboard_dir == temp_tensorboard_dir
             assert data_dir == temp_data_dir
-            work_dir_value = config._data.get('work_dir')
+            paths_data = config._data.get('paths', {})
+            work_dir_value = paths_data.get('work_dir') if hasattr(paths_data, 'get') else getattr(paths_data, '_data', {}).get('work_dir')
             assert isinstance(work_dir_value, str)
 
     def test_config_persistence_and_reload(self):

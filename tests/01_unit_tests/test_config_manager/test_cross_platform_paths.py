@@ -364,11 +364,11 @@ class TestCrossPlatformPathIntegration:
             # 测试现有的单一路径配置仍然工作
             work_path = os.path.join(temp_dir, 'work')
             tensorboard_path = os.path.join(temp_dir, 'tensorboard')
-            config.set('work_dir', work_path)
+            config.set('paths.work_dir', work_path)
             config.set('tensorboard_dir', tensorboard_path)
             
             # 验证获取值正常
-            work_dir = config.get('work_dir')
+            work_dir = config.get('paths.work_dir')
             tensorboard_dir = config.get('tensorboard_dir')
             
             assert work_dir == work_path

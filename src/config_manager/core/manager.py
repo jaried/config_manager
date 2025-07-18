@@ -18,7 +18,9 @@ from .watcher import FileWatcher
 from .call_chain import CallChainTracker
 from .path_configuration import PathConfigurationManager
 from .cross_platform_paths import convert_to_multi_platform_config, get_platform_path
-from ..logger import debug, info, warning, error
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigManagerCore(ConfigNode):
@@ -71,6 +73,21 @@ class ConfigManagerCore(ConfigNode):
 
     def __getattr__(self, name: str) -> Any:
         """重写__getattr__方法，在根配置管理器中检查work_dir弃用"""
+        # 特殊处理first_start_time：返回datetime对象而不是字符串
+        if name == 'first_start_time':
+            # 如果有_first_start_time属性，直接返回datetime对象
+            if hasattr(self, '_first_start_time') and self._first_start_time is not None:
+                return self._first_start_time
+            # 否则尝试从配置中解析
+            time_str = self._data.get('first_start_time')
+            if time_str:
+                try:
+                    return datetime.fromisoformat(str(time_str))
+                except (ValueError, TypeError):
+                    pass
+            # 如果都没有，返回None
+            return None
+        
         # 检查是否是已弃用的属性
         if name == 'work_dir':
             raise AttributeError(
@@ -87,7 +104,7 @@ class ConfigManagerCore(ConfigNode):
         # 重复初始化检测
         with self._initialization_lock:
             if self._initialized:
-                debug("配置管理器已经初始化过，跳过重复初始化")
+                logger.debug("配置管理器已经初始化过，跳过重复初始化")
                 return True
             
             # 标记开始初始化
@@ -123,12 +140,12 @@ class ConfigManagerCore(ConfigNode):
 
         # 根据开关决定是否测试调用链追踪器
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug("=== 调用链追踪器测试 ===")
+            logger.debug("=== 调用链追踪器测试 ===")
             try:
                 test_chain = self._call_chain_tracker.get_call_chain()
-                debug(f"初始化时调用链: {test_chain}")
+                logger.debug(f"初始化时调用链: {test_chain}")
             except Exception as e:
-                debug(f"调用链追踪器测试失败: {e}")
+                logger.debug(f"调用链追踪器测试失败: {e}")
                 import traceback
                 traceback.print_exc()
 
@@ -144,8 +161,8 @@ class ConfigManagerCore(ConfigNode):
 
             # 如果加载失败且配置文件存在，说明是解析错误，不应该覆盖
             if not loaded and os.path.exists(self._config_path):
-                error(f"配置文件存在但解析失败: {self._config_path}")
-                error("为保护原始配置，初始化失败")
+                logger.error(f"配置文件存在但解析失败: {self._config_path}")
+                logger.error("为保护原始配置，初始化失败")
                 return False
 
             # 将配置文件的绝对路径作为配置数据的一部分存储
@@ -174,12 +191,12 @@ class ConfigManagerCore(ConfigNode):
             # 统一处理保存和备份，只在初始化结束后执行一次
             if self._need_save or self._need_backup:
                 # 在初始化期间，统一使用 _save_config_only 避免递归
-                debug("执行初始化保存操作")
+                logger.debug("执行初始化保存操作")
                 self._save_config_only()
                 
                 # 如果需要备份，单独创建备份
                 if self._need_backup:
-                    debug("执行初始化备份操作")
+                    logger.debug("执行初始化备份操作")
                     self._perform_initialization_backup()
                 
                 # 重置标志
@@ -208,15 +225,15 @@ class ConfigManagerCore(ConfigNode):
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug(f"=== 开始加载配置文件: {self._config_path} ===")
+            logger.debug(f"=== 开始加载配置文件: {self._config_path} ===")
 
         # 根据开关决定是否显示调用链
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 load_call_chain = self._call_chain_tracker.get_call_chain()
-                debug(f"加载配置时的调用链: {load_call_chain}")
+                logger.debug(f"加载配置时的调用链: {load_call_chain}")
             except Exception as e:
-                debug(f"获取加载调用链失败: {e}")
+                logger.debug(f"获取加载调用链失败: {e}")
 
         loaded = self._file_ops.load_config(
             self._config_path,
@@ -234,7 +251,7 @@ class ConfigManagerCore(ConfigNode):
                 raw_data = loaded.get('__data__', {})
                 self._type_hints = loaded.get('__type_hints__', {})
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    debug("检测到标准格式，加载__data__节点")
+                    logger.debug("检测到标准格式，加载__data__节点")
             else:
                 # 原始格式：直接使用整个loaded数据，但排除内部键
                 raw_data = {}
@@ -244,7 +261,7 @@ class ConfigManagerCore(ConfigNode):
                         raw_data[key] = value
                 self._type_hints = {}
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    debug("检测到原始格式，直接加载配置数据")
+                    logger.debug("检测到原始格式，直接加载配置数据")
 
             # 重建数据结构
             if raw_data:
@@ -259,7 +276,7 @@ class ConfigManagerCore(ConfigNode):
                         self._data[key] = converted_value
 
             if ENABLE_CALL_CHAIN_DISPLAY:
-                debug("配置加载完成")
+                logger.debug("配置加载完成")
 
             # 标记配置加载成功
             self._config_loaded_successfully = True
@@ -270,7 +287,7 @@ class ConfigManagerCore(ConfigNode):
             return True
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug("配置加载失败")
+            logger.debug("配置加载失败")
 
         # 标记配置加载失败
         self._config_loaded_successfully = False
@@ -289,15 +306,15 @@ class ConfigManagerCore(ConfigNode):
             from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
             if ENABLE_CALL_CHAIN_DISPLAY:
-                debug("=== 开始保存配置 ===")
+                logger.debug("=== 开始保存配置 ===")
 
             # 根据开关决定是否显示保存时的调用链
             if ENABLE_CALL_CHAIN_DISPLAY:
                 try:
                     save_call_chain = self._call_chain_tracker.get_call_chain()
-                    debug(f"保存配置时的调用链: {save_call_chain}")
+                    logger.debug(f"保存配置时的调用链: {save_call_chain}")
                 except Exception as e:
-                    debug(f"获取保存调用链失败: {e}")
+                    logger.debug(f"获取保存调用链失败: {e}")
 
             # 获取可序列化的数据，过滤掉无法序列化的对象
             serializable_data = self._get_serializable_data()
@@ -330,7 +347,7 @@ class ConfigManagerCore(ConfigNode):
                 self._last_backup_path = backup_path
 
             if ENABLE_CALL_CHAIN_DISPLAY:
-                debug(f"保存结果: {saved}")
+                logger.debug(f"保存结果: {saved}")
             return saved
         finally:
             self._saving = False
@@ -360,7 +377,7 @@ class ConfigManagerCore(ConfigNode):
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug("=== 静默保存配置（无备份） ===")
+            logger.debug("=== 静默保存配置（无备份） ===")
 
         # 获取可序列化的数据，过滤掉无法序列化的对象
         serializable_data = self._get_serializable_data()
@@ -384,7 +401,7 @@ class ConfigManagerCore(ConfigNode):
         # 这样避免竞态条件导致的递归保存问题
         
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug(f"静默保存结果: {saved}")
+            logger.debug(f"静默保存结果: {saved}")
         return saved
 
     def reload(self):
@@ -392,19 +409,19 @@ class ConfigManagerCore(ConfigNode):
         from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug("=== 重新加载配置 ===")
+            logger.debug("=== 重新加载配置 ===")
 
         # 根据开关决定是否显示重新加载时的调用链
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 reload_call_chain = self._call_chain_tracker.get_call_chain()
-                debug(f"重新加载配置时的调用链: {reload_call_chain}")
+                logger.debug(f"重新加载配置时的调用链: {reload_call_chain}")
             except Exception as e:
-                debug(f"获取重新加载调用链失败: {e}")
+                logger.debug(f"获取重新加载调用链失败: {e}")
 
         reloaded = self._load()
         if ENABLE_CALL_CHAIN_DISPLAY:
-            debug(f"重新加载结果: {reloaded}")
+            logger.debug(f"重新加载结果: {reloaded}")
         return reloaded
 
     def get_last_backup_path(self) -> str:
@@ -443,7 +460,7 @@ class ConfigManagerCore(ConfigNode):
         self._need_backup = True
         # 记录备份时间
         self._backup_time = self._first_start_time if hasattr(self, '_first_start_time') and self._first_start_time else datetime.now()
-        debug("已标记需要创建初始化备份")
+        logger.debug("已标记需要创建初始化备份")
 
     def _perform_initialization_backup(self) -> None:
         """执行初始化备份操作（只创建备份，不保存配置文件）"""
@@ -474,12 +491,12 @@ class ConfigManagerCore(ConfigNode):
             
             if backup_success:
                 self._last_backup_path = backup_path
-                info(f"初始化备份已创建: {backup_path}")
+                logger.info(f"初始化备份已创建: {backup_path}")
             else:
-                warning("初始化备份创建失败")
+                logger.warning("初始化备份创建失败")
                 
         except Exception as e:
-            error(f"初始化备份操作失败: {str(e)}")
+            logger.error(f"初始化备份操作失败: {str(e)}")
             # 确保重置内部保存标志
             if self._watcher:
                 self._watcher.set_internal_save_flag(False)
@@ -499,7 +516,7 @@ class ConfigManagerCore(ConfigNode):
             os.replace(tmp_backup_path, backup_path)
             return True
         except Exception as e:
-            warning(f"备份文件创建失败: {str(e)}")
+            logger.warning(f"备份文件创建失败: {str(e)}")
             return False
 
     def _can_safely_serialize(self) -> bool:
@@ -530,7 +547,7 @@ class ConfigManagerCore(ConfigNode):
             else:
                 return {}
         except Exception as e:
-            warning(f"获取序列化数据失败: {e}")
+            logger.warning(f"获取序列化数据失败: {e}")
             # 如果to_dict失败，返回空字典而不是失败
             return {}
         finally:
@@ -549,7 +566,7 @@ class ConfigManagerCore(ConfigNode):
                 import ast
                 parsed = ast.literal_eval(stripped)
                 if isinstance(parsed, list):
-                    debug(f"检测到字符串化列表并转换: {stripped[:50]}...")
+                    logger.debug(f"检测到字符串化列表并转换: {stripped[:50]}...")
                     return parsed
             except (ValueError, SyntaxError):
                 # 解析失败，保持原字符串
@@ -561,7 +578,7 @@ class ConfigManagerCore(ConfigNode):
                 import ast
                 parsed = ast.literal_eval(stripped)
                 if isinstance(parsed, dict):
-                    debug(f"检测到字符串化字典并转换: {stripped[:50]}...")
+                    logger.debug(f"检测到字符串化字典并转换: {stripped[:50]}...")
                     return parsed
             except (ValueError, SyntaxError):
                 pass
@@ -718,7 +735,7 @@ class ConfigManagerCore(ConfigNode):
                 # 创建测试目录（跨平台）
                 os.makedirs(self._base_dir, exist_ok=True)
                 
-                debug(f"测试模式路径: {self._base_dir}")
+                logger.debug(f"测试模式路径: {self._base_dir}")
             else:
                 # 生产模式：从多平台配置选择当前平台
                 # 直接访问_data字典避免触发__getattr__循环
@@ -890,7 +907,7 @@ class ConfigManagerCore(ConfigNode):
                     
                     value = ConfigNode(config_dict, _root=self)
                 except Exception as e:
-                    debug(f"创建多平台base_dir配置失败: {e}, 将其保留为字符串。")
+                    logger.debug(f"创建多平台base_dir配置失败: {e}, 将其保留为字符串。")
 
         keys = key.split('.')
         current = self
@@ -1131,7 +1148,7 @@ class ConfigManagerCore(ConfigNode):
                     self.set(key, value, autosave=False)
 
             except Exception as e:
-                debug("警告: 路径配置更新失败: {}", e)
+                logger.debug("警告: 路径配置更新失败: {}", e)
 
     def get_path_configuration_info(self) -> Dict[str, Any]:
         """获取路径配置信息"""
