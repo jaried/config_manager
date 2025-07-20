@@ -31,6 +31,8 @@ __data__:
     tsb_logs_dir: 
       /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
     backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520
+    work_dir: /tmp/original/base/path/test_project/experiment_name
+    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
@@ -39,3 +41,4 @@ __data__:
   __type_hints__:
     first_start_time: datetime
   test_backup_isolation: production_value
+__type_hints__: {}
