@@ -247,11 +247,17 @@ class ConfigManagerCore(ConfigNode):
 
             # 检查是否为标准格式（包含__data__节点）
             if '__data__' in loaded:
-                # 标准格式：使用__data__节点下的数据
-                raw_data = loaded.get('__data__', {})
+                # 标准格式：合并__data__节点和顶层别名引用键
+                raw_data = loaded.get('__data__', {}).copy()
                 self._type_hints = loaded.get('__type_hints__', {})
+                
+                # 添加顶层的别名引用键（非系统键）
+                for key, value in loaded.items():
+                    if not key.startswith('__'):
+                        raw_data[key] = value
+                
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    logger.debug("检测到标准格式，加载__data__节点")
+                    logger.debug("检测到标准格式，加载__data__节点和顶层别名引用")
             else:
                 # 原始格式：直接使用整个loaded数据，但排除内部键
                 raw_data = {}

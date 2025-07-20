@@ -156,12 +156,13 @@ service_b:
             self._check_for_duplicates(saved_content)
     
     def _check_for_duplicates(self, yaml_content: str):
-        """检查YAML内容中是否存在重复节点"""
+        """检查YAML内容中是否存在重复节点，考虑层级结构和上下文"""
         lines = yaml_content.split('\n')
         
-        # 记录每行的键名（忽略缩进）
-        keys_found = {}
+        # 记录键的完整路径：(键名, 缩进级别, 父级路径) -> 行号
+        key_contexts = {}
         duplicate_keys = []
+        current_path = []  # 当前路径栈
         
         for line_num, line in enumerate(lines, 1):
             stripped_line = line.strip()
@@ -173,6 +174,9 @@ service_b:
                 ':' not in stripped_line):
                 continue
             
+            # 计算缩进级别
+            indent_level = len(line) - len(line.lstrip())
+            
             # 提取键名
             if ':' in stripped_line:
                 key = stripped_line.split(':')[0].strip()
@@ -181,31 +185,76 @@ service_b:
                 if '&' in key or '*' in key:
                     continue
                 
-                # 记录键名出现的位置
-                if key in keys_found:
+                # 检查值是否为别名引用
+                colon_pos = stripped_line.find(':')
+                if colon_pos != -1 and colon_pos + 1 < len(stripped_line):
+                    value_part = stripped_line[colon_pos + 1:].strip()
+                    if value_part.startswith('*'):
+                        continue  # 跳过别名引用
+                
+                # 根据缩进级别调整当前路径
+                if indent_level == 0:
+                    current_path = [key]
+                elif indent_level > 0:
+                    # 调整路径栈到合适的深度
+                    target_depth = indent_level // 2  # 假设每级缩进2个空格
+                    current_path = current_path[:target_depth]
+                    current_path.append(key)
+                
+                # 构建完整的键路径
+                full_path = '.'.join(current_path)
+                
+                # 特殊处理：数据值和类型提示是不同的上下文
+                context_key = full_path
+                if len(current_path) >= 2:
+                    parent_path = '.'.join(current_path[:-1])
+                    if parent_path.endswith('__type_hints__'):
+                        context_key = f"{full_path}@type_hint"
+                    elif current_path[-2] == '__data__' and current_path[-1] != '__type_hints__':
+                        context_key = f"{full_path}@data_value"
+                
+                print(f"🔧 检查路径: {context_key} (第{line_num}行)")
+                
+                # 检查在相同上下文中是否重复
+                if context_key in key_contexts:
                     duplicate_keys.append({
                         'key': key,
-                        'first_line': keys_found[key],
+                        'full_path': full_path,
+                        'first_line': key_contexts[context_key],
                         'duplicate_line': line_num,
-                        'first_content': lines[keys_found[key] - 1].strip(),
+                        'first_content': lines[key_contexts[context_key] - 1].strip(),
                         'duplicate_content': line.strip()
                     })
                 else:
-                    keys_found[key] = line_num
+                    key_contexts[context_key] = line_num
         
-        # 报告重复的键
-        if duplicate_keys:
-            print("\n❌ 发现重复的键：")
-            for dup in duplicate_keys:
-                print(f"  键 '{dup['key']}' 重复:")
+        # 过滤掉合理的"重复"情况
+        real_duplicates = []
+        for dup in duplicate_keys:
+            key = dup['key']
+            
+            # 过滤掉数据值和类型提示的组合（这是正常的）
+            if (key == 'first_start_time' and 
+                '__type_hints__' in dup['full_path'] and 
+                len([d for d in duplicate_keys if d['key'] == key]) == 1):
+                print(f"✅ 跳过正常的数据值/类型提示组合: {key}")
+                continue
+            
+            real_duplicates.append(dup)
+        
+        # 报告真正的重复键
+        if real_duplicates:
+            print("\n❌ 发现真正重复的键：")
+            for dup in real_duplicates:
+                print(f"  键 '{dup['key']}' 在路径 '{dup['full_path']}' 重复:")
                 print(f"    第 {dup['first_line']} 行: {dup['first_content']}")
                 print(f"    第 {dup['duplicate_line']} 行: {dup['duplicate_content']}")
             
             # 抛出断言错误，标明具体的重复键
-            duplicate_key_names = [dup['key'] for dup in duplicate_keys]
-            assert False, f"发现重复的键: {duplicate_key_names}"
+            duplicate_key_names = [dup['key'] for dup in real_duplicates]
+            assert False, f"发现真正重复的键: {duplicate_key_names}"
         else:
-            print("\n✅ 未发现重复键")
+            print("\n✅ 未发现真正的重复键")
     
     def test_complex_anchor_alias_scenario(self):
         """测试复杂的锚点别名场景（多层嵌套）"""

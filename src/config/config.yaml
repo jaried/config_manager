@@ -1,6 +1,6 @@
 __data__:
   project_name: test_project
-  first_start_time: '2025-01-07T10:00:00'
+  first_start_time: '2025-01-07T18:15:20'
   test_mode: true
   concurrency: 5
   timeout: 30
@@ -24,21 +24,18 @@ __data__:
     /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
   experiment_name: experiment_name
   paths:
-    work_dir: /tmp/original/base/path/test_project/experiment_name
     checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint
     best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best
     debug_dir: /tmp/original/base/path/test_project/experiment_name/debug
     tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/tensorboard
     tsb_logs_dir: 
-      /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/100000
-    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/100000
-    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/100000
+      /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
+    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
-  scheduler_start_time: '2025-07-19T02:11:54.420678'
+  scheduler_start_time: '2025-07-20T10:33:51.643811'
   scheduler_progress: completed
   __type_hints__:
     first_start_time: datetime
   test_backup_isolation: production_value
-__type_hints__: {}

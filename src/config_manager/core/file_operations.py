@@ -432,16 +432,22 @@ class FileOperations:
             return False
     
     def _remove_duplicate_keys_from_yaml_file(self, file_path: str) -> None:
-        """直接编辑YAML文件，删除重复键的第二次出现"""
+        """直接编辑YAML文件，删除重复键，特别处理__data__和顶层的重复情况"""
+        print(f"🔧 开始YAML文件后处理: {file_path}")
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
             
-            # 记录已见过的键及其出现的行号
-            seen_keys = {}
+            print(f"🔧 读取到 {len(lines)} 行内容")
+            
+            # 记录键的出现情况：键名 -> [(行号, 层级, 所在段)]
+            key_occurrences = {}
             lines_to_remove = set()
             current_section = None
+            protected_keys = {'__data__', '__type_hints__'}
             
+            # 第一轮：收集所有键的出现信息，构建完整的层级路径
+            path_stack = []  # 维护当前的路径栈
             for i, line in enumerate(lines):
                 stripped_line = line.strip()
                 
@@ -455,31 +461,115 @@ class FileOperations:
                     indent_level = len(line) - len(line.lstrip())
                     key = stripped_line.split(':')[0].strip()
                     
-                    # 跳过锚点和别名定义
+                    # 跳过锚点和别名定义行
                     if '&' in key or '*' in key:
+                        print(f"🔧 跳过锚点/别名键: {key} (第{i+1}行)")
                         continue
                     
-                    # 构建唯一键标识（包含缩进层级信息）
-                    if indent_level == 0:  # 顶层键
-                        current_section = key
-                        key_id = f"top_level:{key}"
-                    elif indent_level == 2:  # 二级键
-                        key_id = f"{current_section}:{key}" if current_section else f"level2:{key}"
-                    else:
-                        continue  # 跳过更深层级的键
+                    # 检查值部分是否包含别名引用
+                    colon_pos = stripped_line.find(':')
+                    if colon_pos != -1 and colon_pos + 1 < len(stripped_line):
+                        value_part = stripped_line[colon_pos + 1:].strip()
+                        if value_part.startswith('*'):
+                            print(f"🔧 跳过别名引用: {key}: {value_part} (第{i+1}行)")
+                            continue
                     
-                    # 检查是否重复
-                    if key_id in seen_keys:
-                        # 标记重复行和其后续相关行为需要删除
-                        start_line = i
-                        lines_to_remove.add(start_line)
-                        
-                        # 找到这个键值对的所有相关行（包括多行值）
-                        self._mark_key_block_for_removal(lines, start_line, indent_level, lines_to_remove)
-                        
-                        print(f"删除重复键: {key} (第{i+1}行)")
-                    else:
-                        seen_keys[key_id] = i
+                    # 根据缩进级别调整路径栈
+                    target_depth = indent_level // 2  # 假设每级缩进2个空格
+                    path_stack = path_stack[:target_depth]
+                    path_stack.append(key)
+                    
+                    # 构建完整的键路径
+                    full_key_path = '.'.join(path_stack)
+                    
+                    # 更新当前段（只用于向后兼容）
+                    if indent_level == 0:
+                        current_section = key
+                    
+                    # 使用完整路径作为键标识
+                    if full_key_path not in key_occurrences:
+                        key_occurrences[full_key_path] = []
+                    
+                    key_occurrences[full_key_path].append((i, indent_level, current_section, key))
+                    print(f"🔧 发现键路径: '{full_key_path}' -> '{key}' (第{i+1}行, 缩进{indent_level})")
+            
+            # 第二轮：分析重复情况并标记删除
+            for full_key_path, occurrences in key_occurrences.items():
+                if len(occurrences) <= 1:
+                    continue  # 没有重复
+                
+                # 提取基础键名（路径的最后一部分）
+                base_key = full_key_path.split('.')[-1]
+                
+                # 跳过受保护的系统键在顶层的保护
+                if base_key in protected_keys:
+                    # 但是要检查是否有__data__内部和顶层的重复
+                    data_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                      if section == '__data__' and indent > 0]
+                    top_level_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                           if indent == 0 and section != '__data__']
+                    
+                    if data_occurrences and top_level_occurrences:
+                        # __data__内部和顶层都有__type_hints__，删除顶层的
+                        for line_no, indent, section, key in top_level_occurrences:
+                            lines_to_remove.add(line_no)
+                            self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
+                            print(f"❌ 删除顶层重复系统键: {key} (第{line_no+1}行) - 保留__data__中的版本")
+                    continue
+                
+                print(f"🔧 分析重复路径 '{full_key_path}': {len(occurrences)} 次出现")
+                
+                # 特殊处理first_start_time：如果出现在__data__直接子层和__data__.__type_hints__中，这是正常的
+                if base_key == 'first_start_time':
+                    # 检查是否是数据值和类型提示的合理组合
+                    data_value_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                            if section == '__data__' and indent == 2]
+                    type_hint_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                           if section == '__data__' and indent == 4]
+                    top_level_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                           if indent == 0 and section != '__data__']
+                    
+                    print(f"🔧 first_start_time分析: 数据值{len(data_value_occurrences)}个, 类型提示{len(type_hint_occurrences)}个, 顶层{len(top_level_occurrences)}个")
+                    
+                    # 删除顶层的first_start_time，保留__data__中的数据值和类型提示
+                    if top_level_occurrences:
+                        for line_no, indent, section, key in top_level_occurrences:
+                            lines_to_remove.add(line_no)
+                            self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
+                            print(f"❌ 删除顶层重复键: {key} (第{line_no+1}行) - 保留__data__中的版本")
+                    
+                    # 如果只有__data__内的数据值和类型提示，这是正常情况，不删除任何内容
+                    if data_value_occurrences and type_hint_occurrences and not top_level_occurrences:
+                        print(f"✅ 保留 {base_key} 的数据值和类型提示 - 这是正常配置结构")
+                    elif data_value_occurrences and type_hint_occurrences and top_level_occurrences:
+                        print(f"✅ 保留 {base_key} 的数据值和类型提示，删除顶层重复")
+                    
+                    continue
+                
+                # 检查是否存在 __data__ 内部和顶层的重复
+                data_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                  if section == '__data__' and indent > 0]
+                top_level_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
+                                       if indent == 0 and section != '__data__']
+                
+                if data_occurrences and top_level_occurrences:
+                    # __data__内部和顶层都有，删除顶层的（保留__data__内部的）
+                    for line_no, indent, section, key in top_level_occurrences:
+                        lines_to_remove.add(line_no)
+                        self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
+                        print(f"❌ 删除顶层重复键: {key} (第{line_no+1}行) - 保留__data__中的版本")
+                
+                elif len(occurrences) > 1:
+                    # 真正的同一路径重复，删除后出现的
+                    sorted_occurrences = sorted(occurrences, key=lambda x: x[0])  # 按行号排序
+                    
+                    # 保留第一个，删除其余的
+                    for line_no, indent, section, key in sorted_occurrences[1:]:
+                        lines_to_remove.add(line_no)
+                        self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
+                        print(f"❌ 删除真正重复的键: {key} 在路径 '{full_key_path}' (第{line_no+1}行) - 保留第一次出现")
+            
+            print(f"🔧 标记删除 {len(lines_to_remove)} 行: {sorted(lines_to_remove)}")
             
             # 删除标记的行
             if lines_to_remove:
@@ -489,10 +579,14 @@ class FileOperations:
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.writelines(filtered_lines)
                 
-                print(f"成功删除 {len(lines_to_remove)} 行重复内容")
+                print(f"✅ 成功删除 {len(lines_to_remove)} 行重复内容")
+            else:
+                print(f"ℹ️  没有发现需要删除的重复键")
                 
         except Exception as e:
-            print(f"删除重复键时发生错误: {e}")
+            print(f"❌ 删除重复键时发生错误: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _mark_key_block_for_removal(self, lines: list, start_line: int, base_indent: int, lines_to_remove: set) -> None:
         """标记一个键值对块的所有行为需要删除"""
