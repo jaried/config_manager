@@ -19,7 +19,12 @@
       "Bash(conda run:*)",
       "Bash(git ls-tree:*)",
       "Bash(mv:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git config:*)",
+      "Bash(cat:*)",
+      "Bash(ssh:*)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }

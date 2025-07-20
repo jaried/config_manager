@@ -220,6 +220,10 @@ class FileOperations:
                 # 跳过内部键，避免在顶层结构中添加内部数据
                 if key.startswith('__') and key != '__data__':
                     continue
+                
+                # 跳过 __data__ 键的直接处理，稍后单独处理
+                if key == '__data__':
+                    continue
                     
                 if key in original and isinstance(original[key], dict) and isinstance(value, dict):
                     # 递归合并嵌套字典
@@ -228,29 +232,40 @@ class FileOperations:
                     # 直接更新值（包括新键）
                     original[key] = value
             
-            # 如果新数据中有__data__，需要确保顶层结构也包含__data__中的用户定义键
+            # 如果新数据中有__data__，需要检查是否包含锚点别名引用
+            # 如果包含锚点别名，则完全跳过从__data__复制到顶层的逻辑
             if '__data__' in new_data and isinstance(new_data['__data__'], dict):
                 data_section = new_data['__data__']
-                # 系统字段列表，这些字段不应该在顶层结构中重复
-                system_fields = {
-                    'base_dir', 'first_start_time', 'config_file_path', 'paths', 
-                    '__type_hints__', 'debug_mode'
-                }
                 
-                for key, value in data_section.items():
-                    # 跳过系统字段和内部键
-                    if key.startswith('__') or key in system_fields:
-                        continue
+                # 检查是否存在锚点别名引用
+                has_anchor_alias_refs = self._has_any_anchor_alias_references(original, data_section)
+                
+                if has_anchor_alias_refs:
+                    # 存在锚点别名引用，需要移除顶层的锚点别名引用键以避免重复
+                    self._remove_top_level_anchor_alias_keys(original, data_section)
+                else:
+                    # 没有锚点别名引用，按原逻辑复制用户定义键到顶层
+                    system_fields = {
+                        'base_dir', 'first_start_time', 'config_file_path', 'paths', 
+                        '__type_hints__', 'debug_mode'
+                    }
                     
-                    # 这是用户定义的键，需要在顶层结构中添加
-                    if key not in original:
-                        original[key] = value
-                    elif isinstance(original[key], dict) and isinstance(value, dict):
-                        # 递归合并嵌套字典
-                        self._deep_update_yaml_data(original[key], value)
-                    else:
-                        # 更新值
-                        original[key] = value
+                    for key, value in data_section.items():
+                        # 跳过系统字段和内部键
+                        if key.startswith('__') or key in system_fields:
+                            continue
+                        
+                        # 检查顶层是否已存在该键
+                        if key in original:
+                            if isinstance(original[key], dict) and isinstance(value, dict):
+                                # 递归合并嵌套字典
+                                self._deep_update_yaml_data(original[key], value)
+                            else:
+                                # 正常更新值
+                                original[key] = value
+                        else:
+                            # 顶层不存在该键，直接添加
+                            original[key] = value
             
             return original
         elif isinstance(original, list) and isinstance(new_data, list):
@@ -259,6 +274,115 @@ class FileOperations:
         else:
             # 对于其他类型，直接替换
             return new_data
+    
+    def _is_anchor_alias_reference(self, original_data: dict, key: str, value: Any) -> bool:
+        """检查是否是锚点别名引用情况
+        
+        Args:
+            original_data: 原始YAML数据
+            key: 要检查的键名
+            value: __data__中的值
+            
+        Returns:
+            bool: 如果是锚点别名引用情况返回True，否则返回False
+        """
+        # 检查顶层是否存在该键
+        if key not in original_data:
+            return False
+        
+        original_value = original_data[key]
+        
+        # 如果两个值完全相同（包括引用关系），是锚点别名情况
+        if original_value is value:
+            return True
+        
+        # 对于字典类型，需要深度检查是否存在锚点别名引用的子键
+        if isinstance(value, dict) and isinstance(original_value, dict):
+            return self._has_anchor_alias_subkeys(original_value, value)
+        
+        # 如果值内容相同但不是同一个对象，也可能是锚点别名展开的结果
+        if original_value == value:
+            # 进一步检查是否为复杂数据结构（字典或列表）
+            # 对于简单值，相等不一定意味着锚点别名
+            if isinstance(value, (dict, list)) and len(str(value)) > 10:
+                return True
+        
+        return False
+    
+    def _has_anchor_alias_subkeys(self, original_dict: dict, data_dict: dict) -> bool:
+        """检查字典中是否包含锚点别名引用的子键
+        
+        Args:
+            original_dict: 顶层原始字典
+            data_dict: __data__中的字典
+            
+        Returns:
+            bool: 如果包含锚点别名引用的子键返回True
+        """
+        # 检查data_dict中的每个键是否在original_dict中作为锚点别名引用存在
+        for sub_key, sub_value in data_dict.items():
+            if sub_key in original_dict:
+                original_sub_value = original_dict[sub_key]
+                
+                # 如果是同一个对象，说明存在锚点别名引用
+                if original_sub_value is sub_value:
+                    return True
+                
+                # 递归检查嵌套字典
+                if isinstance(sub_value, dict) and isinstance(original_sub_value, dict):
+                    if self._has_anchor_alias_subkeys(original_sub_value, sub_value):
+                        return True
+        
+        return False
+    
+    def _has_any_anchor_alias_references(self, original_data: dict, data_section: dict) -> bool:
+        """检查__data__部分是否包含任何锚点别名引用
+        
+        Args:
+            original_data: 原始YAML数据（顶层）
+            data_section: __data__部分的数据
+            
+        Returns:
+            bool: 如果包含任何锚点别名引用返回True
+        """
+        for key, value in data_section.items():
+            # 跳过系统字段和内部键
+            if key.startswith('__'):
+                continue
+                
+            # 检查该键是否在顶层存在锚点别名引用
+            if key in original_data:
+                if self._is_anchor_alias_reference(original_data, key, value):
+                    return True
+        
+        return False
+    
+    def _remove_top_level_anchor_alias_keys(self, original_data: dict, data_section: dict) -> None:
+        """移除顶层的锚点别名引用键以避免重复
+        
+        Args:
+            original_data: 原始YAML数据（顶层）
+            data_section: __data__部分的数据
+        """
+        keys_to_remove = []
+        
+        for key, value in data_section.items():
+            # 跳过系统字段和内部键
+            if key.startswith('__'):
+                continue
+                
+            # 检查该键是否在顶层存在锚点别名引用
+            if key in original_data:
+                if self._is_anchor_alias_reference(original_data, key, value):
+                    keys_to_remove.append(key)
+                elif isinstance(value, dict) and isinstance(original_data[key], dict):
+                    # 对于字典类型，检查是否包含锚点别名引用的子键
+                    if self._has_anchor_alias_subkeys(original_data[key], value):
+                        keys_to_remove.append(key)
+        
+        # 移除检测到的锚点别名引用键
+        for key in keys_to_remove:
+            del original_data[key]
     
     def _try_reload_original_data(self, config_path: str):
         """尝试重新加载原始数据（用于路径变化的情况）"""
