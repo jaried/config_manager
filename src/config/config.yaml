@@ -1,6 +1,6 @@
 __data__:
   project_name: test_project
-  first_start_time: '2025-01-07T18:15:20'
+  first_start_time: '2025-01-07T10:00:00'
   test_mode: true
   concurrency: 5
   timeout: 30
@@ -13,7 +13,7 @@ __data__:
     Content_Type: application/json
   url_validation:
     level2_pattern: ^https?://[^/]+/chapter/\d+$
-    exclude_image_patterns: &id001
+    exclude_image_patterns:
       - \.jpg$
       - \.png$
       - \.gif$
@@ -30,9 +30,9 @@ __data__:
     debug_dir: /tmp/original/base/path/test_project/experiment_name/debug
     tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/tensorboard
     tsb_logs_dir: 
-      /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
-    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520
-    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520
+      /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/100000
+    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/100000
+    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/100000
   missing_config_error: 配置文件中缺少 'titls' 配置项
   test_async_value: async_test_data
   scheduler_status: running
@@ -42,26 +42,3 @@ __data__:
     first_start_time: datetime
   test_backup_isolation: production_value
 __type_hints__: {}
-project_name: test_project
-test_mode: true
-concurrency: 5
-timeout: 30
-proxy:
-  http: http://localhost:3213
-  https: https://localhost:3214
-  url: http://proxy.example.com:8080
-headers:
-  Accept: text/html,application/xhtml+xml
-  Content_Type: application/json
-url_validation:
-  level2_pattern: ^https?://[^/]+/chapter/\d+$
-  exclude_image_patterns: *id001
-work_dir: /tmp/original/work/path
-log_dir: /tmp/original/log/path
-experiment_name: experiment_name
-missing_config_error: 配置文件中缺少 'titls' 配置项
-test_async_value: async_test_data
-scheduler_status: running
-scheduler_start_time: '2025-07-19T02:11:54.420678'
-scheduler_progress: completed
-test_backup_isolation: production_value

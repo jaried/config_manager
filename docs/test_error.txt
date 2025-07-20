@@ -1,0 +1,1255 @@
+/home/tony/programs/miniconda3/envs/base_python3.12/bin/python /opt/pycharm-community-2025.1.2/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py --path /home/tony/project/config_manager/tests -- --last-failed
+Testing started at 10:01 ...
+Launching pytest with arguments --last-failed /home/tony/project/config_manager/tests --no-header --no-summary -q in /home/tony/project/config_manager/tests
+
+============================= test session starts ==============================
+collecting ... collected 281 items / 247 deselected / 34 selected
+run-last-failure: rerun previous 34 failures (skipped 18 files)
+
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_config_file_protection.py::TestConfigFileProtection::test_successful_config_can_be_saved
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_config_file_protection.py::TestConfigFileProtection::test_backup_creation_on_parse_error
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_double_load_fix.py::TestDoubleLoadFix::test_internal_modification_and_save
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0010_001_config_file_path.py::TestConfigFilePath::test_tc0010_001_003_config_file_path_persistence
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py::TestRawYamlSupport::test_get_raw_yaml_content
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_001_test_mode.py::TestTestMode::test_tc0012_001_003_test_mode_config_operations
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_001_test_mode.py::TestTestMode::test_tc0012_001_010_multiple_test_instances
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py::TestTC0012004BackupIsolation::test_tc0012_004_002_backup_file_creation_isolation
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py::TestTC0012004BackupIsolation::test_tc0012_004_004_multiple_test_instances_backup_isolation
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py::TestTC0012005ProjectNameTimestamp::test_tc0012_005_001_project_name_from_config <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_single_save_mechanism.py::TestTC0014001SingleSaveMechanism::test_tc0014_001_002_post_initialization_autosave_works
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py::TestYamlAnchorAliasDuplication::test_anchor_alias_modification_behavior FAILED [  2%]配置文件不存在，创建新配置: /tmp/pytest-of-tony/pytest-1/test_successful_config_can_be_0/test_config.yaml
+配置文件监视器已启动
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+📊 自动保存调度频率计数: 3
+配置已自动备份到 /tmp/tests/TestProject/test_experiment/backup/20250720/100126/test_config_20250720_100126.yaml
+配置已自动备份到 /tmp/tests/TestProject/test_experiment/backup/20250720/100126/test_config_20250720_100126.yaml
+✓ 检测到测试环境，自动启用auto_create: /tmp/pytest-of-tony/pytest-1/test_successful_config_can_be_0/test_config.yaml
+配置已从 /tmp/pytest-of-tony/pytest-1/test_successful_config_can_be_0/test_config.yaml 加载
+配置文件监视器已启动
+
+tests/01_unit_tests/test_config_manager/test_config_file_protection.py:68 (TestConfigFileProtection.test_successful_config_can_be_saved)
+None != 'TestProject'
+
+预期:'TestProject'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_config_file_protection.py:89: in test_successful_config_can_be_saved
+    assert config2.get('project_name') == 'TestProject'
+E   AssertionError: assert None == 'TestProject'
+E    +  where None = get('project_name')
+E    +    where get = ConfigManager({'config_file_path': '/tmp/pytest-of-tony/pytest-1/test_successful_config_can_be_0/test_config.yaml', 'first_start_time': '2025-07-20T10:01:27.776362', '__type_hints__': {'first_start_time': 'datetime'}, 'paths': ConfigNode({'work_dir': '/tmp/tests/test_project/test_experiment', 'checkpoint_dir': '/tmp/tests/test_project/test_experiment/checkpoint', 'best_checkpoint_dir': '/tmp/tests/test_project/test_experiment/checkpoint/best', 'debug_dir': '/tmp/tests/test_project/test_experiment/debug', 'tensorboard_dir': '/tmp/tests/test_project/test_experiment/tensorboard', 'tsb_logs_dir': '/tmp/tests/test_project/test_experiment/tsb_logs/2025/29/07/20/100127', 'log_dir': '/tmp/tests/test_project/test_experiment/logs/20250720/100127', 'backup_dir': '/tmp/tests/test_project/test_experiment/backup/20250720/100127', '_root': ConfigManager({...})})}).get
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100127/test_config_20250720_100127.yaml
+FAILED [  5%]配置已从 /tmp/pytest-of-tony/pytest-1/test_backup_creation_on_parse_0/test_config.yaml 加载
+配置文件监视器已启动
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+配置已自动备份到 /tmp/pytest-of-tony/pytest-1/test_backup_creation_on_parse_0/logs/TestProject/test_experiment/backup/20250720/100128/test_config_20250720_100128.yaml
+
+tests/01_unit_tests/test_config_manager/test_config_file_protection.py:120 (TestConfigFileProtection.test_backup_creation_on_parse_error)
+'test_key' != ('__data__:\n'
+ '  project_name: "TestProject"\n'
+ '  base_dir: '
+ '"/tmp/pytest-of-tony/pytest-1/test_backup_creation_on_parse_0/logs"\n'
+ '__type_hints__: {}\n')
+
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_config_file_protection.py:159: in test_backup_creation_on_parse_error
+    assert 'test_key' in backup_content
+E   assert 'test_key' in '__data__:\n  project_name: "TestProject"\n  base_dir: "/tmp/pytest-of-tony/pytest-1/test_backup_creation_on_parse_0/logs"\n__type_hints__: {}\n'
+配置已自动备份到 /tmp/pytest-of-tony/pytest-1/test_backup_creation_on_parse_0/logs/TestProject/test_experiment/backup/20250720/100128/test_config_20250720_100128.yaml
+FAILED [  8%]✓ 检测到测试环境，自动启用auto_create: /tmp/pytest-of-tony/pytest-1/test_internal_modification_and0/config.yaml
+配置已从 /tmp/pytest-of-tony/pytest-1/test_internal_modification_and0/config.yaml 加载
+配置文件监视器已启动
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100129/config_20250720_100129.yaml
+
+tests/01_unit_tests/test_config_manager/test_double_load_fix.py:61 (TestDoubleLoadFix.test_internal_modification_and_save)
+'initial_value' != 'internal_change'
+
+预期:'internal_change'
+实际:'initial_value'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_double_load_fix.py:84: in test_internal_modification_and_save
+    assert content['__data__']['setting'] == 'internal_change'
+E   AssertionError: assert 'initial_value' == 'internal_change'
+E
+E     - internal_change
+E     + initial_value
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100129/config_20250720_100129.yaml
+
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0010_001_config_file_path.py::TestConfigFilePath::test_tc0010_001_007_config_file_path_in_yaml_structure
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py::TestRawYamlSupport::test_tc0011_001_005_raw_yaml_modification_and_save FAILED [ 11%]配置文件不存在，创建新配置: /tmp/tmpp5b65z5i/persistent_config.yaml
+配置文件监视器已启动
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100125/persistent_config_20250720_100125.yaml
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100125/persistent_config_20250720_100125.yaml
+✓ 检测到测试环境，自动启用auto_create: /tmp/tmpp5b65z5i/persistent_config.yaml
+配置已从 /tmp/tmpp5b65z5i/persistent_config.yaml 加载
+配置文件监视器已启动
+
+tests/01_unit_tests/test_config_manager/test_tc0010_001_config_file_path.py:92 (TestConfigFilePath.test_tc0010_001_003_config_file_path_persistence)
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0010_001_config_file_path.py:127: in test_tc0010_001_003_config_file_path_persistence
+    assert cfg2.persistent_test == "first_value", "配置值应该被正确加载"
+           ^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'persistent_test'
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100132/persistent_config_20250720_100132.yaml
+FAILED [ 14%]配置文件不存在，创建新配置: /tmp/tmpkua44kad/yaml_structure_test.yaml
+配置文件监视器已启动
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100125/yaml_structure_test_20250720_100125.yaml
+
+tests/01_unit_tests/test_config_manager/test_tc0010_001_config_file_path.py:240 (TestConfigFilePath.test_tc0010_001_007_config_file_path_in_yaml_structure)
+'config_file_path' != {}
+
+预期:{}
+实际:'config_file_path'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0010_001_config_file_path.py:269: in test_tc0010_001_007_config_file_path_in_yaml_structure
+    assert 'config_file_path' in data_section, "数据节点应该包含config_file_path字段"
+E   AssertionError: 数据节点应该包含config_file_path字段
+E   assert 'config_file_path' in {}
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100125/yaml_structure_test_20250720_100125.yaml
+FAILED [ 17%]✓ 检测到测试环境，自动启用auto_create: /tmp/tmpumnjo5k9.yaml
+配置已从 /tmp/tmpumnjo5k9.yaml 加载
+移除顶层重复键: ['original_key', 'to_modify']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['original_key', 'to_modify']
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100134/tmpumnjo5k9_20250720_100134.yaml
+移除顶层重复键: ['original_key', 'to_modify']
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100134/tmpumnjo5k9_20250720_100134.yaml
+✓ 检测到测试环境，自动启用auto_create: /tmp/tmpumnjo5k9.yaml
+配置已从 /tmp/tmpumnjo5k9.yaml 加载
+
+tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py:97 (TestRawYamlSupport.test_tc0011_001_005_raw_yaml_modification_and_save)
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py:111: in test_tc0011_001_005_raw_yaml_modification_and_save
+    assert config2.to_modify == 'new_value'
+           ^^^^^^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'to_modify'
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100134/tmpumnjo5k9_20250720_100134.yaml
+FAILED [ 20%]✓ 检测到测试环境，自动启用auto_create: /tmp/pytest-of-tony/pytest-1/test_get_raw_yaml_content0/test.yaml
+配置已从 /tmp/pytest-of-tony/pytest-1/test_get_raw_yaml_content0/test.yaml 加载
+移除顶层重复键: ['key', 'nested']
+配置文件监视器已启动
+
+tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py:123 (TestRawYamlSupport.test_get_raw_yaml_content)
+{'key': 'value', 'nested': {'key': 'nested_value'}} != None
+
+预期:None
+实际:{'key': 'value', 'nested': {'key': 'nested_value'}}
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py:138: in test_get_raw_yaml_content
+    assert config_data == reread_data
+E   AssertionError: assert {'key': 'value', 'nested': {'key': 'nested_value'}} == None
+移除顶层重复键: ['key', 'nested']
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100134/test_20250720_100134.yaml
+FAILED [ 23%]✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100135/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100135/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100135/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100135/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100135/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100135/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:35.487652
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100135/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100135/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+📊 自动保存调度频率计数: 3
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100135/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100135/b9a7c5a5/src/config/config.yaml 加载
+
+tests/01_unit_tests/test_config_manager/test_tc0012_001_test_mode.py:76 (TestTestMode.test_tc0012_001_003_test_mode_config_operations)
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_001_test_mode.py:99: in test_tc0012_001_003_test_mode_config_operations
+    assert cfg.app_name == "测试应用"
+           ^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'app_name'
+✓ 已清理当前测试环境: /tmp/tests/20250720/100135_d82ecb28
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 26%]✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100135/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100135/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250607/103000/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/103000/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/103000/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250607/103000/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-06-07 10:30:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/103000/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250607/103000/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250607/103000/b9a7c5a5/test_project/experiment_name/backup/20250607/103000/config_20250607_103000.yaml
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250607/103000/b9a7c5a5/test_project/experiment_name/backup/20250607/103000/config_20250607_103000.yaml
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100135/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100135/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250607/113000/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/113000/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/113000/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250607/113000/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-06-07 11:30:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/113000/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250607/113000/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250607/113000/b9a7c5a5/test_project/experiment_name/backup/20250607/113000/config_20250607_113000.yaml
+配置已从 /tmp/tests/20250607/103000/b9a7c5a5/src/config/config.yaml 加载
+配置已从 /tmp/tests/20250607/113000/b9a7c5a5/src/config/config.yaml 加载
+
+tests/01_unit_tests/test_config_manager/test_tc0012_001_test_mode.py:263 (TestTestMode.test_tc0012_001_010_multiple_test_instances)
+None != 'instance_1'
+
+预期:'instance_1'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_001_test_mode.py:292: in test_tc0012_001_010_multiple_test_instances
+    assert cfg1.get('instance_id') == "instance_1"
+E   assert None == 'instance_1'
+E    +  where None = get('instance_id')
+E    +    where get = ConfigManager({'project_name': 'test_project', 'first_start_time': '2025-01-07T18:15:20', 'test_mode': True, 'concurrency': 5, 'timeout': 30, 'proxy': ConfigNode({'http': 'http://localhost:3213', 'https': 'https://localhost:3214', 'url': 'http://proxy.example.com:8080'}), 'headers': ConfigNode({'Accept': 'text/html,application/xhtml+xml', 'Content_Type': 'application/json'}), 'url_validation': ConfigNode({'level2_pattern': '^https?://[^/]+/chapter/\\d+$', 'exclude_image_patterns': ['\\.jpg$', '\\.png$', '\\.gif$']}), 'base_dir': '/tmp/tests/20250607/103000/b9a7c5a5', 'work_dir': '/tmp/original/work/path', 'log_dir': '/tmp/original/log/path', 'config_file_path': '/mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml', 'experiment_name': 'experiment_name', 'paths': ConfigNode({'work_dir': '/tmp/original/base/path/test_project/experiment_name', 'checkpoint_dir': '/tmp/original/base/path/test_project/experiment_name/checkpoint', 'best_checkpoint_dir': '/tmp/original/base/path/test_project/experiment_name/checkpoint/best', 'debug_dir': '/tmp/original/base/path/test_project/experiment_name/debug', 'tensorboard_dir': '/tmp/original/base/path/test_project/experiment_name/tensorboard', 'tsb_logs_dir': '/tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520', 'log_dir': '/tmp/original/base/path/test_project/experiment_name/logs/20250107/181520', 'backup_dir': '/tmp/original/base/path/test_project/experiment_name/backup/20250107/181520'}), 'missing_config_error': "\u914d\u7f6e\u6587\u4ef6\u4e2d\u7f3a\u5c11 'titls' \u914d\u7f6e\u9879", 'test_async_value': 'async_test_data', 'scheduler_status': 'running', 'scheduler_start_time': '2025-07-19T02:11:54.420678', 'scheduler_progress': 'completed', '__type_hints__': ConfigNode({'first_start_time': 'datetime'}), 'test_backup_isolation': 'production_value'}).get
+✓ 已清理当前测试环境: /tmp/tests/20250720/100136_15d5f150
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250607_113000.yaml
+FAILED [ 29%]配置已从 /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml 加载
+配置文件监视器已启动
+📊 自动保存调度频率计数: 1
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+⚠️  测试模式：清理现有生产模式实例
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100137/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100137/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250107/100000/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-01-07 10:00:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250107/100000/b9a7c5a5/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250107/100000/b9a7c5a5/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+生产环境实际备份路径: /tmp/original/base/path/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+测试环境实际备份路径: /tmp/tests/20250107/100000/b9a7c5a5/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+
+tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py:51 (TestTC0012004BackupIsolation.test_tc0012_004_002_backup_file_creation_isolation)
+'test_value' != ('__data__:\n'
+ '  project_name: test_project\n'
+ "  first_start_time: '2025-01-07T18:15:20'\n"
+ '  test_mode: true\n'
+ '  concurrency: 5\n'
+ '  timeout: 30\n'
+ '  proxy:\n'
+ '    http: http://localhost:3213\n'
+ '    https: https://localhost:3214\n'
+ '    url: http://proxy.example.com:8080\n'
+ '  headers:\n'
+ '    Accept: text/html,application/xhtml+xml\n'
+ '    Content_Type: application/json\n'
+ '  url_validation:\n'
+ '    level2_pattern: ^https?://[^/]+/chapter/\\d+$\n'
+ '    exclude_image_patterns:\n'
+ '      - \\.jpg$\n'
+ '      - \\.png$\n'
+ '      - \\.gif$\n'
+ '  base_dir: /tmp/tests/20250107/100000/b9a7c5a5\n'
+ '  work_dir: /tmp/original/work/path\n'
+ '  log_dir: /tmp/original/log/path\n'
+ '  config_file_path: \n'
+ '    '
+ '/mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml\n'
+ '  experiment_name: experiment_name\n'
+ '  paths:\n'
+ '    work_dir: /tmp/original/base/path/test_project/experiment_name\n'
+ '    checkpoint_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/checkpoint\n'
+ '    best_checkpoint_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/checkpoint/best\n'
+ '    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug\n'
+ '    tensorboard_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/tensorboard\n'
+ '    tsb_logs_dir: \n'
+ '      '
+ '/tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520\n'
+ '    log_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/logs/20250107/181520\n'
+ '    backup_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/backup/20250107/181520\n'
+ "  missing_config_error: 配置文件中缺少 'titls' 配置项\n"
+ '  test_async_value: async_test_data\n'
+ '  scheduler_status: running\n'
+ "  scheduler_start_time: '2025-07-19T02:11:54.420678'\n"
+ '  scheduler_progress: completed\n'
+ '  __type_hints__:\n'
+ '    first_start_time: datetime\n'
+ '  test_backup_isolation: production_value\n'
+ '__type_hints__: {}\n')
+
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py:91: in test_tc0012_004_002_backup_file_creation_isolation
+    assert "test_value" in test_content
+E   assert 'test_value' in "__data__:\n  project_name: test_project\n  first_start_time: '2025-01-07T18:15:20'\n  test_mode: true\n  concurrency: 5\n  timeout: 30\n  proxy:\n    http: http://localhost:3213\n    https: https://localhost:3214\n    url: http://proxy.example.com:8080\n  headers:\n    Accept: text/html,application/xhtml+xml\n    Content_Type: application/json\n  url_validation:\n    level2_pattern: ^https?://[^/]+/chapter/\\d+$\n    exclude_image_patterns:\n      - \\.jpg$\n      - \\.png$\n      - \\.gif$\n  base_dir: /tmp/tests/20250107/100000/b9a7c5a5\n  work_dir: /tmp/original/work/path\n  log_dir: /tmp/original/log/path\n  config_file_path: \n    /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml\n  experiment_name: experiment_name\n  paths:\n    work_dir: /tmp/original/base/path/test_project/experiment_name\n    checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint\n    best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best\n    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug\n    tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/tensorboard\n    tsb_logs_dir: \n      /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520\n    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520\n    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520\n  missing_config_error: \u914d\u7f6e\u6587\u4ef6\u4e2d\u7f3a\u5c11 'titls' \u914d\u7f6e\u9879\n  test_async_value: async_test_data\n  scheduler_status: running\n  scheduler_start_time: '2025-07-19T02:11:54.420678'\n  scheduler_progress: completed\n  __type_hints__:\n    first_start_time: datetime\n  test_backup_isolation: production_value\n__type_hints__: {}\n"
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250107/100000/b9a7c5a5/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+FAILED [ 32%]✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100137/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100137/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250107/100000/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-01-07 10:00:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100137/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100137/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250107/110000/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/110000/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/110000/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250107/110000/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-01-07 11:00:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/110000/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250107/110000/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+
+配置已自动备份到 /tmp/tests/20250107/110000/b9a7c5a5/test_project/experiment_name/backup/20250107/110000/config_20250107_110000.yaml
+配置已自动备份到 /tmp/tests/20250107/100000/b9a7c5a5/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+
+tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py:127 (TestTC0012004BackupIsolation.test_tc0012_004_004_multiple_test_instances_backup_isolation)
+'instance1_value' != ('__data__:\n'
+ '  project_name: test_project\n'
+ "  first_start_time: '2025-01-07T18:15:20'\n"
+ '  test_mode: true\n'
+ '  concurrency: 5\n'
+ '  timeout: 30\n'
+ '  proxy:\n'
+ '    http: http://localhost:3213\n'
+ '    https: https://localhost:3214\n'
+ '    url: http://proxy.example.com:8080\n'
+ '  headers:\n'
+ '    Accept: text/html,application/xhtml+xml\n'
+ '    Content_Type: application/json\n'
+ '  url_validation:\n'
+ '    level2_pattern: ^https?://[^/]+/chapter/\\d+$\n'
+ '    exclude_image_patterns:\n'
+ '      - \\.jpg$\n'
+ '      - \\.png$\n'
+ '      - \\.gif$\n'
+ '  base_dir: /tmp/tests/20250107/100000/b9a7c5a5\n'
+ '  work_dir: /tmp/original/work/path\n'
+ '  log_dir: /tmp/original/log/path\n'
+ '  config_file_path: \n'
+ '    '
+ '/mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml\n'
+ '  experiment_name: experiment_name\n'
+ '  paths:\n'
+ '    work_dir: /tmp/original/base/path/test_project/experiment_name\n'
+ '    checkpoint_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/checkpoint\n'
+ '    best_checkpoint_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/checkpoint/best\n'
+ '    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug\n'
+ '    tensorboard_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/tensorboard\n'
+ '    tsb_logs_dir: \n'
+ '      '
+ '/tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520\n'
+ '    log_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/logs/20250107/181520\n'
+ '    backup_dir: '
+ '/tmp/original/base/path/test_project/experiment_name/backup/20250107/181520\n'
+ "  missing_config_error: 配置文件中缺少 'titls' 配置项\n"
+ '  test_async_value: async_test_data\n'
+ '  scheduler_status: running\n'
+ "  scheduler_start_time: '2025-07-19T02:11:54.420678'\n"
+ '  scheduler_progress: completed\n'
+ '  __type_hints__:\n'
+ '    first_start_time: datetime\n'
+ '  test_backup_isolation: production_value\n'
+ '__type_hints__: {}\n')
+
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py:167: in test_tc0012_004_004_multiple_test_instances_backup_isolation
+    assert "instance1_value" in content1
+E   assert 'instance1_value' in "__data__:\n  project_name: test_project\n  first_start_time: '2025-01-07T18:15:20'\n  test_mode: true\n  concurrency: 5\n  timeout: 30\n  proxy:\n    http: http://localhost:3213\n    https: https://localhost:3214\n    url: http://proxy.example.com:8080\n  headers:\n    Accept: text/html,application/xhtml+xml\n    Content_Type: application/json\n  url_validation:\n    level2_pattern: ^https?://[^/]+/chapter/\\d+$\n    exclude_image_patterns:\n      - \\.jpg$\n      - \\.png$\n      - \\.gif$\n  base_dir: /tmp/tests/20250107/100000/b9a7c5a5\n  work_dir: /tmp/original/work/path\n  log_dir: /tmp/original/log/path\n  config_file_path: \n    /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml\n  experiment_name: experiment_name\n  paths:\n    work_dir: /tmp/original/base/path/test_project/experiment_name\n    checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint\n    best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best\n    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug\n    tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/tensorboard\n    tsb_logs_dir: \n      /tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520\n    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520\n    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520\n  missing_config_error: \u914d\u7f6e\u6587\u4ef6\u4e2d\u7f3a\u5c11 'titls' \u914d\u7f6e\u9879\n  test_async_value: async_test_data\n  scheduler_status: running\n  scheduler_start_time: '2025-07-19T02:11:54.420678'\n  scheduler_progress: completed\n  __type_hints__:\n    first_start_time: datetime\n  test_backup_isolation: production_value\n__type_hints__: {}\n"
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250107/100000/b9a7c5a5/test_project/experiment_name/backup/20250107/100000/config_20250107_100000.yaml
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250107/110000/b9a7c5a5/test_project/experiment_name/backup/20250107/110000/config_20250107_110000.yaml
+FAILED [ 35%]配置已从 /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml 加载
+配置文件监视器已启动
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py:20 (TestTC0012005ProjectNameTimestamp.test_tc0012_005_001_project_name_from_config)
+'test_project' != 'project_name'
+
+预期:'project_name'
+实际:'test_project'
+<点击以查看差异>
+
+01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py:28: in test_tc0012_005_001_project_name_from_config
+    assert project_name == 'project_name', f"期望project_name为'project_name'，实际: {project_name}"
+E   AssertionError: 期望project_name为'project_name'，实际: test_project
+E   assert 'test_project' == 'project_name'
+E
+E     - project_name
+E     + test_project
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 38%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100139/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100139/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100139/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp9uqy901f.yaml -> /tmp/tests/20250720/100139/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:39.538285
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100139/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100139/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'experiment_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['project_name', 'experiment_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100139/b9a7c5a5/autosave_test/post_init_test/backup/20250720/100139/config_20250720_100139.yaml
+
+tests/01_unit_tests/test_config_manager/test_tc0014_001_single_save_mechanism.py:67 (TestTC0014001SingleSaveMechanism.test_tc0014_001_002_post_initialization_autosave_works)
+'post_init_test_value' != {}
+
+预期:{}
+实际:'post_init_test_value'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_single_save_mechanism.py:112: in test_tc0014_001_002_post_initialization_autosave_works
+    assert 'post_init_test_value' in saved_data, f"值应该被保存到配置文件中，当前配置: {saved_data}"
+E   AssertionError: 值应该被保存到配置文件中，当前配置: {}
+E   assert 'post_init_test_value' in {}
+移除顶层重复键: ['project_name', 'experiment_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100139/b9a7c5a5/autosave_test/post_init_test/backup/20250720/100139/config_20250720_100139.yaml
+
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py::TestYamlAnchorAliasDuplication::test_complex_anchor_alias_scenario
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0001_001_basic_operations.py::test_tc0001_001_004_config_persistence FAILED [ 41%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100139/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100139/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100139/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmpxyv7qw_1/test_config.yaml -> /tmp/tests/20250720/100139/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:39.894000
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100139/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100139/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100139/b9a7c5a5/test_project/test_experiment/backup/20250720/100139/config_20250720_100139.yaml
+修改后保存的内容：
+__data__:
+  base_config: &default_config
+    timeout: 30
+    retries: 3
+    debug: false
+  base_dir: /tmp/tests/20250720/100139/b9a7c5a5
+__type_hints__: {}
+
+# 使用别名引用
+service_a:
+  config: *default_config
+service_b:
+  config: *default_config
+
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100140/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmpxyv7qw_1/test_config.yaml -> /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:40.012980
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+service_a timeout: None
+service_b timeout: None
+
+❌ 发现重复的键：
+  键 'config' 重复:
+    第 11 行: config: *default_config
+    第 13 行: config: *default_config
+
+tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py:96 (TestYamlAnchorAliasDuplication.test_anchor_alias_modification_behavior)
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py:156: in test_anchor_alias_modification_behavior
+    self._check_for_duplicates(saved_content)
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py:206: in _check_for_duplicates
+    assert False, f"发现重复的键: {duplicate_key_names}"
+E   AssertionError: 发现重复的键: ['config']
+E   assert False
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100139/b9a7c5a5/test_project/test_experiment/backup/20250720/100139/config_20250720_100139.yaml
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100140/b9a7c5a5/test_project/test_experiment/backup/20250720/100140/config_20250720_100140.yaml
+FAILED [ 44%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100140/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp0h4wa4tn/complex_config.yaml -> /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:40.139870
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+
+tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py:209 (TestYamlAnchorAliasDuplication.test_complex_anchor_alias_scenario)
+None != 'localhost'
+
+预期:'localhost'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0014_001_yaml_anchor_alias_duplication.py:260: in test_complex_anchor_alias_scenario
+    assert user_db_host == 'localhost'
+E   AssertionError: assert None == 'localhost'
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100140/b9a7c5a5/test_project/test_experiment/backup/20250720/100140/config_20250720_100140.yaml
+
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py::test_tc0002_001_001_autosave_basic
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py::test_tc0002_001_002_multilevel_autosave
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py::test_tc0002_001_005_first_start_time_persistence
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py::test_tc0002_001_007_backup_directory_structure
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py::test_tc0002_001_009_start_time_persistence_with_caller
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0002_002_async_envs_scenario.py::test_tc0002_002_005_mock_real_scenario
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0005_001_advanced_features.py::test_tc0005_001_006_backup_loading
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0005_002_path_handling.py::test_tc0005_002_001_explicit_path_handling
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0005_002_path_handling.py::test_tc0005_002_002_project_structure_path
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0006_001_quick_verification.py::test_tc0006_001_001_basic_functionality
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0006_001_quick_verification.py::test_tc0006_001_002_nested_dict_assignment
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0007_001_reload_verification.py::test_tc0007_001_001_simple_reload
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0007_001_reload_verification.py::test_tc0007_001_002_nested_reload
+../../../../../../../../home/tony/project/config_manager/tests/test_config_manager/test_tc0007_001_reload_verification.py::test_tc0007_001_003_autosave_reload
+../../../../../../../../home/tony/project/config_manager/tests/test_yaml_comments_preservation.py::test_yaml_comments_preservation <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py FAILED [ 47%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100140/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:40.276088
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100140/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0001_001_basic_operations.py:81 (test_tc0001_001_004_config_persistence)
+None != 'save_me'
+
+预期:'save_me'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0001_001_basic_operations.py:104: in test_tc0001_001_004_config_persistence
+    assert value == "save_me"
+E   AssertionError: assert None == 'save_me'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 50%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100140/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:40.725310
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100140/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100140/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100140/b9a7c5a5/src/config/config.yaml 加载
+Debug: _data 内容: {'project_name': 'test_project', 'first_start_time': '2025-01-07T18:15:20', 'test_mode': True, 'concurrency': 5, 'timeout': 30, 'proxy': ConfigNode({'http': 'http://localhost:3213', 'https': 'https://localhost:3214', 'url': 'http://proxy.example.com:8080'}), 'headers': ConfigNode({'Accept': 'text/html,application/xhtml+xml', 'Content_Type': 'application/json'}), 'url_validation': ConfigNode({'level2_pattern': '^https?://[^/]+/chapter/\\d+$', 'exclude_image_patterns': ['\\.jpg$', '\\.png$', '\\.gif$']}), 'base_dir': '/tmp/tests/20250720/100140/b9a7c5a5', 'work_dir': '/tmp/original/work/path', 'log_dir': '/tmp/original/log/path', 'config_file_path': '/mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml', 'experiment_name': 'experiment_name', 'paths': ConfigNode({'work_dir': '/tmp/original/base/path/test_project/experiment_name', 'checkpoint_dir': '/tmp/original/base/path/test_project/experiment_name/checkpoint', 'best_checkpoint_dir': '/tmp/original/base/path/test_project/experiment_name/checkpoint/best', 'debug_dir': '/tmp/original/base/path/test_project/experiment_name/debug', 'tensorboard_dir': '/tmp/original/base/path/test_project/experiment_name/tensorboard', 'tsb_logs_dir': '/tmp/original/base/path/test_project/experiment_name/tsb_logs/2025/02/01/07/181520', 'log_dir': '/tmp/original/base/path/test_project/experiment_name/logs/20250107/181520', 'backup_dir': '/tmp/original/base/path/test_project/experiment_name/backup/20250107/181520'}), 'missing_config_error': "配置文件中缺少 'titls' 配置项", 'test_async_value': 'async_test_data', 'scheduler_status': 'running', 'scheduler_start_time': '2025-07-19T02:11:54.420678', 'scheduler_progress': 'completed', '__type_hints__': ConfigNode({'first_start_time': 'datetime'}), 'test_backup_isolation': 'production_value'}
+
+tests/test_config_manager/test_tc0002_001_autosave_feature.py:26 (test_tc0002_001_001_autosave_basic)
+None != 'value1'
+
+预期:'value1'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py:60: in test_tc0002_001_001_autosave_basic
+    assert value == "value1"
+E   AssertionError: assert None == 'value1'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 52%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100141/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100141/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100141/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100141/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:41.142891
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100141/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100141/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100141/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100141/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0002_001_autosave_feature.py:63 (test_tc0002_001_002_multilevel_autosave)
+None != 'deep_value'
+
+预期:'deep_value'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py:87: in test_tc0002_001_002_multilevel_autosave
+    assert value == "deep_value"
+E   AssertionError: assert None == 'deep_value'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 55%]✓ 检测到测试环境，自动启用auto_create: /tmp/tmpa8dbmyur/test_time_config.yaml
+配置文件不存在，创建新配置: /tmp/tmpa8dbmyur/test_time_config.yaml
+📊 自动保存调度频率计数: 1
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250605/103045/test_time_config_20250605_103045.yaml
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250605/103045/test_time_config_20250605_103045.yaml
+✓ 检测到测试环境，自动启用auto_create: /tmp/tmpa8dbmyur/test_time_config.yaml
+配置已从 /tmp/tmpa8dbmyur/test_time_config.yaml 加载
+
+tests/test_config_manager/test_tc0002_001_autosave_feature.py:154 (test_tc0002_001_005_first_start_time_persistence)
+datetime.datetime(2025, 7, 20, 10, 1, 41, 814611) != datetime.datetime(2025, 6, 5, 10, 30, 45)
+
+预期:datetime.datetime(2025, 6, 5, 10, 30, 45)
+实际:datetime.datetime(2025, 7, 20, 10, 1, 41, 814611)
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py:201: in test_tc0002_001_005_first_start_time_persistence
+    assert second_time == first_time
+E   assert datetime.datetime(2025, 7, 20, 10, 1, 41, 814611) == datetime.datetime(2025, 6, 5, 10, 30, 45)
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100141/test_time_config_20250720_100141.yaml
+FAILED [ 58%]✓ 检测到测试环境，自动启用auto_create: /tmp/tmp7zgwuyp_/structure_test.yaml
+配置文件不存在，创建新配置: /tmp/tmp7zgwuyp_/structure_test.yaml
+📊 自动保存调度频率计数: 1
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100141/structure_test_20250720_100141.yaml
+
+tests/test_config_manager/test_tc0002_001_autosave_feature.py:245 (test_tc0002_001_007_backup_directory_structure)
+'structure_test' != {}
+
+预期:{}
+实际:'structure_test'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py:298: in test_tc0002_001_007_backup_directory_structure
+    assert 'structure_test' in backup_content['__data__']
+E   AssertionError: assert 'structure_test' in {}
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100141/structure_test_20250720_100141.yaml
+FAILED [ 61%]✓ 检测到测试环境，自动启用auto_create: /tmp/tmprr08695h/persist_caller_test.yaml
+配置文件不存在，创建新配置: /tmp/tmprr08695h/persist_caller_test.yaml
+📊 自动保存调度频率计数: 1
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250220/141530/persist_caller_test_20250220_141530.yaml
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250220/141530/persist_caller_test_20250220_141530.yaml
+✓ 检测到测试环境，自动启用auto_create: /tmp/tmprr08695h/persist_caller_test.yaml
+配置已从 /tmp/tmprr08695h/persist_caller_test.yaml 加载
+
+tests/test_config_manager/test_tc0002_001_autosave_feature.py:358 (test_tc0002_001_009_start_time_persistence_with_caller)
+datetime.datetime(2025, 7, 20, 10, 1, 42, 439257) != datetime.datetime(2025, 2, 20, 14, 15, 30)
+
+预期:datetime.datetime(2025, 2, 20, 14, 15, 30)
+实际:datetime.datetime(2025, 7, 20, 10, 1, 42, 439257)
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0002_001_autosave_feature.py:414: in test_tc0002_001_009_start_time_persistence_with_caller
+    assert second_time == test_start_time  # 应该是原始保存的时间
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   assert datetime.datetime(2025, 7, 20, 10, 1, 42, 439257) == datetime.datetime(2025, 2, 20, 14, 15, 30)
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100142/persist_caller_test_20250720_100142.yaml
+FAILED [ 64%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100142/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100142/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100142/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100142/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:42.544096
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100142/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100142/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100142/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100142/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100142/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp7cg6oe2d/envs/base_python3.12/Lib/site-packages/config/config.yaml -> /tmp/tests/20250720/100142/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:42.906063
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100142/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100142/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/test_experiment/backup/20250720/100142/config_20250720_100142.yaml
+📊 自动保存调度频率计数: 3
+📊 自动保存调度频率计数: 4
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/test_experiment/backup/20250720/100142/config_20250720_100142.yaml
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/test_experiment/backup/20250720/100142/config_20250720_100142.yaml
+
+tests/test_config_manager/test_tc0002_002_async_envs_scenario.py:325 (test_tc0002_002_005_mock_real_scenario)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0002_002_async_envs_scenario.py:440: in test_tc0002_002_005_mock_real_scenario
+    assert scheduler_backup_content['__data__']['scheduler_started'] == "scheduler_module_started"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/tony/programs/miniconda3/envs/base_python3.12/lib/python3.12/site-packages/ruamel/yaml/comments.py:853: in __getitem__
+    return ordereddict.__getitem__(self, key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'scheduler_started'
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100142/b9a7c5a5/test_project/test_experiment/backup/20250720/100142/config_20250720_100142.yaml
+FAILED [ 67%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100143/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100143/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100143/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100143/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:43.492435
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100143/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100143/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100143/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+📊 自动保存调度频率计数: 3
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100143/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100143/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0005_001_advanced_features.py:156 (test_tc0005_001_006_backup_loading)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0005_001_advanced_features.py:189: in test_tc0005_001_006_backup_loading
+    assert cfg.backup_test == "modified_value"
+           ^^^^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'backup_test'. Did you mean: '_backup_time'?
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 70%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100144/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100144/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100144/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100144/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:44.168197
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100144/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100144/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100144/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100144/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0005_002_path_handling.py:22 (test_tc0005_002_001_explicit_path_handling)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0005_002_path_handling.py:56: in test_tc0005_002_001_explicit_path_handling
+    assert cfg.explicit_test == "explicit_value"
+           ^^^^^^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'explicit_test'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 73%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100144/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100144/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100144/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100144/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:44.632730
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100144/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100144/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100144/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100144/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0005_002_path_handling.py:59 (test_tc0005_002_002_project_structure_path)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0005_002_path_handling.py:93: in test_tc0005_002_002_project_structure_path
+    assert cfg.project_test == "project_value"
+           ^^^^^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'project_test'. Did you mean: 'project_name'?
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 76%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100145/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:45.086466
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100145/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0006_001_quick_verification.py:20 (test_tc0006_001_001_basic_functionality)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0006_001_quick_verification.py:50: in test_tc0006_001_001_basic_functionality
+    reloaded_app_name = cfg.app_name
+                        ^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'app_name'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 79%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100145/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:45.330631
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100145/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0006_001_quick_verification.py:56 (test_tc0006_001_002_nested_dict_assignment)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0006_001_quick_verification.py:76: in test_tc0006_001_002_nested_dict_assignment
+    reloaded_value = cfg.level1.level2.value
+                     ^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'level1'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 82%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100145/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:45.589480
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100145/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0007_001_reload_verification.py:21 (test_tc0007_001_001_simple_reload)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0007_001_reload_verification.py:38: in test_tc0007_001_001_simple_reload
+    reloaded_value = cfg.test_value
+                     ^^^^^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'test_value'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 85%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100145/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:45.866745
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100145/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100145/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100145/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0007_001_reload_verification.py:42 (test_tc0007_001_002_nested_reload)
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0007_001_reload_verification.py:61: in test_tc0007_001_002_nested_reload
+    nested_value = cfg.level1.level2.value
+                   ^^^^^^^^^^
+../src/config_manager/config_manager.py:977: in __getattr__
+    value = super().__getattr__(name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/core/manager.py:99: in __getattr__
+    return super().__getattr__(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+../src/config_manager/config_node.py:76: in __getattr__
+    raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+E   AttributeError: 'ConfigManager' object has no attribute 'level1'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 88%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100146/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+⚠️  生产配置不存在，尝试更广泛的搜索...
+当前工作目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+在当前目录未找到，向上查找...
+查找第1级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第2级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第3级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第4级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+查找第5级上级目录: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 在上级目录找到配置文件: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:46.109352
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+配置已从 /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml 加载
+
+tests/test_config_manager/test_tc0007_001_reload_verification.py:69 (test_tc0007_001_003_autosave_reload)
+None != 'auto_saved_value'
+
+预期:'auto_saved_value'
+实际:None
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/test_config_manager/test_tc0007_001_reload_verification.py:94: in test_tc0007_001_003_autosave_reload
+    assert auto_value == "auto_saved_value"
+E   AssertionError: assert None == 'auto_saved_value'
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+
+../../../../../../../../home/tony/project/config_manager/tests/test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_new_keys <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py
+../../../../../../../../home/tony/project/config_manager/tests/test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_nested_structures <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py
+../../../../../../../../home/tony/project/config_manager/tests/test_yaml_comments_preservation.py::test_yaml_comments_preservation_edge_cases <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py
+
+===================== 34 failed, 247 deselected in 22.04s ======================
+FAILED [ 91%]✓ 检测到测试环境，自动启用auto_create: /tmp/tmpmk6b07u4.yaml
+配置已从 /tmp/tmpmk6b07u4.yaml 加载
+移除顶层重复键: ['app_name', 'version', 'database', 'service', 'features']
+📊 自动保存调度频率计数: 1
+移除顶层重复键: ['app_name', 'version', 'database', 'service', 'features']
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100146/tmpmk6b07u4_20250720_100146.yaml
+保存后的配置文件内容:
+# 应用程序配置
+{}
+
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py:16 (test_yaml_comments_preservation)
+'ModifiedApp' != '# 应用程序配置\n{}\n'
+
+预期:'# 应用程序配置\n{}\n'
+实际:'ModifiedApp'
+<点击以查看差异>
+
+test_yaml_comments_preservation.py:90: in test_yaml_comments_preservation
+    assert "ModifiedApp" in saved_content
+E   AssertionError: assert 'ModifiedApp' in '# \u5e94\u7528\u7a0b\u5e8f\u914d\u7f6e\n{}\n'
+移除顶层重复键: ['app_name', 'version', 'database', 'service', 'features']
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/100146/tmpmk6b07u4_20250720_100146.yaml
+FAILED [ 94%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100146/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp5aps62hm.yaml -> /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:46.579407
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['app_name', 'version', 'database', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+移除顶层重复键: ['app_name', 'version', 'database', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/test_experiment/backup/20250720/100146/config_20250720_100146.yaml
+添加新键后的配置文件内容:
+# 基础配置
+{}
+
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py:127 (test_yaml_comments_preservation_with_new_keys)
+'# 数据库配置' != '# 基础配置\n{}\n'
+
+预期:'# 基础配置\n{}\n'
+实际:'# 数据库配置'
+<点击以查看差异>
+
+test_yaml_comments_preservation.py:174: in test_yaml_comments_preservation_with_new_keys
+    assert "# 数据库配置" in saved_content
+E   AssertionError: assert '# \u6570\u636e\u5e93\u914d\u7f6e' in '# \u57fa\u7840\u914d\u7f6e\n{}\n'
+移除顶层重复键: ['app_name', 'version', 'database', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/test_experiment/backup/20250720/100146/config_20250720_100146.yaml
+FAILED [ 97%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100146/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp1aw16ktw.yaml -> /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:46.695727
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['app', 'services', 'base_dir', 'first_start_time', 'config_file_path']
+移除顶层重复键: ['app', 'services', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/test_experiment/backup/20250720/100146/config_20250720_100146.yaml
+嵌套结构修改后的配置文件内容:
+# 应用配置
+{}
+
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py:190 (test_yaml_comments_preservation_with_nested_structures)
+'# 基本信息' != '# 应用配置\n{}\n'
+
+预期:'# 应用配置\n{}\n'
+实际:'# 基本信息'
+<点击以查看差异>
+
+test_yaml_comments_preservation.py:264: in test_yaml_comments_preservation_with_nested_structures
+    assert "# 基本信息" in saved_content
+E   AssertionError: assert '# \u57fa\u672c\u4fe1\u606f' in '# \u5e94\u7528\u914d\u7f6e\n{}\n'
+移除顶层重复键: ['app', 'services', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/test_experiment/backup/20250720/100146/config_20250720_100146.yaml
+FAILED [100%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/100146/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmpa6pjxt2t.yaml -> /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 10:01:46.812162
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/100146/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/100146/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['app_name', 'empty_value', 'list_items', 'dict_items', 'special_chars', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+📊 自动保存调度频率计数: 3
+移除顶层重复键: ['app_name', 'empty_value', 'list_items', 'dict_items', 'special_chars', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/test_experiment/backup/20250720/100146/config_20250720_100146.yaml
+边缘情况测试后的配置文件内容:
+# 顶层注释
+# 多行注释
+# 第三行注释
+
+{}
+
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py:298 (test_yaml_comments_preservation_edge_cases)
+'# 行内注释' != '# 顶层注释\n# 多行注释\n# 第三行注释\n\n{}\n'
+
+预期:'# 顶层注释\n# 多行注释\n# 第三行注释\n\n{}\n'
+实际:'# 行内注释'
+<点击以查看差异>
+
+test_yaml_comments_preservation.py:365: in test_yaml_comments_preservation_edge_cases
+    assert "# 行内注释" in saved_content
+E   AssertionError: assert '# \u884c\u5185\u6ce8\u91ca' in '# \u9876\u5c42\u6ce8\u91ca\n# \u591a\u884c\u6ce8\u91ca\n# \u7b2c\u4e09\u884c\u6ce8\u91ca\n\n{}\n'
+移除顶层重复键: ['app_name', 'empty_value', 'list_items', 'dict_items', 'special_chars', 'base_dir', 'first_start_time', 'config_file_path']
+配置已自动备份到 /tmp/tests/20250720/100146/b9a7c5a5/test_project/test_experiment/backup/20250720/100146/config_20250720_100146.yaml
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250607_103000.yaml
+
+进程已结束，退出代码为 1

@@ -220,14 +220,6 @@ class FileOperations:
             # 对于字典，深度合并并保留注释
             # 直接在原始字典上更新，以保留ruamel.yaml的注释信息
             for key, value in new_data.items():
-                # 跳过内部键，避免在顶层结构中添加内部数据
-                if key.startswith('__') and key != '__data__':
-                    continue
-                
-                # 跳过 __data__ 键的直接处理，稍后单独处理
-                if key == '__data__':
-                    continue
-                    
                 if key in original and isinstance(original[key], dict) and isinstance(value, dict):
                     # 递归合并嵌套字典
                     self._deep_update_yaml_data(original[key], value)
@@ -359,7 +351,7 @@ class FileOperations:
             del original_data[key]
     
     def _remove_all_duplicate_keys_from_top_level(self, original_data: dict, data_section: dict) -> None:
-        """彻底移除顶层所有与__data__重复的键，解决重复键问题
+        """智能移除顶层真正重复的键，保留有差异的键
         
         Args:
             original_data: 原始YAML数据（顶层）
@@ -375,17 +367,69 @@ class FileOperations:
             if key in protected_top_level_keys:
                 continue
             
-            # 如果该键在__data__中存在，就从顶层移除以避免重复
+            # 检查是否在__data__中存在
             if key in data_section:
-                keys_to_remove.append(key)
+                top_level_value = original_data[key]
+                data_section_value = data_section[key]
+                
+                # 只有当值完全相同时才认为是重复，需要删除
+                if self._are_values_identical(top_level_value, data_section_value):
+                    keys_to_remove.append(key)
+                else:
+                    # 值不同，保留顶层的键（可能有特殊用途）
+                    print(f"保留顶层键 '{key}': 值与__data__中的不同")
         
-        # 移除所有重复的键
+        # 移除确认重复的键
         for key in keys_to_remove:
             del original_data[key]
             
         # 记录移除的键用于调试（可选）
         if keys_to_remove:
             print(f"移除顶层重复键: {keys_to_remove}")
+    
+    def _are_values_identical(self, value1: Any, value2: Any) -> bool:
+        """比较两个值是否完全相同，用于判断是否为真正的重复
+        
+        Args:
+            value1: 第一个值
+            value2: 第二个值
+            
+        Returns:
+            bool: 如果值完全相同返回True，否则返回False
+        """
+        try:
+            # 首先检查是否是同一个对象引用（锚点别名情况）
+            if value1 is value2:
+                return True
+            
+            # 检查基本类型的相等性
+            if type(value1) is not type(value2):
+                return False
+            
+            # 对于字典类型，递归比较
+            if isinstance(value1, dict) and isinstance(value2, dict):
+                if set(value1.keys()) != set(value2.keys()):
+                    return False
+                for key in value1.keys():
+                    if not self._are_values_identical(value1[key], value2[key]):
+                        return False
+                return True
+            
+            # 对于列表类型，逐一比较元素
+            if isinstance(value1, list) and isinstance(value2, list):
+                if len(value1) != len(value2):
+                    return False
+                for i in range(len(value1)):
+                    if not self._are_values_identical(value1[i], value2[i]):
+                        return False
+                return True
+            
+            # 对于基本类型，直接比较值
+            return value1 == value2
+            
+        except Exception:
+            # 比较出现异常时，保守起见认为不相同
+            return False
     
     def _remove_duplicate_keys_from_yaml_file(self, file_path: str) -> None:
         """直接编辑YAML文件，删除重复键的第二次出现"""
