@@ -20,14 +20,14 @@ class TestTC0012005ProjectNameTimestamp:
 
     def test_tc0012_005_001_project_name_from_config(self):
         """测试从配置文件中读取project_name"""
-        # 使用生产环境配置管理器，应该读取到生产配置中的project_name
-        cfg = get_config_manager()
+        # 使用测试模式配置管理器，避免污染生产配置
+        cfg = get_config_manager(test_mode=True)
         
         # 验证project_name被正确读取
         project_name = cfg.get('project_name')
         assert project_name == 'test_project', f"期望project_name为'test_project'，实际: {project_name}"
         
-        print(f"✓ 生产环境project_name: {project_name}")
+        print(f"✓ 测试环境project_name: {project_name}")
 
     def test_tc0012_005_002_test_mode_path_with_project_name(self):
         """测试test_mode下路径包含project_name"""

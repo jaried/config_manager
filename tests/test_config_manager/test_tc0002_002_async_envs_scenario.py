@@ -91,7 +91,7 @@ class MockScheduler:
 
             # 读取配置 - 这里会调用 get_config_manager()
             # 在真实场景中，这可能会创建新实例或使用现有实例
-            config = get_config_manager()
+            config = get_config_manager(test_mode=True)
 
             # 模拟检查配置项（就像真实场景中检查'titls'）
             if not hasattr(config, 'titls') and config.get('titls') is None:
@@ -115,7 +115,7 @@ class MockScheduler:
             return
         except Exception as e:
             # 模拟异常处理
-            config = get_config_manager()
+            config = get_config_manager(test_mode=True)
             config.scheduler_error = str(e)
             raise e
 

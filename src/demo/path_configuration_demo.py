@@ -23,7 +23,7 @@ def demonstrate_path_configuration():
     
     # 1. 创建配置管理器
     print("\n1. 创建配置管理器...")
-    config = get_config_manager()
+    config = get_config_manager(test_mode=True)
     
     # 2. 设置基础配置
     print("\n2. 设置基础配置...")
@@ -157,7 +157,7 @@ def demonstrate_path_generation_scenarios():
         
         try:
             # 创建临时配置管理器
-            config = get_config_manager(config_path=f"temp_config_{i}.yaml")
+            config = get_config_manager(config_path=f"temp_config_{i}.yaml", test_mode=True)
             
             # 设置配置
             for key, value in scenario['config'].items():
@@ -182,7 +182,7 @@ def demonstrate_time_based_directories():
     print("=" * 60)
     
     try:
-        config = get_config_manager(config_path="time_demo_config.yaml")
+        config = get_config_manager(config_path="time_demo_config.yaml", test_mode=True)
         
         # 设置基础配置
         config.project_name = "time_demo"

@@ -487,12 +487,16 @@ class FileOperations:
     
     def _remove_duplicate_keys_from_yaml_file(self, file_path: str) -> None:
         """直接编辑YAML文件，删除重复键，特别处理__data__和顶层的重复情况"""
-        print(f"🔧 开始YAML文件后处理: {file_path}")
+        # 检查是否为测试模式，如果是则减少详细日志输出
+        is_test_mode = '/tests/' in file_path or '/tmp/' in file_path
+        if not is_test_mode:
+            print(f"🔧 开始YAML文件后处理: {file_path}")
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
             
-            print(f"🔧 读取到 {len(lines)} 行内容")
+            if not is_test_mode:
+                print(f"🔧 读取到 {len(lines)} 行内容")
             
             # 记录键的出现情况：键名 -> [(行号, 层级, 所在段)]
             key_occurrences = {}
@@ -517,7 +521,8 @@ class FileOperations:
                     
                     # 跳过锚点和别名定义行
                     if '&' in key or '*' in key:
-                        print(f"🔧 跳过锚点/别名键: {key} (第{i+1}行)")
+                        if not is_test_mode:
+                            print(f"🔧 跳过锚点/别名键: {key} (第{i+1}行)")
                         continue
                     
                     # 检查值部分是否包含别名引用
@@ -525,7 +530,8 @@ class FileOperations:
                     if colon_pos != -1 and colon_pos + 1 < len(stripped_line):
                         value_part = stripped_line[colon_pos + 1:].strip()
                         if value_part.startswith('*'):
-                            print(f"🔧 跳过别名引用: {key}: {value_part} (第{i+1}行)")
+                            if not is_test_mode:
+                                print(f"🔧 跳过别名引用: {key}: {value_part} (第{i+1}行)")
                             continue
                     
                     # 根据缩进级别调整路径栈
@@ -545,7 +551,8 @@ class FileOperations:
                         key_occurrences[full_key_path] = []
                     
                     key_occurrences[full_key_path].append((i, indent_level, current_section, key))
-                    print(f"🔧 发现键路径: '{full_key_path}' -> '{key}' (第{i+1}行, 缩进{indent_level})")
+                    if not is_test_mode:
+                        print(f"🔧 发现键路径: '{full_key_path}' -> '{key}' (第{i+1}行, 缩进{indent_level})")
             
             # 第二轮：分析重复情况并标记删除
             for full_key_path, occurrences in key_occurrences.items():
@@ -669,7 +676,8 @@ class FileOperations:
                         self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
                         print(f"❌ 删除别名引用: {key} 在路径 '{full_key_path}' (第{line_no+1}行) - 删除*id001引用")
             
-            print(f"🔧 标记删除 {len(lines_to_remove)} 行: {sorted(lines_to_remove)}")
+            if not is_test_mode:
+                print(f"🔧 标记删除 {len(lines_to_remove)} 行: {sorted(lines_to_remove)}")
             
             # 删除标记的行
             if lines_to_remove:
@@ -679,9 +687,11 @@ class FileOperations:
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.writelines(filtered_lines)
                 
-                print(f"✅ 成功删除 {len(lines_to_remove)} 行重复内容")
+                if not is_test_mode:
+                    print(f"✅ 成功删除 {len(lines_to_remove)} 行重复内容")
             else:
-                print(f"ℹ️  没有发现需要删除的重复键")
+                if not is_test_mode:
+                    print(f"ℹ️  没有发现需要删除的重复键")
                 
         except Exception as e:
             print(f"❌ 删除重复键时发生错误: {e}")
