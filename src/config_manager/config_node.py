@@ -84,9 +84,9 @@ class ConfigNode:
         if '_data' not in self.__dict__:
             super().__setattr__('_data', {})
 
-        # 特殊处理debug_mode：不允许设置，因为它是动态属性
-        if name == 'debug_mode':
-            # 静默忽略debug_mode的设置，因为它应该总是动态获取
+        # 特殊处理系统键和保留键：不允许设置到_data中，避免数据结构污染
+        if name in ('debug_mode', '__type_hints__', '__data__'):
+            # 静默忽略这些系统键的设置，因为它们不应该存储在配置数据中
             return
 
         # 使用实例方法而不是类方法来构建值
@@ -119,9 +119,9 @@ class ConfigNode:
 
     def __setitem__(self, key: str, value: Any):
         """通过键设置值"""
-        # 特殊处理debug_mode：不允许设置，因为它是动态属性
-        if key == 'debug_mode':
-            # 静默忽略debug_mode的设置，因为它应该总是动态获取
+        # 特殊处理系统键和保留键：不允许设置到_data中，避免数据结构污染
+        if key in ('debug_mode', '__type_hints__', '__data__'):
+            # 静默忽略这些系统键的设置，因为它们不应该存储在配置数据中
             return
             
         # 使用实例方法而不是类方法来构建值
@@ -358,8 +358,8 @@ class ConfigNode:
         if hasattr(self, '_data'):
             data = super().__getattribute__('_data')
             for key, value in data.items():
-                # 跳过debug_mode和_root，因为它们不应该保存到配置文件
-                if key in ('debug_mode', '_root'):
+                # 跳过系统键和特殊键，因为它们不应该保存到__data__节点
+                if key in ('debug_mode', '_root', '__type_hints__', '__data__'):
                     continue
                     
                 if isinstance(value, ConfigNode):
@@ -380,6 +380,9 @@ class ConfigNode:
         data_dict.clear()
 
         for key, value in data.items():
+            # 过滤掉系统键，避免数据结构污染
+            if key in ('__type_hints__', '__data__', 'debug_mode'):
+                continue
             # 直接设置到_data中，而不是通过属性访问
             if isinstance(value, dict):
                 data_dict[key] = ConfigNode(value)

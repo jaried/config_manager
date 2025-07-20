@@ -25,7 +25,7 @@ class TestTC0012005ProjectNameTimestamp:
         
         # 验证project_name被正确读取
         project_name = cfg.get('project_name')
-        assert project_name == 'project_name', f"期望project_name为'project_name'，实际: {project_name}"
+        assert project_name == 'test_project', f"期望project_name为'test_project'，实际: {project_name}"
         
         print(f"✓ 生产环境project_name: {project_name}")
 

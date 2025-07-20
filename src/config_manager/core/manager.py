@@ -247,11 +247,17 @@ class ConfigManagerCore(ConfigNode):
 
             # 检查是否为标准格式（包含__data__节点）
             if '__data__' in loaded:
-                # 标准格式：使用__data__节点下的数据
-                raw_data = loaded.get('__data__', {})
+                # 标准格式：合并__data__节点和顶层别名引用键
+                raw_data = loaded.get('__data__', {}).copy()
                 self._type_hints = loaded.get('__type_hints__', {})
+                
+                # 添加顶层的别名引用键（非系统键），但__data__中的值具有更高优先级
+                for key, value in loaded.items():
+                    if not key.startswith('__') and key not in raw_data:
+                        raw_data[key] = value
+                
                 if ENABLE_CALL_CHAIN_DISPLAY:
-                    logger.debug("检测到标准格式，加载__data__节点")
+                    logger.debug("检测到标准格式，加载__data__节点和顶层别名引用")
             else:
                 # 原始格式：直接使用整个loaded数据，但排除内部键
                 raw_data = {}
@@ -263,9 +269,18 @@ class ConfigManagerCore(ConfigNode):
                 if ENABLE_CALL_CHAIN_DISPLAY:
                     logger.debug("检测到原始格式，直接加载配置数据")
 
-            # 重建数据结构
+            # 重建数据结构（过滤系统键，防止污染）
             if raw_data:
+                # 定义需要过滤的系统键
+                system_keys = {'__type_hints__', '__data__', 'debug_mode'}
+                
                 for key, value in raw_data.items():
+                    # 过滤系统键，防止从污染文件加载时污染内存数据结构
+                    if key in system_keys:
+                        if ENABLE_CALL_CHAIN_DISPLAY:
+                            logger.debug(f"过滤加载时的系统键污染: {key}")
+                        continue
+                        
                     if isinstance(value, dict):
                         # 递归转换字典中的字符串化数据
                         converted_dict = self._convert_stringified_data_recursive(value)
@@ -587,10 +602,17 @@ class ConfigManagerCore(ConfigNode):
         return value
 
     def _convert_stringified_data_recursive(self, data):
-        """递归转换嵌套数据结构中的字符串化数据"""
+        """递归转换嵌套数据结构中的字符串化数据（过滤系统键）"""
         if isinstance(data, dict):
             result = {}
+            # 定义需要过滤的系统键
+            system_keys = {'__type_hints__', '__data__', 'debug_mode'}
+            
             for key, value in data.items():
+                # 过滤系统键，防止嵌套污染
+                if key in system_keys:
+                    continue
+                    
                 if isinstance(value, dict):
                     result[key] = self._convert_stringified_data_recursive(value)
                 elif isinstance(value, list):
@@ -1110,9 +1132,7 @@ class ConfigManagerCore(ConfigNode):
         self._data['first_start_time'] = self._first_start_time.isoformat()
         
         # 确保类型注释中包含 first_start_time 的类型
-        if '__type_hints__' not in self._data:
-            self._data['__type_hints__'] = {}
-        self._data['__type_hints__']['first_start_time'] = 'datetime'
+        self._type_hints['first_start_time'] = 'datetime'
 
         # 根据初始化状态决定保存策略
         if getattr(self, '_during_initialization', False):

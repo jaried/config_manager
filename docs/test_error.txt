@@ -1,0 +1,772 @@
+/home/tony/programs/miniconda3/envs/base_python3.12/bin/python /opt/pycharm-community-2025.1.2/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py --path /home/tony/project/config_manager/tests -- --last-failed
+Testing started at 13:52 ...
+Launching pytest with arguments --last-failed /home/tony/project/config_manager/tests --no-header --no-summary -q in /home/tony/project/config_manager/tests
+
+============================= test session starts ==============================
+collecting ... collected 31 items / 23 deselected / 8 selected
+run-last-failure: rerun previous 8 failures (skipped 52 files)
+
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py::TestRawYamlSupport::test_tc0011_001_005_raw_yaml_modification_and_save
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py::TestFirstStartTimePreservation::test_tc0012_002_001_preserve_original_first_start_time
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py::TestFirstStartTimePreservation::test_tc0012_002_005_priority_order_verification
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py::TestFirstStartTimePreservation::test_tc0012_002_006_custom_logger_integration
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py::TestTC0012005ProjectNameTimestamp::test_tc0012_005_001_project_name_from_config <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py::TestTC0012005ProjectNameTimestamp::test_tc0012_005_004_first_start_time_priority <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py
+../../../../../../../../home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0018_001_first_start_time_type_fix.py::test_first_start_time_reload_with_type_hints <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0018_001_first_start_time_type_fix.py
+../../../../../../../../home/tony/project/config_manager/tests/test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_new_keys <- ../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py FAILED [ 12%]✓ 检测到测试环境，自动启用auto_create: /tmp/tmp33dxmtf_.yaml
+配置已从 /tmp/tmp33dxmtf_.yaml 加载
+移除顶层重复键: ['original_key', 'to_modify']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+保留顶层键 'to_modify': 值与__data__中的不同
+移除顶层重复键: ['original_key']
+🔧 开始YAML文件后处理: /tmp/tmp33dxmtf_.yaml.tmp
+🔧 读取到 19 行内容
+🔧 发现键路径: 'to_modify' -> 'to_modify' (第1行, 缩进0)
+🔧 发现键路径: '__data__' -> '__data__' (第2行, 缩进0)
+🔧 发现键路径: '__data__.original_key' -> 'original_key' (第3行, 缩进2)
+🔧 发现键路径: '__data__.to_modify' -> 'to_modify' (第4行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第5行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第6行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第7行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第8行, 缩进4)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第9行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第15行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第17行, 缩进4)
+🔧 发现键路径: '__data__.new_key' -> 'new_key' (第18行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第19行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/135245/tmp33dxmtf__20250720_135245.yaml
+保留顶层键 'to_modify': 值与__data__中的不同
+移除顶层重复键: ['original_key']
+🔧 开始YAML文件后处理: /tmp/tmp33dxmtf_.yaml.tmp
+🔧 读取到 19 行内容
+🔧 发现键路径: 'to_modify' -> 'to_modify' (第1行, 缩进0)
+🔧 发现键路径: '__data__' -> '__data__' (第2行, 缩进0)
+🔧 发现键路径: '__data__.original_key' -> 'original_key' (第3行, 缩进2)
+🔧 发现键路径: '__data__.to_modify' -> 'to_modify' (第4行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第5行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第6行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第7行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第8行, 缩进4)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第9行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第15行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第17行, 缩进4)
+🔧 发现键路径: '__data__.new_key' -> 'new_key' (第18行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第19行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/135245/tmp33dxmtf__20250720_135245.yaml
+✓ 检测到测试环境，自动启用auto_create: /tmp/tmp33dxmtf_.yaml
+配置已从 /tmp/tmp33dxmtf_.yaml 加载
+移除顶层重复键: ['to_modify']
+
+tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py:97 (TestRawYamlSupport.test_tc0011_001_005_raw_yaml_modification_and_save)
+'old_value' != 'new_value'
+
+预期:'new_value'
+实际:'old_value'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0011_001_raw_yaml_support.py:111: in test_tc0011_001_005_raw_yaml_modification_and_save
+    assert config2.to_modify == 'new_value'
+E   AssertionError: assert 'old_value' == 'new_value'
+E
+E     - new_value
+E     + old_value
+移除顶层重复键: ['to_modify']
+🔧 开始YAML文件后处理: /tmp/tmp33dxmtf_.yaml.tmp
+🔧 读取到 18 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.original_key' -> 'original_key' (第2行, 缩进2)
+🔧 发现键路径: '__data__.to_modify' -> 'to_modify' (第3行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第4行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第5行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第6行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第7行, 缩进4)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第8行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第15行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.new_key' -> 'new_key' (第17行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第18行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/test_project/test_experiment/backup/20250720/135245/tmp33dxmtf__20250720_135245.yaml
+FAILED [ 25%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135245/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp8597foek.yaml -> /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 13:52:45.391938
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+
+tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py:30 (TestFirstStartTimePreservation.test_tc0012_002_001_preserve_original_first_start_time)
+'2025-07-20T13:52:45.391938' != '2025-01-01T10:00:00'
+
+预期:'2025-01-01T10:00:00'
+实际:'2025-07-20T13:52:45.391938'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py:52: in test_tc0012_002_001_preserve_original_first_start_time
+    assert stored_time_str == original_time.isoformat(), \
+E   AssertionError: 应该保留原配置的时间 2025-01-01T10:00:00，实际: 2025-07-20T13:52:45.391938
+E   assert '2025-07-20T13:52:45.391938' == '2025-01-01T10:00:00'
+E
+E     - 2025-01-01T10:00:00
+E     + 2025-07-20T13:52:45.391938
+✓ 已清理当前测试环境: /tmp/tests/20250720/135245_3b83d696
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 19 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.app_name' -> 'app_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.some_config' -> 'some_config' (第4行, 缩进2)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第5行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第6行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第7行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第8行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第15行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第17行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第19行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135245/b9a7c5a5/test_project/test_experiment/backup/20250720/135245/config_20250720_135245.yaml
+FAILED [ 37%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250607/164500/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/164500/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/164500/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp30e45sx7.yaml -> /tmp/tests/20250607/164500/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-06-07 16:45:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250607/164500/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250607/164500/b9a7c5a5/src/config/config.yaml 加载
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['base_dir', 'config_file_path']
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['base_dir', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250607/164500/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 21 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.app_name' -> 'app_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第4行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第5行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第6行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第7行, 缩进4)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第8行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第18行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第20行, 缩进0)
+🔧 发现键路径: 'first_start_time' -> 'first_start_time' (第21行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250607/164500/b9a7c5a5/test_project/test_experiment/backup/20250607/164500/config_20250607_164500.yaml
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135245/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp30e45sx7.yaml -> /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 13:52:45.626705
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+
+tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py:181 (TestFirstStartTimePreservation.test_tc0012_002_005_priority_order_verification)
+'2025-07-20T13:52:45.626705' != '2025-03-01T09:00:00'
+
+预期:'2025-03-01T09:00:00'
+实际:'2025-07-20T13:52:45.626705'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py:213: in test_tc0012_002_005_priority_order_verification
+    assert stored_time2 == config_time.isoformat(), \
+E   AssertionError: 应该使用配置时间 2025-03-01T09:00:00，实际: 2025-07-20T13:52:45.626705
+E   assert '2025-07-20T13:52:45.626705' == '2025-03-01T09:00:00'
+E
+E     - 2025-03-01T09:00:00
+E     + 2025-07-20T13:52:45.626705
+✓ 已清理当前测试环境: /tmp/tests/20250720/135245_3357f620
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 18 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.app_name' -> 'app_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第4行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第5行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第6行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第7行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第8行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第16行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第18行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135245/b9a7c5a5/test_project/test_experiment/backup/20250720/135245/config_20250720_135245.yaml
+FAILED [ 50%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135245/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmp19zv3b6z.yaml -> /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 13:52:45.755919
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135245/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+
+tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py:221 (TestFirstStartTimePreservation.test_tc0012_002_006_custom_logger_integration)
+'2025-07-20T13:52:45.755919' != '2025-04-10T08:30:15'
+
+预期:'2025-04-10T08:30:15'
+实际:'2025-07-20T13:52:45.755919'
+<点击以查看差异>
+
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_002_first_start_time_preservation.py:244: in test_tc0012_002_006_custom_logger_integration
+    assert stored_time_str == original_time.isoformat()
+E   AssertionError: assert '2025-07-20T13:52:45.755919' == '2025-04-10T08:30:15'
+E
+E     - 2025-04-10T08:30:15
+E     + 2025-07-20T13:52:45.755919
+✓ 已清理当前测试环境: /tmp/tests/20250720/135245_41a9e623
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135245/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 20 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.app_name' -> 'app_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.logging' -> 'logging' (第4行, 缩进2)
+🔧 发现键路径: '__data__.logging.level' -> 'level' (第5行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第6行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第7行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第8行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第18行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第20行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135245/b9a7c5a5/test_project/test_experiment/backup/20250720/135245/config_20250720_135245.yaml
+FAILED [ 62%]配置已从 /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml 加载
+配置文件监视器已启动
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py:20 (TestTC0012005ProjectNameTimestamp.test_tc0012_005_001_project_name_from_config)
+'test_project' != 'project_name'
+
+预期:'project_name'
+实际:'test_project'
+<点击以查看差异>
+
+01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py:28: in test_tc0012_005_001_project_name_from_config
+    assert project_name == 'project_name', f"期望project_name为'project_name'，实际: {project_name}"
+E   AssertionError: 期望project_name为'project_name'，实际: test_project
+E   assert 'test_project' == 'project_name'
+E
+E     - project_name
+E     + test_project
+🔧 开始YAML文件后处理: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml.tmp
+🔧 读取到 44 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.project_name' -> 'project_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.test_mode' -> 'test_mode' (第4行, 缩进2)
+🔧 发现键路径: '__data__.concurrency' -> 'concurrency' (第5行, 缩进2)
+🔧 发现键路径: '__data__.timeout' -> 'timeout' (第6行, 缩进2)
+🔧 发现键路径: '__data__.proxy' -> 'proxy' (第7行, 缩进2)
+🔧 发现键路径: '__data__.proxy.http' -> 'http' (第8行, 缩进4)
+🔧 发现键路径: '__data__.proxy.https' -> 'https' (第9行, 缩进4)
+🔧 发现键路径: '__data__.proxy.url' -> 'url' (第10行, 缩进4)
+🔧 发现键路径: '__data__.headers' -> 'headers' (第11行, 缩进2)
+🔧 发现键路径: '__data__.headers.Accept' -> 'Accept' (第12行, 缩进4)
+🔧 发现键路径: '__data__.headers.Content_Type' -> 'Content_Type' (第13行, 缩进4)
+🔧 发现键路径: '__data__.url_validation' -> 'url_validation' (第14行, 缩进2)
+🔧 发现键路径: '__data__.url_validation.level2_pattern' -> 'level2_pattern' (第15行, 缩进4)
+🔧 发现键路径: '__data__.url_validation.exclude_image_patterns' -> 'exclude_image_patterns' (第16行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第20行, 缩进2)
+🔧 发现键路径: '__data__.work_dir' -> 'work_dir' (第21行, 缩进2)
+🔧 发现键路径: '__data__.log_dir' -> 'log_dir' (第22行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第23行, 缩进2)
+🔧 发现键路径: '__data__.experiment_name' -> 'experiment_name' (第25行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第26行, 缩进2)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第27行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第28行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第29行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第30行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第31行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第33行, 缩进4)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第34行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第35行, 缩进4)
+🔧 发现键路径: '__data__.missing_config_error' -> 'missing_config_error' (第36行, 缩进2)
+🔧 发现键路径: '__data__.test_async_value' -> 'test_async_value' (第37行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_status' -> 'scheduler_status' (第38行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_start_time' -> 'scheduler_start_time' (第39行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_progress' -> 'scheduler_progress' (第40行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第41行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第42行, 缩进4)
+🔧 发现键路径: '__data__.test_backup_isolation' -> 'test_backup_isolation' (第43行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第44行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+FAILED [ 75%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250107/100000/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmpk2czpyym.yaml -> /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-01-07 10:00:00
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/100000/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml 加载
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['base_dir', 'config_file_path']
+✓ 传入参数优先级验证通过: 2025-01-07 10:00:00
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['base_dir', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250107/100000/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 21 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.project_name' -> 'project_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第4行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第5行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第6行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第7行, 缩进4)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第8行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第13行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第18行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第20行, 缩进0)
+🔧 发现键路径: 'first_start_time' -> 'first_start_time' (第21行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250107/100000/b9a7c5a5/test_project/test_experiment/backup/20250107/100000/config_20250107_100000.yaml
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135247/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmpk7jjaabe.yaml -> /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 13:52:47.124010
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py:66 (TestTC0012005ProjectNameTimestamp.test_tc0012_005_004_first_start_time_priority)
+datetime.datetime(2025, 7, 20, 13, 52, 47, 124010) != datetime.datetime(2025, 1, 7, 12, 30, 45)
+
+预期:datetime.datetime(2025, 1, 7, 12, 30, 45)
+实际:datetime.datetime(2025, 7, 20, 13, 52, 47, 124010)
+<点击以查看差异>
+
+01_unit_tests/test_config_manager/test_tc0012_005_project_name_timestamp.py:122: in test_tc0012_005_004_first_start_time_priority
+    assert first_start_time2 == expected_time, f"应使用配置文件中的first_start_time，实际: {first_start_time2}"
+E   AssertionError: 应使用配置文件中的first_start_time，实际: 2025-07-20 13:52:47.124010
+E   assert datetime.datetime(2025, 7, 20, 13, 52, 47, 124010) == datetime.datetime(2025, 1, 7, 12, 30, 45)
+移除顶层重复键: ['base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 18 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.project_name' -> 'project_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第4行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第5行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第6行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第7行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第8行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第9行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第10行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第11行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第12行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第14行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第16行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第18行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/backup/20250720/135247/config_20250720_135247.yaml
+FAILED [ 87%]✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135247/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250107/181520/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/181520/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/181520/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250107/181520/b9a7c5a5/src/config/config.yaml
+✓ 使用传入的first_start_time: 2025-01-07 18:15:20
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250107/181520/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250107/181520/b9a7c5a5/src/config/config.yaml 加载
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['project_name', 'base_dir', 'config_file_path']
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['project_name', 'base_dir', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250107/181520/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 46 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.project_name' -> 'project_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.test_mode' -> 'test_mode' (第4行, 缩进2)
+🔧 发现键路径: '__data__.concurrency' -> 'concurrency' (第5行, 缩进2)
+🔧 发现键路径: '__data__.timeout' -> 'timeout' (第6行, 缩进2)
+🔧 发现键路径: '__data__.proxy' -> 'proxy' (第7行, 缩进2)
+🔧 发现键路径: '__data__.proxy.http' -> 'http' (第8行, 缩进4)
+🔧 发现键路径: '__data__.proxy.https' -> 'https' (第9行, 缩进4)
+🔧 发现键路径: '__data__.proxy.url' -> 'url' (第10行, 缩进4)
+🔧 发现键路径: '__data__.headers' -> 'headers' (第11行, 缩进2)
+🔧 发现键路径: '__data__.headers.Accept' -> 'Accept' (第12行, 缩进4)
+🔧 发现键路径: '__data__.headers.Content_Type' -> 'Content_Type' (第13行, 缩进4)
+🔧 发现键路径: '__data__.url_validation' -> 'url_validation' (第14行, 缩进2)
+🔧 发现键路径: '__data__.url_validation.level2_pattern' -> 'level2_pattern' (第15行, 缩进4)
+🔧 发现键路径: '__data__.url_validation.exclude_image_patterns' -> 'exclude_image_patterns' (第16行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第20行, 缩进2)
+🔧 发现键路径: '__data__.work_dir' -> 'work_dir' (第21行, 缩进2)
+🔧 发现键路径: '__data__.log_dir' -> 'log_dir' (第22行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第23行, 缩进2)
+🔧 发现键路径: '__data__.experiment_name' -> 'experiment_name' (第24行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第25行, 缩进2)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第26行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第27行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第28行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第29行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第30行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第32行, 缩进4)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第34行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第35行, 缩进4)
+🔧 发现键路径: '__data__.missing_config_error' -> 'missing_config_error' (第37行, 缩进2)
+🔧 发现键路径: '__data__.test_async_value' -> 'test_async_value' (第38行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_status' -> 'scheduler_status' (第39行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_start_time' -> 'scheduler_start_time' (第40行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_progress' -> 'scheduler_progress' (第41行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第42行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第43行, 缩进4)
+🔧 发现键路径: '__data__.test_backup_isolation' -> 'test_backup_isolation' (第44行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第45行, 缩进0)
+🔧 发现键路径: 'first_start_time' -> 'first_start_time' (第46行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250107/181520/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135247/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135247/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 检测到生产配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+✓ 已从生产环境复制配置: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml -> /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 13:52:47.411730
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml 加载
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+重新加载后 first_start_time 类型: <class 'datetime.datetime'>
+重新加载后 first_start_time 值: 2025-07-20 13:52:47.411730
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/01_unit_tests/test_config_manager/test_tc0018_001_first_start_time_type_fix.py:47 (test_first_start_time_reload_with_type_hints)
+datetime.datetime(2025, 7, 20, 13, 52, 47, 411730) != datetime.datetime(2025, 1, 7, 18, 15, 20)
+
+预期:datetime.datetime(2025, 1, 7, 18, 15, 20)
+实际:datetime.datetime(2025, 7, 20, 13, 52, 47, 411730)
+<点击以查看差异>
+
+01_unit_tests/test_config_manager/test_tc0018_001_first_start_time_type_fix.py:69: in test_first_start_time_reload_with_type_hints
+    assert new_config.first_start_time == test_time, f"从 YAML 加载的时间值不正确: {new_config.first_start_time} != {test_time}"
+E   AssertionError: 从 YAML 加载的时间值不正确: 2025-07-20 13:52:47.411730 != 2025-01-07 18:15:20
+E   assert datetime.datetime(2025, 7, 20, 13, 52, 47, 411730) == datetime.datetime(2025, 1, 7, 18, 15, 20)
+E    +  where datetime.datetime(2025, 7, 20, 13, 52, 47, 411730) = ConfigManager({'project_name': 'test_project', 'first_start_time': '2025-07-20T13:52:47.411730', 'test_mode': True, 'concurrency': 5, 'timeout': 30, 'proxy': ConfigNode({'http': 'http://localhost:3213', 'https': 'https://localhost:3214', 'url': 'http://proxy.example.com:8080'}), 'headers': ConfigNode({'Accept': 'text/html,application/xhtml+xml', 'Content_Type': 'application/json'}), 'url_validation': ConfigNode({'level2_pattern': '^https?://[^/]+/chapter/\\d+$', 'exclude_image_patterns': ['\\.jpg$', '\\.png$', '\\.gif$']}), 'base_dir': '/tmp/tests/20250720/135247/b9a7c5a5', 'work_dir': '/tmp/original/work/path', 'log_dir': '/tmp/original/log/path', 'config_file_path': '/tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml', 'experiment_name': 'experiment_name', 'paths': ConfigNode({'work_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name', 'checkpoint_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/checkpoint', 'best_checkpoint_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/checkpoint/best', 'debug_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/debug', 'tensorboard_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/tensorboard', 'tsb_logs_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/tsb_logs/2025/29/07/20/135247', 'log_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/logs/20250720/135247', 'backup_dir': '/tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/backup/20250720/135247'}), 'missing_config_error': "\u914d\u7f6e\u6587\u4ef6\u4e2d\u7f3a\u5c11 'titls' \u914d\u7f6e\u9879", 'test_async_value': 'async_test_data', 'scheduler_status': 'running', 'scheduler_start_time': '2025-07-20T13:30:57.630314', 'scheduler_progress': 'completed', '__type_hints__': ConfigNode({'first_start_time': 'datetime'}), 'test_backup_isolation': 'production_value'}).first_start_time
+移除顶层重复键: ['project_name', 'base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 45 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.project_name' -> 'project_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.test_mode' -> 'test_mode' (第4行, 缩进2)
+🔧 发现键路径: '__data__.concurrency' -> 'concurrency' (第5行, 缩进2)
+🔧 发现键路径: '__data__.timeout' -> 'timeout' (第6行, 缩进2)
+🔧 发现键路径: '__data__.proxy' -> 'proxy' (第7行, 缩进2)
+🔧 发现键路径: '__data__.proxy.http' -> 'http' (第8行, 缩进4)
+🔧 发现键路径: '__data__.proxy.https' -> 'https' (第9行, 缩进4)
+🔧 发现键路径: '__data__.proxy.url' -> 'url' (第10行, 缩进4)
+🔧 发现键路径: '__data__.headers' -> 'headers' (第11行, 缩进2)
+🔧 发现键路径: '__data__.headers.Accept' -> 'Accept' (第12行, 缩进4)
+🔧 发现键路径: '__data__.headers.Content_Type' -> 'Content_Type' (第13行, 缩进4)
+🔧 发现键路径: '__data__.url_validation' -> 'url_validation' (第14行, 缩进2)
+🔧 发现键路径: '__data__.url_validation.level2_pattern' -> 'level2_pattern' (第15行, 缩进4)
+🔧 发现键路径: '__data__.url_validation.exclude_image_patterns' -> 'exclude_image_patterns' (第16行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第20行, 缩进2)
+🔧 发现键路径: '__data__.work_dir' -> 'work_dir' (第21行, 缩进2)
+🔧 发现键路径: '__data__.log_dir' -> 'log_dir' (第22行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第23行, 缩进2)
+🔧 发现键路径: '__data__.experiment_name' -> 'experiment_name' (第24行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第25行, 缩进2)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第26行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第27行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第28行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第29行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第30行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第32行, 缩进4)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第34行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第35行, 缩进4)
+🔧 发现键路径: '__data__.missing_config_error' -> 'missing_config_error' (第37行, 缩进2)
+🔧 发现键路径: '__data__.test_async_value' -> 'test_async_value' (第38行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_status' -> 'scheduler_status' (第39行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_start_time' -> 'scheduler_start_time' (第40行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_progress' -> 'scheduler_progress' (第41行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第42行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第43行, 缩进4)
+🔧 发现键路径: '__data__.test_backup_isolation' -> 'test_backup_isolation' (第44行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第45行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135247/b9a7c5a5/test_project/experiment_name/backup/20250720/135247/config_20250720_135247.yaml
+
+
+======================= 8 failed, 23 deselected in 3.59s =======================
+FAILED [100%]✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests
+✓ 基于当前工作目录生成测试路径: /tmp/tests/20250720/135247/b9a7c5a5
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/tmpnd7zmi2w.yaml -> /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-07-20 13:52:47.565684
+✓ 开始执行路径替换，test_base_dir: /tmp/tests/20250720/135247/b9a7c5a5, temp_base: /tmp
+配置已从 /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml 加载
+保留顶层键 'database': 值与__data__中的不同
+移除顶层重复键: ['app_name', 'version', 'base_dir', 'first_start_time', 'config_file_path']
+📊 自动保存调度频率计数: 1
+📊 自动保存调度频率计数: 2
+保留顶层键 'database': 值与__data__中的不同
+移除顶层重复键: ['app_name', 'version', 'base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 31 行内容
+🔧 发现键路径: 'database' -> 'database' (第2行, 缩进0)
+🔧 发现键路径: 'database.host' -> 'host' (第3行, 缩进2)
+🔧 发现键路径: 'database.port' -> 'port' (第4行, 缩进2)
+🔧 发现键路径: '__data__' -> '__data__' (第5行, 缩进0)
+🔧 发现键路径: '__data__.app_name' -> 'app_name' (第6行, 缩进2)
+🔧 发现键路径: '__data__.version' -> 'version' (第7行, 缩进2)
+🔧 发现键路径: '__data__.database' -> 'database' (第8行, 缩进2)
+🔧 发现键路径: '__data__.database.host' -> 'host' (第9行, 缩进4)
+🔧 发现键路径: '__data__.database.port' -> 'port' (第10行, 缩进4)
+🔧 发现键路径: '__data__.database.timeout' -> 'timeout' (第11行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第12行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第13行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第14行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第15行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第17行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第18行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第19行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第20行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第21行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第23行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第25行, 缩进4)
+🔧 发现键路径: '__data__.new_feature' -> 'new_feature' (第27行, 缩进2)
+🔧 发现键路径: '__data__.logging' -> 'logging' (第28行, 缩进2)
+🔧 发现键路径: '__data__.logging.level' -> 'level' (第29行, 缩进4)
+🔧 发现键路径: '__data__.logging.file' -> 'file' (第30行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第31行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/backup/20250720/135247/config_20250720_135247.yaml
+添加新键后的配置文件内容:
+# 基础配置
+database:
+  host: localhost  # 主机地址
+  port: 5432      # 端口号
+__data__:
+  app_name: TestApp
+  version: 1.0.0
+  database:
+    host: localhost
+    port: 5432
+    timeout: 30
+  base_dir: /tmp/tests/20250720/135247/b9a7c5a5
+  first_start_time: '2025-07-20T13:52:47.565684'
+  config_file_path: /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml
+  paths:
+    work_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment
+    checkpoint_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/checkpoint
+    best_checkpoint_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/checkpoint/best
+    debug_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/debug
+    tensorboard_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/tensorboard
+    tsb_logs_dir:
+      /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/tsb_logs/2025/29/07/20/135247
+    log_dir:
+      /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/logs/20250720/135247
+    backup_dir:
+      /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/backup/20250720/135247
+  new_feature: enabled
+  logging:
+    level: INFO
+    file: app.log
+__type_hints__: {}
+
+
+../../../../mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/tests/test_yaml_comments_preservation.py:127 (test_yaml_comments_preservation_with_new_keys)
+'# 数据库配置' != ('# 基础配置\n'
+ 'database:\n'
+ '  host: localhost  # 主机地址\n'
+ '  port: 5432      # 端口号\n'
+ '__data__:\n'
+ '  app_name: TestApp\n'
+ '  version: 1.0.0\n'
+ '  database:\n'
+ '    host: localhost\n'
+ '    port: 5432\n'
+ '    timeout: 30\n'
+ '  base_dir: /tmp/tests/20250720/135247/b9a7c5a5\n'
+ "  first_start_time: '2025-07-20T13:52:47.565684'\n"
+ '  config_file_path: '
+ '/tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml\n'
+ '  paths:\n'
+ '    work_dir: '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment\n'
+ '    checkpoint_dir: '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/checkpoint\n'
+ '    best_checkpoint_dir: '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/checkpoint/best\n'
+ '    debug_dir: '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/debug\n'
+ '    tensorboard_dir: '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/tensorboard\n'
+ '    tsb_logs_dir: \n'
+ '      '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/tsb_logs/2025/29/07/20/135247\n'
+ '    log_dir: \n'
+ '      '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/logs/20250720/135247\n'
+ '    backup_dir: \n'
+ '      '
+ '/tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/backup/20250720/135247\n'
+ '  new_feature: enabled\n'
+ '  logging:\n'
+ '    level: INFO\n'
+ '    file: app.log\n'
+ '__type_hints__: {}\n')
+
+<点击以查看差异>
+
+test_yaml_comments_preservation.py:174: in test_yaml_comments_preservation_with_new_keys
+    assert "# 数据库配置" in saved_content
+E   assert '# \u6570\u636e\u5e93\u914d\u7f6e' in "# \u57fa\u7840\u914d\u7f6e\ndatabase:\n  host: localhost  # \u4e3b\u673a\u5730\u5740\n  port: 5432      # \u7aef\u53e3\u53f7\n__data__:\n  app_name: TestApp\n  version: 1.0.0\n  database:\n    host: localhost\n    port: 5432\n    timeout: 30\n  base_dir: /tmp/tests/20250720/135247/b9a7c5a5\n  first_start_time: '2025-07-20T13:52:47.565684'\n  config_file_path: /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml\n  paths:\n    work_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment\n    checkpoint_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/checkpoint\n    best_checkpoint_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/checkpoint/best\n    debug_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/debug\n    tensorboard_dir: /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/tensorboard\n    tsb_logs_dir: \n      /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/tsb_logs/2025/29/07/20/135247\n    log_dir: \n      /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/logs/20250720/135247\n    backup_dir: \n      /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/backup/20250720/135247\n  new_feature: enabled\n  logging:\n    level: INFO\n    file: app.log\n__type_hints__: {}\n"
+保留顶层键 'database': 值与__data__中的不同
+移除顶层重复键: ['app_name', 'version', 'base_dir', 'first_start_time', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250720/135247/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 31 行内容
+🔧 发现键路径: 'database' -> 'database' (第2行, 缩进0)
+🔧 发现键路径: 'database.host' -> 'host' (第3行, 缩进2)
+🔧 发现键路径: 'database.port' -> 'port' (第4行, 缩进2)
+🔧 发现键路径: '__data__' -> '__data__' (第5行, 缩进0)
+🔧 发现键路径: '__data__.app_name' -> 'app_name' (第6行, 缩进2)
+🔧 发现键路径: '__data__.version' -> 'version' (第7行, 缩进2)
+🔧 发现键路径: '__data__.database' -> 'database' (第8行, 缩进2)
+🔧 发现键路径: '__data__.database.host' -> 'host' (第9行, 缩进4)
+🔧 发现键路径: '__data__.database.port' -> 'port' (第10行, 缩进4)
+🔧 发现键路径: '__data__.database.timeout' -> 'timeout' (第11行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第12行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第13行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第14行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第15行, 缩进2)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第16行, 缩进4)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第17行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第18行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第19行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第20行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第21行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第23行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第25行, 缩进4)
+🔧 发现键路径: '__data__.new_feature' -> 'new_feature' (第27行, 缩进2)
+🔧 发现键路径: '__data__.logging' -> 'logging' (第28行, 缩进2)
+🔧 发现键路径: '__data__.logging.level' -> 'level' (第29行, 缩进4)
+🔧 发现键路径: '__data__.logging.file' -> 'file' (第30行, 缩进4)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第31行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250720/135247/b9a7c5a5/test_project/test_experiment/backup/20250720/135247/config_20250720_135247.yaml
+保留顶层键 'first_start_time': 值与__data__中的不同
+移除顶层重复键: ['project_name', 'base_dir', 'config_file_path']
+🔧 开始YAML文件后处理: /tmp/tests/20250107/181520/b9a7c5a5/src/config/config.yaml.tmp
+🔧 读取到 46 行内容
+🔧 发现键路径: '__data__' -> '__data__' (第1行, 缩进0)
+🔧 发现键路径: '__data__.project_name' -> 'project_name' (第2行, 缩进2)
+🔧 发现键路径: '__data__.first_start_time' -> 'first_start_time' (第3行, 缩进2)
+🔧 发现键路径: '__data__.test_mode' -> 'test_mode' (第4行, 缩进2)
+🔧 发现键路径: '__data__.concurrency' -> 'concurrency' (第5行, 缩进2)
+🔧 发现键路径: '__data__.timeout' -> 'timeout' (第6行, 缩进2)
+🔧 发现键路径: '__data__.proxy' -> 'proxy' (第7行, 缩进2)
+🔧 发现键路径: '__data__.proxy.http' -> 'http' (第8行, 缩进4)
+🔧 发现键路径: '__data__.proxy.https' -> 'https' (第9行, 缩进4)
+🔧 发现键路径: '__data__.proxy.url' -> 'url' (第10行, 缩进4)
+🔧 发现键路径: '__data__.headers' -> 'headers' (第11行, 缩进2)
+🔧 发现键路径: '__data__.headers.Accept' -> 'Accept' (第12行, 缩进4)
+🔧 发现键路径: '__data__.headers.Content_Type' -> 'Content_Type' (第13行, 缩进4)
+🔧 发现键路径: '__data__.url_validation' -> 'url_validation' (第14行, 缩进2)
+🔧 发现键路径: '__data__.url_validation.level2_pattern' -> 'level2_pattern' (第15行, 缩进4)
+🔧 发现键路径: '__data__.url_validation.exclude_image_patterns' -> 'exclude_image_patterns' (第16行, 缩进4)
+🔧 发现键路径: '__data__.base_dir' -> 'base_dir' (第20行, 缩进2)
+🔧 发现键路径: '__data__.work_dir' -> 'work_dir' (第21行, 缩进2)
+🔧 发现键路径: '__data__.log_dir' -> 'log_dir' (第22行, 缩进2)
+🔧 发现键路径: '__data__.config_file_path' -> 'config_file_path' (第23行, 缩进2)
+🔧 发现键路径: '__data__.experiment_name' -> 'experiment_name' (第24行, 缩进2)
+🔧 发现键路径: '__data__.paths' -> 'paths' (第25行, 缩进2)
+🔧 发现键路径: '__data__.paths.checkpoint_dir' -> 'checkpoint_dir' (第26行, 缩进4)
+🔧 发现键路径: '__data__.paths.best_checkpoint_dir' -> 'best_checkpoint_dir' (第27行, 缩进4)
+🔧 发现键路径: '__data__.paths.debug_dir' -> 'debug_dir' (第28行, 缩进4)
+🔧 发现键路径: '__data__.paths.tensorboard_dir' -> 'tensorboard_dir' (第29行, 缩进4)
+🔧 发现键路径: '__data__.paths.tsb_logs_dir' -> 'tsb_logs_dir' (第30行, 缩进4)
+🔧 发现键路径: '__data__.paths.backup_dir' -> 'backup_dir' (第32行, 缩进4)
+🔧 发现键路径: '__data__.paths.work_dir' -> 'work_dir' (第34行, 缩进4)
+🔧 发现键路径: '__data__.paths.log_dir' -> 'log_dir' (第35行, 缩进4)
+🔧 发现键路径: '__data__.missing_config_error' -> 'missing_config_error' (第37行, 缩进2)
+🔧 发现键路径: '__data__.test_async_value' -> 'test_async_value' (第38行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_status' -> 'scheduler_status' (第39行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_start_time' -> 'scheduler_start_time' (第40行, 缩进2)
+🔧 发现键路径: '__data__.scheduler_progress' -> 'scheduler_progress' (第41行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__' -> '__type_hints__' (第42行, 缩进2)
+🔧 发现键路径: '__data__.__type_hints__.first_start_time' -> 'first_start_time' (第43行, 缩进4)
+🔧 发现键路径: '__data__.test_backup_isolation' -> 'test_backup_isolation' (第44行, 缩进2)
+🔧 发现键路径: '__type_hints__' -> '__type_hints__' (第45行, 缩进0)
+🔧 发现键路径: 'first_start_time' -> 'first_start_time' (第46行, 缩进0)
+🔧 标记删除 0 行: []
+ℹ️  没有发现需要删除的重复键
+配置已自动备份到 /tmp/tests/20250107/181520/b9a7c5a5/test_project/experiment_name/backup/20250107/181520/config_20250107_181520.yaml
+
+进程已结束，退出代码为 1
