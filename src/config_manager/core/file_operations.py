@@ -388,13 +388,13 @@ class FileOperations:
             print(f"移除顶层重复键: {keys_to_remove}")
     
     def _remove_duplicate_keys_from_yaml_file(self, file_path: str) -> None:
-        """直接编辑YAML文件，删除重复键的第二次出现，包括跨部分重复"""
+        """直接编辑YAML文件，删除重复键的第二次出现"""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
             
-            # 记录已见过的键及其出现的行号和部分
-            seen_keys = {}  # key_name -> {'line': line_num, 'section': section_name}
+            # 记录已见过的键及其出现的行号
+            seen_keys = {}
             lines_to_remove = set()
             current_section = None
             
@@ -415,35 +415,16 @@ class FileOperations:
                     if '&' in key or '*' in key:
                         continue
                     
-                    # 处理不同层级的键
+                    # 构建唯一键标识（包含缩进层级信息）
                     if indent_level == 0:  # 顶层键
                         current_section = key
                         key_id = f"top_level:{key}"
-                        actual_key = key
                     elif indent_level == 2:  # 二级键
                         key_id = f"{current_section}:{key}" if current_section else f"level2:{key}"
-                        actual_key = key
                     else:
                         continue  # 跳过更深层级的键
                     
-                    # 特殊处理：检查跨部分重复（__data__ 和 __type_hints__ 之间的重复）
-                    if current_section in ['__data__', '__type_hints__'] and indent_level == 2:
-                        # 检查该键是否已经在其他部分出现过
-                        if actual_key in seen_keys:
-                            previous_info = seen_keys[actual_key]
-                            # 如果之前在__data__中出现过，现在在__type_hints__中，删除__type_hints__中的
-                            if previous_info['section'] == '__data__' and current_section == '__type_hints__':
-                                # 标记当前行（__type_hints__中的重复键）为需要删除
-                                start_line = i
-                                lines_to_remove.add(start_line)
-                                self._mark_key_block_for_removal(lines, start_line, indent_level, lines_to_remove)
-                                print(f"删除跨部分重复键: {actual_key} 在{current_section}中 (第{i+1}行)")
-                                continue
-                        else:
-                            # 记录第一次出现的键
-                            seen_keys[actual_key] = {'line': i, 'section': current_section}
-                    
-                    # 检查同部分内的重复
+                    # 检查是否重复
                     if key_id in seen_keys:
                         # 标记重复行和其后续相关行为需要删除
                         start_line = i
@@ -452,11 +433,9 @@ class FileOperations:
                         # 找到这个键值对的所有相关行（包括多行值）
                         self._mark_key_block_for_removal(lines, start_line, indent_level, lines_to_remove)
                         
-                        print(f"删除同部分重复键: {key} (第{i+1}行)")
+                        print(f"删除重复键: {key} (第{i+1}行)")
                     else:
-                        # 对于非跨部分情况，记录键的完整标识
-                        if current_section not in ['__data__', '__type_hints__'] or indent_level != 2:
-                            seen_keys[key_id] = {'line': i, 'section': current_section}
+                        seen_keys[key_id] = i
             
             # 删除标记的行
             if lines_to_remove:

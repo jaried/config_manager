@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import os
 import tempfile
-import pytest
-from datetime import datetime
 
 from config_manager import get_config_manager
 
@@ -31,7 +29,8 @@ class TestCompleteDuplicateKeysFix:
   base_dir: /tmp/test
   config_file_path: /tmp/test/config.yaml
   first_start_time: '2025-07-20T10:00:00'
-__type_hints__: {}
+__type_hints__:
+  first_start_time: datetime
 
 # 顶层重复的键（这些应该被移除）
 experiment_name: default
@@ -158,9 +157,10 @@ titles:
         """检查YAML内容中是否没有重复节点"""
         lines = yaml_content.split('\n')
         
-        # 检测重复键的简化逻辑
+        # 检测重复键的逻辑，考虑__data__和__type_hints__中的同名键是正常的
         seen_keys = {}
         duplicate_count = 0
+        current_section = None
         
         for line_num, line in enumerate(lines, 1):
             stripped_line = line.strip()
@@ -180,8 +180,14 @@ titles:
             if '&' in key or '*' in key:
                 continue
             
-            # 构建唯一键标识
-            key_id = f"{indent}:{key}"
+            # 构建唯一键标识，包含部分信息
+            if indent == 0:  # 顶层键
+                current_section = key
+                key_id = f"top_level:{key}"
+            elif indent == 2:  # 二级键
+                key_id = f"{current_section}:{key}" if current_section else f"level2:{key}"
+            else:
+                continue  # 跳过更深层级
             
             if key_id in seen_keys:
                 duplicate_count += 1
@@ -193,7 +199,7 @@ titles:
         if duplicate_count > 0:
             assert False, f"❌ 修复失败！仍发现 {duplicate_count} 个重复键"
         else:
-            print(f"\n✅ 彻底修复成功！未发现任何重复键")
+            print("\n✅ 彻底修复成功！未发现任何重复键")
     
     def _verify_clean_top_level_structure(self, yaml_content: str):
         """验证顶层结构干净：只包含系统键和合法的锚点别名引用"""
