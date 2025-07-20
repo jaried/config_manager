@@ -217,21 +217,26 @@ class FileOperations:
     def _deep_update_yaml_data(self, original: Any, new_data: Any) -> Any:
         """深度更新YAML数据，保留原始结构和注释"""
         if isinstance(original, dict) and isinstance(new_data, dict):
-            # 对于字典，深度合并并保留注释
-            # 直接在原始字典上更新，以保留ruamel.yaml的注释信息
-            for key, value in new_data.items():
-                if key in original and isinstance(original[key], dict) and isinstance(value, dict):
-                    # 递归合并嵌套字典
-                    self._deep_update_yaml_data(original[key], value)
-                else:
-                    # 直接更新值（包括新键）
-                    original[key] = value
+            # 检测是否是原始格式到标准格式的转换
+            is_raw_to_standard = ('__data__' not in original and '__data__' in new_data)
             
-            # 彻底解决重复键问题：完全禁止从__data__向顶层复制用户配置键
-            # 保存结构应该只包含 __data__ 和 __type_hints__，顶层不应有用户配置键
-            if '__data__' in new_data and isinstance(new_data['__data__'], dict):
-                # 移除顶层所有可能与__data__重复的用户配置键
-                self._remove_all_duplicate_keys_from_top_level(original, new_data['__data__'])
+            if is_raw_to_standard:
+                # 特殊处理：原始格式转标准格式，采用保守策略保留注释
+                print("🔧 检测到原始格式到标准格式转换，采用注释保留策略")
+                return self._convert_raw_to_standard_preserving_comments(original, new_data)
+            else:
+                # 标准的深度合并，保留ruamel.yaml的注释信息
+                for key, value in new_data.items():
+                    if key in original and isinstance(original[key], dict) and isinstance(value, dict):
+                        # 递归合并嵌套字典
+                        self._deep_update_yaml_data(original[key], value)
+                    else:
+                        # 直接更新值（包括新键）
+                        original[key] = value
+                
+                # 移除顶层重复键
+                if '__data__' in new_data and isinstance(new_data['__data__'], dict):
+                    self._remove_all_duplicate_keys_from_top_level(original, new_data['__data__'])
             
             return original
         elif isinstance(original, list) and isinstance(new_data, list):
@@ -240,6 +245,41 @@ class FileOperations:
         else:
             # 对于其他类型，直接替换
             return new_data
+    
+    def _convert_raw_to_standard_preserving_comments(self, original: dict, new_data: dict) -> dict:
+        """将原始格式转换为标准格式，最大程度保留注释"""
+        # 策略：保持原始结构，只更新值，在末尾添加新节点
+        
+        # 获取新数据中的 __data__ 内容
+        data_section = new_data.get('__data__', {})
+        type_hints_section = new_data.get('__type_hints__', {})
+        
+        # 更新原始结构中已存在的键值
+        for key, value in data_section.items():
+            if key in original:
+                if isinstance(original[key], dict) and isinstance(value, dict):
+                    # 递归更新嵌套字典
+                    self._deep_update_yaml_data(original[key], value)
+                else:
+                    # 更新值
+                    original[key] = value
+        
+        # 添加新的键到原始结构（这些键在原始文件中不存在）
+        for key, value in data_section.items():
+            if key not in original:
+                original[key] = value
+        
+        # 在末尾添加 __data__ 节点（包含所有数据）
+        original['__data__'] = data_section
+        
+        # 添加 __type_hints__ 节点
+        if type_hints_section:
+            original['__type_hints__'] = type_hints_section
+        elif '__type_hints__' not in original:
+            original['__type_hints__'] = {}
+        
+        print(f"🔧 原始格式转换完成，保留了原始键顺序和注释")
+        return original
     
     def _is_anchor_alias_reference(self, original_data: dict, key: str, value: Any) -> bool:
         """检查是否是锚点别名引用情况
