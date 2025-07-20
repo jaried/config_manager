@@ -718,7 +718,7 @@ class ConfigManager(ConfigManagerCore):
                 data_section = loaded_data['__data__']
                 for sys_key in list(data_section.keys()):
                     if sys_key in system_keys:
-                        print(f"🔧 清理__data__节点中的系统键污染: {sys_key}")
+                        # print(f"🔧 清理__data__节点中的系统键污染: {sys_key}")
                         del data_section[sys_key]
 
             # 保存更新后的配置，直接使用原始数据以保留注释

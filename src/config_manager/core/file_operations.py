@@ -39,9 +39,9 @@ class FileOperations:
                 if ENABLE_CALL_CHAIN_DISPLAY:
                     try:
                         call_chain = call_chain_tracker.get_call_chain()
-                        print(f"创建配置调用链: {call_chain}")
+                        logger.debug(f"创建配置调用链: {call_chain}")
                     except Exception as e:
-                        print(f"获取创建调用链失败: {e}")
+                        logger.debug(f"获取创建调用链失败: {e}")
 
                 # 创建空配置并保存
                 empty_data = {'__data__': {}, '__type_hints__': {}}
@@ -90,13 +90,13 @@ class FileOperations:
             if ENABLE_CALL_CHAIN_DISPLAY:
                 try:
                     call_chain = call_chain_tracker.get_call_chain()
-                    print(f"加载配置调用链: {call_chain}")
+                    logger.debug(f"加载配置调用链: {call_chain}")
                 except Exception as e:
-                    print(f"获取加载调用链失败: {e}")
+                    logger.debug(f"获取加载调用链失败: {e}")
                     # 尝试获取详细调试信息
                     try:
                         debug_info = call_chain_tracker.get_detailed_call_info()
-                        print(f"调用链调试信息: {debug_info}")
+                        logger.debug(f"调用链调试信息: {debug_info}")
                     except Exception as debug_e:
                         print(f"获取调试信息也失败: {debug_e}")
 
@@ -222,7 +222,7 @@ class FileOperations:
             
             if is_raw_to_standard:
                 # 特殊处理：原始格式转标准格式，采用保守策略保留注释
-                print("🔧 检测到原始格式到标准格式转换，采用注释保留策略")
+                # print("🔧 检测到原始格式到标准格式转换，采用注释保留策略")
                 return self._convert_raw_to_standard_preserving_comments(original, new_data)
             else:
                 # 标准的深度合并，保留ruamel.yaml的注释信息
@@ -282,7 +282,7 @@ class FileOperations:
         elif '__type_hints__' not in original:
             original['__type_hints__'] = {}
         
-        print(f"🔧 原始格式转换完成，保留了原始键顺序和注释")
+        # print(f"🔧 原始格式转换完成，保留了原始键顺序和注释")
         return original
     
     def _is_anchor_alias_reference(self, original_data: dict, key: str, value: Any) -> bool:
@@ -575,10 +575,10 @@ class FileOperations:
                         for line_no, indent, section, key in data_occurrences:
                             lines_to_remove.add(line_no)
                             self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                            print(f"❌ 删除__data__内部的系统键: {key} (第{line_no+1}行) - 保留顶层版本，修复数据结构污染")
+                            # print(f"❌ 删除__data__内部的系统键: {key} (第{line_no+1}行) - 保留顶层版本，修复数据结构污染")
                     continue
                 
-                print(f"🔧 分析重复路径 '{full_key_path}': {len(occurrences)} 次出现")
+                # print(f"🔧 分析重复路径 '{full_key_path}': {len(occurrences)} 次出现")
                 
                 # 特殊处理first_start_time：如果出现在__data__直接子层和__data__.__type_hints__中，这是正常的
                 if base_key == 'first_start_time':
@@ -590,20 +590,20 @@ class FileOperations:
                     top_level_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
                                            if indent == 0 and section != '__data__']
                     
-                    print(f"🔧 first_start_time分析: 数据值{len(data_value_occurrences)}个, 类型提示{len(type_hint_occurrences)}个, 顶层{len(top_level_occurrences)}个")
+                    # print(f"🔧 first_start_time分析: 数据值{len(data_value_occurrences)}个, 类型提示{len(type_hint_occurrences)}个, 顶层{len(top_level_occurrences)}个")
                     
                     # 删除顶层的first_start_time，保留__data__中的数据值和类型提示
                     if top_level_occurrences:
                         for line_no, indent, section, key in top_level_occurrences:
                             lines_to_remove.add(line_no)
                             self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                            print(f"❌ 删除顶层重复键: {key} (第{line_no+1}行) - 保留__data__中的版本")
+                            # print(f"❌ 删除顶层重复键: {key} (第{line_no+1}行) - 保留__data__中的版本")
                     
                     # 如果只有__data__内的数据值和类型提示，这是正常情况，不删除任何内容
                     if data_value_occurrences and type_hint_occurrences and not top_level_occurrences:
-                        print(f"✅ 保留 {base_key} 的数据值和类型提示 - 这是正常配置结构")
+                        # print(f"✅ 保留 {base_key} 的数据值和类型提示 - 这是正常配置结构")
                     elif data_value_occurrences and type_hint_occurrences and top_level_occurrences:
-                        print(f"✅ 保留 {base_key} 的数据值和类型提示，删除顶层重复")
+                        # print(f"✅ 保留 {base_key} 的数据值和类型提示，删除顶层重复")
                     
                     continue
                 
@@ -646,13 +646,13 @@ class FileOperations:
                             import re
                             cleaned_line = re.sub(r'\s*&\w+', '', line_content)
                             lines[line_no] = cleaned_line
-                            print(f"🔧 清理__data__内锚点标记: 第{line_no+1}行 去掉&标记，保留数据")
+                            # print(f"🔧 清理__data__内锚点标记: 第{line_no+1}行 去掉&标记，保留数据")
                     
                     # 删除顶层的别名引用
                     for line_no, indent, section, key in top_level_occurrences:
                         lines_to_remove.add(line_no)
                         self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                        print(f"❌ 删除顶层别名引用: {key} (第{line_no+1}行) - 删除*id001引用")
+                        # print(f"❌ 删除顶层别名引用: {key} (第{line_no+1}行) - 删除*id001引用")
                 
                 elif len(occurrences) > 1:
                     # 锚点别名路径重复处理：
@@ -668,13 +668,13 @@ class FileOperations:
                         import re
                         cleaned_line = re.sub(r'\s*&\w+', '', first_line)
                         lines[first_line_no] = cleaned_line
-                        print(f"🔧 清理锚点标记: 第{first_line_no+1}行 去掉&标记，保留数据")
+                        # print(f"🔧 清理锚点标记: 第{first_line_no+1}行 去掉&标记，保留数据")
                     
                     # 删除第2个及后续（别名引用）
                     for line_no, indent, section, key in sorted_occurrences[1:]:
                         lines_to_remove.add(line_no)
                         self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                        print(f"❌ 删除别名引用: {key} 在路径 '{full_key_path}' (第{line_no+1}行) - 删除*id001引用")
+                        # print(f"❌ 删除别名引用: {key} 在路径 '{full_key_path}' (第{line_no+1}行) - 删除*id001引用")
             
             # if not is_test_mode:
             #     print(f"🔧 标记删除 {len(lines_to_remove)} 行: {sorted(lines_to_remove)}")
@@ -695,7 +695,7 @@ class FileOperations:
                 pass
                 
         except Exception as e:
-            print(f"❌ 删除重复键时发生错误: {e}")
+            # print(f"❌ 删除重复键时发生错误: {e}")
             import traceback
             traceback.print_exc()
     

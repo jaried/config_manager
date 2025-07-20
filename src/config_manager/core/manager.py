@@ -635,9 +635,9 @@ class ConfigManagerCore(ConfigNode):
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 change_call_chain = self._call_chain_tracker.get_call_chain()
-                print(f"文件变化回调的调用链: {change_call_chain}")
+                logger.debug(f"文件变化回调的调用链: {change_call_chain}")
             except Exception as e:
-                print(f"获取文件变化调用链失败: {e}")
+                logger.debug(f"获取文件变化调用链失败: {e}")
 
         self.reload()
         return
@@ -646,7 +646,7 @@ class ConfigManagerCore(ConfigNode):
         """安排自动保存或标记需要保存"""
         # 添加递归保护机制
         if hasattr(self, '_scheduling_autosave') and self._scheduling_autosave:
-            print("🔄 检测到递归调用，跳过自动保存调度")
+            # print("🔄 检测到递归调用，跳过自动保存调度")
             return
         
         # 如果正在保存过程中，不要再次调度自动保存
@@ -658,15 +658,15 @@ class ConfigManagerCore(ConfigNode):
         current_time = time.time()
         if current_time - self._autosave_last_time < 1.0:
             self._autosave_count += 1
-            print(f"📊 自动保存调度频率计数: {self._autosave_count}")
+            # print(f"📊 自动保存调度频率计数: {self._autosave_count}")
             if self._autosave_count > 10:
-                print(f"⚠️  自动保存调度频率过高，跳过调度 (第{self._autosave_count}次)")
+                # print(f"⚠️  自动保存调度频率过高，跳过调度 (第{self._autosave_count}次)")
                 return
         else:
             # 重置计数器
             self._autosave_count = 1
             self._autosave_last_time = current_time
-            print("🔄 重置自动保存调度计数器")
+            # print("🔄 重置自动保存调度计数器")
             
         self._scheduling_autosave = True
         
@@ -678,9 +678,9 @@ class ConfigManagerCore(ConfigNode):
                 try:
                     autosave_call_chain = self._call_chain_tracker.get_call_chain()
                     action = "标记需要保存" if getattr(self, '_during_initialization', False) else "安排自动保存"
-                    print(f"{action}时的调用链: {autosave_call_chain}")
+                    logger.debug(f"{action}时的调用链: {autosave_call_chain}")
                 except Exception as e:
-                    print(f"获取调用链失败: {e}")
+                    logger.debug(f"获取调用链失败: {e}")
 
             # 只有在成功加载过配置的情况下才进行保存操作
             if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:

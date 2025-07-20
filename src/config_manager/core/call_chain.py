@@ -218,8 +218,8 @@ class CallChainTracker:
                             'is_internal': is_config_manager_module
                         })
 
-                        print(
-                            f"调试：找到start_time在模块 {module_name}: {parsed_time} (内部模块: {is_config_manager_module})")
+                        # print(
+                        #     f"调试：找到start_time在模块 {module_name}: {parsed_time} (内部模块: {is_config_manager_module})")
 
             if found_start_times:
                 # 优先选择非config_manager内部模块的start_time
@@ -228,7 +228,7 @@ class CallChainTracker:
                 if external_times:
                     # 选择第一个外部模块的start_time
                     selected = external_times[0]
-                    print(f"调试：选择外部模块的start_time - 模块: {selected['module']}, 时间: {selected['time']}")
+                    # print(f"调试：选择外部模块的start_time - 模块: {selected['module']}, 时间: {selected['time']}")
                     return selected['time']
                 else:
                     # 如果只有内部模块的start_time，检查是否是测试场景需要后备机制
@@ -245,22 +245,22 @@ class CallChainTracker:
                             # 在测试环境中，如果只找到内部模块的start_time，
                             # 可能是测试故意移除了外部start_time，应该使用当前时间
                             current_time = datetime.now()
-                            print(f"调试：测试环境中仅找到内部模块start_time，使用当前时间: {current_time}")
+                            # print(f"调试：测试环境中仅找到内部模块start_time，使用当前时间: {current_time}")
                             return current_time
                         else:
                             # 非测试环境，使用内部模块的start_time
                             selected = internal_times[0]
-                            print(
-                                f"调试：仅找到内部模块的start_time - 模块: {selected['module']}, 时间: {selected['time']}")
+                            # print(
+                            #     f"调试：仅找到内部模块的start_time - 模块: {selected['module']}, 时间: {selected['time']}")
                             return selected['time']
 
             # 如果没有找到任何start_time，使用当前时间
             current_time = datetime.now()
-            print(f"调试：未找到任何start_time，使用当前时间: {current_time}")
+            # print(f"调试：未找到任何start_time，使用当前时间: {current_time}")
             return current_time
 
         except Exception as e:
-            print(f"调试：获取start_time时发生异常: {e}")
+            # print(f"调试：获取start_time时发生异常: {e}")
             return datetime.now()
 
     def get_detailed_call_info(self) -> dict:
