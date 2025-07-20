@@ -111,7 +111,7 @@ class FileOperations:
             return None
 
     def save_config(self, config_path: str, data: Dict[str, Any], backup_path: str = None) -> bool:
-        """保存配置到文件，保留注释和格式"""
+        """保存配置到文件，保留注释和格式并彻底解决重复键问题"""
         try:
             # 保存到主配置文件
             original_dir = os.path.dirname(config_path)
@@ -124,6 +124,9 @@ class FileOperations:
             tmp_original_path = f"{config_path}.tmp"
             with open(tmp_original_path, 'w', encoding='utf-8') as f:
                 self._yaml.dump(data_to_save, f)
+
+            # 后处理：删除YAML文件中的重复键
+            self._remove_duplicate_keys_from_yaml_file(tmp_original_path)
 
             os.replace(tmp_original_path, config_path)
 
@@ -232,40 +235,11 @@ class FileOperations:
                     # 直接更新值（包括新键）
                     original[key] = value
             
-            # 如果新数据中有__data__，需要检查是否包含锚点别名引用
-            # 如果包含锚点别名，则完全跳过从__data__复制到顶层的逻辑
+            # 彻底解决重复键问题：完全禁止从__data__向顶层复制用户配置键
+            # 保存结构应该只包含 __data__ 和 __type_hints__，顶层不应有用户配置键
             if '__data__' in new_data and isinstance(new_data['__data__'], dict):
-                data_section = new_data['__data__']
-                
-                # 检查是否存在锚点别名引用
-                has_anchor_alias_refs = self._has_any_anchor_alias_references(original, data_section)
-                
-                if has_anchor_alias_refs:
-                    # 存在锚点别名引用，需要移除顶层的锚点别名引用键以避免重复
-                    self._remove_top_level_anchor_alias_keys(original, data_section)
-                else:
-                    # 没有锚点别名引用，按原逻辑复制用户定义键到顶层
-                    system_fields = {
-                        'base_dir', 'first_start_time', 'config_file_path', 'paths', 
-                        '__type_hints__', 'debug_mode'
-                    }
-                    
-                    for key, value in data_section.items():
-                        # 跳过系统字段和内部键
-                        if key.startswith('__') or key in system_fields:
-                            continue
-                        
-                        # 检查顶层是否已存在该键
-                        if key in original:
-                            if isinstance(original[key], dict) and isinstance(value, dict):
-                                # 递归合并嵌套字典
-                                self._deep_update_yaml_data(original[key], value)
-                            else:
-                                # 正常更新值
-                                original[key] = value
-                        else:
-                            # 顶层不存在该键，直接添加
-                            original[key] = value
+                # 移除顶层所有可能与__data__重复的用户配置键
+                self._remove_all_duplicate_keys_from_top_level(original, new_data['__data__'])
             
             return original
         elif isinstance(original, list) and isinstance(new_data, list):
@@ -383,6 +357,148 @@ class FileOperations:
         # 移除检测到的锚点别名引用键
         for key in keys_to_remove:
             del original_data[key]
+    
+    def _remove_all_duplicate_keys_from_top_level(self, original_data: dict, data_section: dict) -> None:
+        """彻底移除顶层所有与__data__重复的键，解决重复键问题
+        
+        Args:
+            original_data: 原始YAML数据（顶层）
+            data_section: __data__部分的数据
+        """
+        keys_to_remove = []
+        
+        # 定义必须保留的顶层系统键
+        protected_top_level_keys = {'__data__', '__type_hints__'}
+        
+        for key in list(original_data.keys()):
+            # 保护系统键不被移除
+            if key in protected_top_level_keys:
+                continue
+            
+            # 如果该键在__data__中存在，就从顶层移除以避免重复
+            if key in data_section:
+                keys_to_remove.append(key)
+        
+        # 移除所有重复的键
+        for key in keys_to_remove:
+            del original_data[key]
+            
+        # 记录移除的键用于调试（可选）
+        if keys_to_remove:
+            print(f"移除顶层重复键: {keys_to_remove}")
+    
+    def _remove_duplicate_keys_from_yaml_file(self, file_path: str) -> None:
+        """直接编辑YAML文件，删除重复键的第二次出现，包括跨部分重复"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            # 记录已见过的键及其出现的行号和部分
+            seen_keys = {}  # key_name -> {'line': line_num, 'section': section_name}
+            lines_to_remove = set()
+            current_section = None
+            
+            for i, line in enumerate(lines):
+                stripped_line = line.strip()
+                
+                # 跳过空行和注释
+                if not stripped_line or stripped_line.startswith('#'):
+                    continue
+                
+                # 如果行包含冒号，提取键名
+                if ':' in stripped_line:
+                    # 计算缩进级别
+                    indent_level = len(line) - len(line.lstrip())
+                    key = stripped_line.split(':')[0].strip()
+                    
+                    # 跳过锚点和别名定义
+                    if '&' in key or '*' in key:
+                        continue
+                    
+                    # 处理不同层级的键
+                    if indent_level == 0:  # 顶层键
+                        current_section = key
+                        key_id = f"top_level:{key}"
+                        actual_key = key
+                    elif indent_level == 2:  # 二级键
+                        key_id = f"{current_section}:{key}" if current_section else f"level2:{key}"
+                        actual_key = key
+                    else:
+                        continue  # 跳过更深层级的键
+                    
+                    # 特殊处理：检查跨部分重复（__data__ 和 __type_hints__ 之间的重复）
+                    if current_section in ['__data__', '__type_hints__'] and indent_level == 2:
+                        # 检查该键是否已经在其他部分出现过
+                        if actual_key in seen_keys:
+                            previous_info = seen_keys[actual_key]
+                            # 如果之前在__data__中出现过，现在在__type_hints__中，删除__type_hints__中的
+                            if previous_info['section'] == '__data__' and current_section == '__type_hints__':
+                                # 标记当前行（__type_hints__中的重复键）为需要删除
+                                start_line = i
+                                lines_to_remove.add(start_line)
+                                self._mark_key_block_for_removal(lines, start_line, indent_level, lines_to_remove)
+                                print(f"删除跨部分重复键: {actual_key} 在{current_section}中 (第{i+1}行)")
+                                continue
+                        else:
+                            # 记录第一次出现的键
+                            seen_keys[actual_key] = {'line': i, 'section': current_section}
+                    
+                    # 检查同部分内的重复
+                    if key_id in seen_keys:
+                        # 标记重复行和其后续相关行为需要删除
+                        start_line = i
+                        lines_to_remove.add(start_line)
+                        
+                        # 找到这个键值对的所有相关行（包括多行值）
+                        self._mark_key_block_for_removal(lines, start_line, indent_level, lines_to_remove)
+                        
+                        print(f"删除同部分重复键: {key} (第{i+1}行)")
+                    else:
+                        # 对于非跨部分情况，记录键的完整标识
+                        if current_section not in ['__data__', '__type_hints__'] or indent_level != 2:
+                            seen_keys[key_id] = {'line': i, 'section': current_section}
+            
+            # 删除标记的行
+            if lines_to_remove:
+                filtered_lines = [line for i, line in enumerate(lines) if i not in lines_to_remove]
+                
+                # 写回文件
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.writelines(filtered_lines)
+                
+                print(f"成功删除 {len(lines_to_remove)} 行重复内容")
+                
+        except Exception as e:
+            print(f"删除重复键时发生错误: {e}")
+    
+    def _mark_key_block_for_removal(self, lines: list, start_line: int, base_indent: int, lines_to_remove: set) -> None:
+        """标记一个键值对块的所有行为需要删除"""
+        lines_to_remove.add(start_line)
+        
+        # 检查后续行是否属于这个键值对（更深的缩进或续行）
+        for i in range(start_line + 1, len(lines)):
+            line = lines[i]
+            stripped_line = line.strip()
+            
+            # 空行也可能属于这个块
+            if not stripped_line:
+                lines_to_remove.add(i)
+                continue
+            
+            # 注释行可能属于这个块
+            if stripped_line.startswith('#'):
+                lines_to_remove.add(i)
+                continue
+            
+            # 计算缩进
+            current_indent = len(line) - len(line.lstrip())
+            
+            # 如果缩进更深，说明是这个键的值的一部分
+            if current_indent > base_indent:
+                lines_to_remove.add(i)
+            else:
+                # 缩进相同或更少，说明这个键值对块结束了
+                break
     
     def _try_reload_original_data(self, config_path: str):
         """尝试重新加载原始数据（用于路径变化的情况）"""
