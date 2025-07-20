@@ -654,9 +654,15 @@ class ConfigManager(ConfigManagerCore):
                 time_to_use = None  # 标记不需要更新时间值
                 
                 # 确保 __type_hints__ 中包含 first_start_time 的类型注释
-                if '__type_hints__' not in loaded_data:
-                    loaded_data['__type_hints__'] = {}
-                loaded_data['__type_hints__']['first_start_time'] = 'datetime'
+                # 检查配置格式，只有标准格式才在顶级操作__type_hints__
+                if '__data__' in loaded_data:
+                    # 标准格式：在顶级操作__type_hints__
+                    if '__type_hints__' not in loaded_data:
+                        loaded_data['__type_hints__'] = {}
+                    loaded_data['__type_hints__']['first_start_time'] = 'datetime'
+                else:
+                    # 原始格式：不添加系统键，避免格式污染
+                    pass
             else:
                 # 只有在都没有的情况下才使用当前时间
                 time_to_use = datetime.now()
@@ -704,6 +710,16 @@ class ConfigManager(ConfigManagerCore):
                     loaded_data['first_start_time'] = str(time_to_use)
             
             loaded_data['config_file_path'] = test_config_path
+
+            # 在保存前清理__data__节点中的系统键污染
+            if '__data__' in loaded_data and isinstance(loaded_data['__data__'], dict):
+                # 清理__data__节点中的系统键，防止数据结构污染
+                system_keys = {'__type_hints__', '__data__', 'debug_mode'}
+                data_section = loaded_data['__data__']
+                for sys_key in list(data_section.keys()):
+                    if sys_key in system_keys:
+                        print(f"🔧 清理__data__节点中的系统键污染: {sys_key}")
+                        del data_section[sys_key]
 
             # 保存更新后的配置，直接使用原始数据以保留注释
             with open(test_config_path, 'w', encoding='utf-8') as f:

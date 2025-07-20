@@ -264,13 +264,17 @@ class FileOperations:
                     # 更新值
                     original[key] = value
         
-        # 添加新的键到原始结构（这些键在原始文件中不存在）
+        # 添加新的键到原始结构（这些键在原始文件中不存在，但排除系统键）
+        system_keys = {'__data__', '__type_hints__'}
         for key, value in data_section.items():
-            if key not in original:
+            if key not in original and key not in system_keys:
                 original[key] = value
         
-        # 在末尾添加 __data__ 节点（包含所有数据）
-        original['__data__'] = data_section
+        # 在末尾添加 __data__ 节点（只包含非系统键的配置数据）
+        # 过滤掉系统键，避免数据结构污染
+        system_keys = {'__data__', '__type_hints__'}
+        clean_data_section = {k: v for k, v in data_section.items() if k not in system_keys}
+        original['__data__'] = clean_data_section
         
         # 添加 __type_hints__ 节点
         if type_hints_section:
@@ -391,7 +395,12 @@ class FileOperations:
             del original_data[key]
     
     def _remove_all_duplicate_keys_from_top_level(self, original_data: dict, data_section: dict) -> None:
-        """智能移除顶层真正重复的键，保留有差异的键
+        """移除YAML锚点别名展开产生的重复键，保留锚点定义
+        
+        专门处理YAML锚点别名(&id001, *id001)展开产生的重复键：
+        - 保留锚点定义（__data__中的，第1个）
+        - 删除别名展开（顶层的，第2个及后续）
+        - 其他非锚点相关的重复键不删除，可能有特殊用途
         
         Args:
             original_data: 原始YAML数据（顶层）
@@ -412,20 +421,25 @@ class FileOperations:
                 top_level_value = original_data[key]
                 data_section_value = data_section[key]
                 
-                # 只有当值完全相同时才认为是重复，需要删除
+                # 只有当值完全相同时才可能是锚点别名展开产生的重复
                 if self._are_values_identical(top_level_value, data_section_value):
+                    # 这是锚点别名展开产生的重复：
+                    # 保留锚点定义(__data__中的，第1个)，删除别名展开(顶层的，第2个)
                     keys_to_remove.append(key)
+                    print(f"删除锚点别名展开重复: '{key}' (保留__data__中的锚点定义)")
                 else:
-                    # 值不同，保留顶层的键（可能有特殊用途）
-                    print(f"保留顶层键 '{key}': 值与__data__中的不同")
+                    # 值不同，保留顶层的键（非锚点别名重复，可能有特殊用途）
+                    print(f"保留顶层键 '{key}': 值与__data__中的不同，非锚点别名重复")
         
-        # 移除确认重复的键
+        # 移除确认的锚点别名重复键
         for key in keys_to_remove:
             del original_data[key]
             
-        # 记录移除的键用于调试（可选）
+        # 记录移除的键用于调试
         if keys_to_remove:
-            print(f"移除顶层重复键: {keys_to_remove}")
+            print(f"移除锚点别名重复键: {keys_to_remove}")
+        else:
+            print("未发现锚点别名重复键需要删除")
     
     def _are_values_identical(self, value1: Any, value2: Any) -> bool:
         """比较两个值是否完全相同，用于判断是否为真正的重复
@@ -550,11 +564,11 @@ class FileOperations:
                                            if indent == 0 and section != '__data__']
                     
                     if data_occurrences and top_level_occurrences:
-                        # __data__内部和顶层都有__type_hints__，删除顶层的
-                        for line_no, indent, section, key in top_level_occurrences:
+                        # __data__内部和顶层都有__type_hints__，删除__data__内部的（这是数据结构污染）
+                        for line_no, indent, section, key in data_occurrences:
                             lines_to_remove.add(line_no)
                             self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                            print(f"❌ 删除顶层重复系统键: {key} (第{line_no+1}行) - 保留__data__中的版本")
+                            print(f"❌ 删除__data__内部的系统键: {key} (第{line_no+1}行) - 保留顶层版本，修复数据结构污染")
                     continue
                 
                 print(f"🔧 分析重复路径 '{full_key_path}': {len(occurrences)} 次出现")
@@ -586,6 +600,26 @@ class FileOperations:
                     
                     continue
                 
+                # 检查是否包含YAML锚点别名标记
+                has_anchor_alias = False
+                for line_no, indent, section, key in occurrences:
+                    line_content = lines[line_no].strip()
+                    if '&' in line_content or '*' in line_content:
+                        # 检查是否是真正的YAML锚点或别名标记
+                        import re
+                        if re.search(r'&\w+|:\s*\*\w+', line_content):
+                            has_anchor_alias = True
+                            print(f"🔍 检测到锚点别名标记: {line_content.strip()} (第{line_no+1}行)")
+                            break
+                
+                if not has_anchor_alias:
+                    # 非锚点别名重复，不删除，可能有特殊用途
+                    print(f"🛡️  保留非锚点别名重复键: '{base_key}' - 可能有特殊用途")
+                    continue
+                
+                # 只有检测到锚点别名标记才进行重复删除
+                print(f"🎯 处理锚点别名重复键: '{base_key}'")
+                
                 # 检查是否存在 __data__ 内部和顶层的重复
                 data_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
                                   if section == '__data__' and indent > 0]
@@ -593,21 +627,47 @@ class FileOperations:
                                        if indent == 0 and section != '__data__']
                 
                 if data_occurrences and top_level_occurrences:
-                    # __data__内部和顶层都有，删除顶层的（保留__data__内部的）
+                    # __data__内部和顶层都有锚点别名：
+                    # 1. 处理__data__内部的锚点定义：去掉&id001标记，保留数据
+                    # 2. 删除顶层的别名引用*id001
+                    
+                    # 处理__data__内部的锚点定义
+                    for line_no, indent, section, key in data_occurrences:
+                        line_content = lines[line_no]
+                        if '&' in line_content:
+                            # 去掉锚点标记 &id001，保留数据
+                            import re
+                            cleaned_line = re.sub(r'\s*&\w+', '', line_content)
+                            lines[line_no] = cleaned_line
+                            print(f"🔧 清理__data__内锚点标记: 第{line_no+1}行 去掉&标记，保留数据")
+                    
+                    # 删除顶层的别名引用
                     for line_no, indent, section, key in top_level_occurrences:
                         lines_to_remove.add(line_no)
                         self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                        print(f"❌ 删除顶层重复键: {key} (第{line_no+1}行) - 保留__data__中的版本")
+                        print(f"❌ 删除顶层别名引用: {key} (第{line_no+1}行) - 删除*id001引用")
                 
                 elif len(occurrences) > 1:
-                    # 真正的同一路径重复，删除后出现的
+                    # 锚点别名路径重复处理：
+                    # 1. 保留第1个（锚点定义&id001），但去掉&id001标记  
+                    # 2. 删除第2个及后续（别名引用*id001）
                     sorted_occurrences = sorted(occurrences, key=lambda x: x[0])  # 按行号排序
                     
-                    # 保留第一个，删除其余的
+                    # 处理第1个（锚点定义）：去掉&id001标记，保留数据
+                    first_line_no = sorted_occurrences[0][0]
+                    first_line = lines[first_line_no]
+                    if '&' in first_line:
+                        # 去掉锚点标记 &id001，保留数据
+                        import re
+                        cleaned_line = re.sub(r'\s*&\w+', '', first_line)
+                        lines[first_line_no] = cleaned_line
+                        print(f"🔧 清理锚点标记: 第{first_line_no+1}行 去掉&标记，保留数据")
+                    
+                    # 删除第2个及后续（别名引用）
                     for line_no, indent, section, key in sorted_occurrences[1:]:
                         lines_to_remove.add(line_no)
                         self._mark_key_block_for_removal(lines, line_no, indent, lines_to_remove)
-                        print(f"❌ 删除真正重复的键: {key} 在路径 '{full_key_path}' (第{line_no+1}行) - 保留第一次出现")
+                        print(f"❌ 删除别名引用: {key} 在路径 '{full_key_path}' (第{line_no+1}行) - 删除*id001引用")
             
             print(f"🔧 标记删除 {len(lines_to_remove)} 行: {sorted(lines_to_remove)}")
             
