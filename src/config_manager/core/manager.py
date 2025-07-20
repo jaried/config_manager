@@ -251,9 +251,9 @@ class ConfigManagerCore(ConfigNode):
                 raw_data = loaded.get('__data__', {}).copy()
                 self._type_hints = loaded.get('__type_hints__', {})
                 
-                # 添加顶层的别名引用键（非系统键）
+                # 添加顶层的别名引用键（非系统键），但__data__中的值具有更高优先级
                 for key, value in loaded.items():
-                    if not key.startswith('__'):
+                    if not key.startswith('__') and key not in raw_data:
                         raw_data[key] = value
                 
                 if ENABLE_CALL_CHAIN_DISPLAY:
