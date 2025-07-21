@@ -22,7 +22,8 @@
       "Bash(ssh:*)",
       "WebFetch(domain:stackoverflow.com)",
       "Bash(git stash:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }

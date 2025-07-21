@@ -37,7 +37,7 @@ class FileWatcher:
 
         self._watcher_thread = threading.Thread(
             target=self._watch_file,
-            daemon=False  # 改为非daemon线程，确保优雅关闭
+            daemon=True  # 设为daemon线程，允许程序正常退出
         )
         self._watcher_thread.start()
         print("配置文件监视器已启动")
