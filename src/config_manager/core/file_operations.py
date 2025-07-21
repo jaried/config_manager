@@ -602,8 +602,10 @@ class FileOperations:
                     # 如果只有__data__内的数据值和类型提示，这是正常情况，不删除任何内容
                     if data_value_occurrences and type_hint_occurrences and not top_level_occurrences:
                         # print(f"✅ 保留 {base_key} 的数据值和类型提示 - 这是正常配置结构")
+                        pass
                     elif data_value_occurrences and type_hint_occurrences and top_level_occurrences:
                         # print(f"✅ 保留 {base_key} 的数据值和类型提示，删除顶层重复")
+                        pass
                     
                     continue
                 
