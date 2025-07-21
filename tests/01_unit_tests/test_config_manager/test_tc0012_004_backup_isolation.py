@@ -23,7 +23,7 @@ class TestTC0012004BackupIsolation:
         fixed_time = datetime(2025, 1, 7, 10, 0, 0)
         
         # 生产环境配置管理器
-        prod_cfg = get_config_manager(first_start_time=fixed_time)
+        prod_cfg = get_config_manager(first_start_time=fixed_time, test_mode=True)
         prod_backup_path = prod_cfg.get_last_backup_path()
         
         # 测试环境配置管理器
@@ -54,7 +54,7 @@ class TestTC0012004BackupIsolation:
         fixed_time = datetime(2025, 1, 7, 10, 0, 0)
         
         # 生产环境：设置配置并触发备份
-        prod_cfg = get_config_manager(first_start_time=fixed_time, autosave_delay=0.1)
+        prod_cfg = get_config_manager(first_start_time=fixed_time, autosave_delay=0.1, test_mode=True)
         prod_cfg.test_backup_isolation = "production_value"
         # 明确触发保存以确保备份文件创建
         prod_cfg.save()

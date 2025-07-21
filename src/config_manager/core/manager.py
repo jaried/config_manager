@@ -140,12 +140,12 @@ class ConfigManagerCore(ConfigNode):
 
         # 根据开关决定是否测试调用链追踪器
         if ENABLE_CALL_CHAIN_DISPLAY:
-            logger.debug("=== 调用链追踪器测试 ===")
+            print("=== 调用链追踪器测试 ===")
             try:
                 test_chain = self._call_chain_tracker.get_call_chain()
-                logger.debug(f"初始化时调用链: {test_chain}")
+                print(f"初始化时调用链: {test_chain}")
             except Exception as e:
-                logger.debug(f"调用链追踪器测试失败: {e}")
+                print(f"调用链追踪器测试失败: {e}")
                 import traceback
                 traceback.print_exc()
 
@@ -176,7 +176,9 @@ class ConfigManagerCore(ConfigNode):
 
             # 注册清理函数（程序退出时自动调用）
             import atexit
-            atexit.register(self.cleanup)
+            if not hasattr(self, '_cleanup_registered'):
+                atexit.register(self._cleanup)
+                self._cleanup_registered = True
 
             # 检查是否需要路径配置（避免对简单配置文件意外修改）
             if self._should_setup_paths():
@@ -232,9 +234,9 @@ class ConfigManagerCore(ConfigNode):
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 load_call_chain = self._call_chain_tracker.get_call_chain()
-                logger.debug(f"加载配置时的调用链: {load_call_chain}")
+                print(f"加载配置时的调用链: {load_call_chain}")
             except Exception as e:
-                logger.debug(f"获取加载调用链失败: {e}")
+                print(f"获取加载调用链失败: {e}")
 
         loaded = self._file_ops.load_config(
             self._config_path,
@@ -328,9 +330,9 @@ class ConfigManagerCore(ConfigNode):
             if ENABLE_CALL_CHAIN_DISPLAY:
                 try:
                     save_call_chain = self._call_chain_tracker.get_call_chain()
-                    logger.debug(f"保存配置时的调用链: {save_call_chain}")
+                    print(f"保存配置时的调用链: {save_call_chain}")
                 except Exception as e:
-                    logger.debug(f"获取保存调用链失败: {e}")
+                    print(f"获取保存调用链失败: {e}")
 
             # 获取可序列化的数据，过滤掉无法序列化的对象
             serializable_data = self._get_serializable_data()
@@ -431,9 +433,9 @@ class ConfigManagerCore(ConfigNode):
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 reload_call_chain = self._call_chain_tracker.get_call_chain()
-                logger.debug(f"重新加载配置时的调用链: {reload_call_chain}")
+                print(f"重新加载配置时的调用链: {reload_call_chain}")
             except Exception as e:
-                logger.debug(f"获取重新加载调用链失败: {e}")
+                print(f"获取重新加载调用链失败: {e}")
 
         reloaded = self._load()
         if ENABLE_CALL_CHAIN_DISPLAY:
@@ -636,9 +638,9 @@ class ConfigManagerCore(ConfigNode):
         if ENABLE_CALL_CHAIN_DISPLAY:
             try:
                 change_call_chain = self._call_chain_tracker.get_call_chain()
-                logger.debug(f"文件变化回调的调用链: {change_call_chain}")
+                print(f"文件变化回调的调用链: {change_call_chain}")
             except Exception as e:
-                logger.debug(f"获取文件变化调用链失败: {e}")
+                print(f"获取文件变化调用链失败: {e}")
 
         self.reload()
         return
@@ -679,9 +681,9 @@ class ConfigManagerCore(ConfigNode):
                 try:
                     autosave_call_chain = self._call_chain_tracker.get_call_chain()
                     action = "标记需要保存" if getattr(self, '_during_initialization', False) else "安排自动保存"
-                    logger.debug(f"{action}时的调用链: {autosave_call_chain}")
+                    print(f"{action}时的调用链: {autosave_call_chain}")
                 except Exception as e:
-                    logger.debug(f"获取调用链失败: {e}")
+                    print(f"获取调用链失败: {e}")
 
             # 只有在成功加载过配置的情况下才进行保存操作
             if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
@@ -809,23 +811,31 @@ class ConfigManagerCore(ConfigNode):
 
     def _cleanup(self):
         """清理资源"""
-        if self._watcher:
-            self._watcher.stop()
-
-        if self._autosave_manager:
-            self._autosave_manager.cleanup()
-
-        # 执行最后一次保存（只有在成功加载过配置的情况下才保存）
+        # 防止重复清理
+        if hasattr(self, '_cleanup_done') and self._cleanup_done:
+            return
+        
         try:
-            if (hasattr(self, '_data') and self._data and
-                    hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully):
-                self.save()
-        except Exception as e:
-            print(f"清理时保存配置失败: {str(e)}")
+            if self._watcher:
+                self._watcher.stop()
 
-        # 清理数据
-        if hasattr(self, '_data'):
-            self._data.clear()
+            if self._autosave_manager:
+                self._autosave_manager.cleanup()
+
+            # 执行最后一次保存（只有在成功加载过配置的情况下才保存）
+            try:
+                if (hasattr(self, '_data') and self._data and
+                        hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully):
+                    self.save()
+            except Exception as e:
+                print(f"清理时保存配置失败: {str(e)}")
+
+            # 清理数据
+            if hasattr(self, '_data'):
+                self._data.clear()
+        finally:
+            # 标记清理完成，防止重复调用
+            self._cleanup_done = True
         return
 
     # ========== 类型转换和配置访问方法 ==========

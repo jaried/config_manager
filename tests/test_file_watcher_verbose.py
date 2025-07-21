@@ -31,7 +31,7 @@ def test_file_watcher_verbose():
         config = get_config_manager(
             config_path=config_path,
             watch=True,
-            test_mode=False
+            test_mode=True
         )
         
         # 检查文件监视器状态

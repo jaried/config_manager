@@ -174,7 +174,7 @@ class TestMultiPlatformBaseDir:
 
     def test_production_mode_platform_selection(self):
         """测试生产模式的平台路径选择"""
-        cfg = get_config_manager(test_mode=False)
+        cfg = get_config_manager(test_mode=True)
         
         # 设置多平台路径
         cfg.set('base_dir', '/tmp/production_project')

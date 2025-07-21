@@ -52,12 +52,12 @@ features:
         test_config_path = tmp.name
     
     try:
-        # 创建配置管理器（非测试模式，避免路径转换）
+        # 创建配置管理器（测试模式，确保测试隔离）
         config = get_config_manager(
             config_path=test_config_path,
             auto_create=False,
             watch=False,
-            test_mode=False
+            test_mode=True
         )
         
         # 验证配置正确加载

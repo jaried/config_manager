@@ -119,7 +119,7 @@ def test_config_load_performance():
                     config_path=test_config_path,
                     auto_create=False,
                     watch=False,
-                    test_mode=False  # 使用非测试模式避免路径处理开销
+                    test_mode=True  # 统一使用测试模式确保测试隔离
                 )
                 
                 # 验证配置加载正确
@@ -254,7 +254,7 @@ def concurrent_config_worker(config_path: str, worker_id: int, operations: int, 
             auto_create=False,
             watch=False,
             autosave_delay=None,  # 禁用自动保存避免并发冲突
-            test_mode=False  # 使用非测试模式避免复杂的路径处理
+            test_mode=True  # 统一使用测试模式确保测试隔离
         )
         
         start_time = time.time()
@@ -455,7 +455,7 @@ def test_large_config_file_handling():
                 config_path=test_config_path,
                 auto_create=False,
                 watch=False,
-                test_mode=False  # 使用非测试模式避免路径处理开销
+                test_mode=True  # 统一使用测试模式确保测试隔离
             )
         
         print(f"加载大型配置文件耗时: {timer.elapsed:.4f}秒")

@@ -34,10 +34,10 @@ def test_first_start_time_yaml_type_hints():
     # 保存配置
     config.save()
     
-    # 验证 __type_hints__ 中包含 first_start_time 的类型注释
-    assert '__type_hints__' in config._data, "配置中应该包含 __type_hints__"
+    # 验证类型注释中包含 first_start_time 的类型注释
+    assert hasattr(config, '_type_hints'), "配置中应该包含 _type_hints 属性"
     
-    type_hints = config._data.get('__type_hints__', {})
+    type_hints = config._type_hints
     print(f"类型注释: {type_hints}")
     
     # 验证 first_start_time 的类型注释
@@ -47,26 +47,35 @@ def test_first_start_time_yaml_type_hints():
 
 def test_first_start_time_reload_with_type_hints():
     """验证从 YAML 重新加载时根据类型注释转换类型"""
+    import tempfile
+    import os
+    
     test_time = datetime(2025, 1, 7, 18, 15, 20)
-    config = get_config_manager(test_mode=True, first_start_time=test_time)
-    config.save()
     
-    # 手动清理内存中的配置管理器实例
-    from config_manager.config_manager import ConfigManager
-    if hasattr(ConfigManager, '_instances'):
-        ConfigManager._instances.clear()
-    
-    # 重新加载配置
-    new_config = get_config_manager(test_mode=True)
-    
-    print(f"重新加载后 first_start_time 类型: {type(new_config.first_start_time)}")
-    print(f"重新加载后 first_start_time 值: {new_config.first_start_time}")
-    
-    # 验证从 YAML 加载的时间类型
-    assert isinstance(new_config.first_start_time, datetime), f"从 YAML 加载的 first_start_time 应该是 datetime 对象，实际是 {type(new_config.first_start_time)}"
-    
-    # 验证时间值是否正确
-    assert new_config.first_start_time == test_time, f"从 YAML 加载的时间值不正确: {new_config.first_start_time} != {test_time}"
+    # 使用临时文件确保测试隔离
+    with tempfile.TemporaryDirectory() as temp_dir:
+        config_path = os.path.join(temp_dir, "test_config.yaml")
+        
+        # 第一次创建配置
+        config = get_config_manager(config_path=config_path, test_mode=True, auto_create=True, first_start_time=test_time)
+        config.save()
+        
+        # 手动清理内存中的配置管理器实例
+        from config_manager.config_manager import ConfigManager
+        if hasattr(ConfigManager, '_instances'):
+            ConfigManager._instances.clear()
+        
+        # 重新加载配置（使用相同的路径）
+        new_config = get_config_manager(config_path=config_path, test_mode=True)
+        
+        print(f"重新加载后 first_start_time 类型: {type(new_config.first_start_time)}")
+        print(f"重新加载后 first_start_time 值: {new_config.first_start_time}")
+        
+        # 验证从 YAML 加载的时间类型
+        assert isinstance(new_config.first_start_time, datetime), f"从 YAML 加载的 first_start_time 应该是 datetime 对象，实际是 {type(new_config.first_start_time)}"
+        
+        # 验证时间值是否正确
+        assert new_config.first_start_time == test_time, f"从 YAML 加载的时间值不正确: {new_config.first_start_time} != {test_time}"
 
 
 def test_first_start_time_string_conversion():

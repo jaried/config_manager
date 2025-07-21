@@ -29,7 +29,7 @@ def test_file_watcher_external_change():
         config = get_config_manager(
             config_path=config_path,
             watch=True,
-            test_mode=False
+            test_mode=True
         )
         
         print(f"初始值: {config.get('setting')}")

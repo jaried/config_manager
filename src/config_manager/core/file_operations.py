@@ -3,9 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 
 import os
+import logging
 from ruamel.yaml import YAML
 from typing import Dict, Any, Optional
 from ..utils import lock_file, unlock_file
+
+logger = logging.getLogger(__name__)
 
 
 class FileOperations:
@@ -39,9 +42,9 @@ class FileOperations:
                 if ENABLE_CALL_CHAIN_DISPLAY:
                     try:
                         call_chain = call_chain_tracker.get_call_chain()
-                        logger.debug(f"创建配置调用链: {call_chain}")
+                        print(f"创建配置调用链: {call_chain}")
                     except Exception as e:
-                        logger.debug(f"获取创建调用链失败: {e}")
+                        print(f"获取创建调用链失败: {e}")
 
                 # 创建空配置并保存
                 empty_data = {'__data__': {}, '__type_hints__': {}}
@@ -90,13 +93,13 @@ class FileOperations:
             if ENABLE_CALL_CHAIN_DISPLAY:
                 try:
                     call_chain = call_chain_tracker.get_call_chain()
-                    logger.debug(f"加载配置调用链: {call_chain}")
+                    print(f"加载配置调用链: {call_chain}")
                 except Exception as e:
-                    logger.debug(f"获取加载调用链失败: {e}")
+                    print(f"获取加载调用链失败: {e}")
                     # 尝试获取详细调试信息
                     try:
                         debug_info = call_chain_tracker.get_detailed_call_info()
-                        logger.debug(f"调用链调试信息: {debug_info}")
+                        print(f"调用链调试信息: {debug_info}")
                     except Exception as debug_e:
                         print(f"获取调试信息也失败: {debug_e}")
 

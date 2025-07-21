@@ -37,7 +37,7 @@ class FileWatcher:
 
         self._watcher_thread = threading.Thread(
             target=self._watch_file,
-            daemon=True
+            daemon=False  # 改为非daemon线程，确保优雅关闭
         )
         self._watcher_thread.start()
         print("配置文件监视器已启动")
@@ -47,7 +47,10 @@ class FileWatcher:
         """停止文件监视"""
         self._stop_watcher.set()
         if self._watcher_thread and self._watcher_thread.is_alive():
-            self._watcher_thread.join(timeout=1.0)
+            # 尝试优雅停止，由于使用了可中断等待，应该能快速响应
+            self._watcher_thread.join(timeout=1.5)
+            if self._watcher_thread.is_alive():
+                print("⚠️  文件监视器线程未能在1.5秒内停止")
         return
 
     def set_internal_save_flag(self, flag: bool):
@@ -91,8 +94,10 @@ class FileWatcher:
                             print(f"📁 检测到外部文件变化，触发重新加载")
                             self._callback()
                             self._last_mtime = current_mtime
-                time.sleep(1)
+                # 使用可中断的等待，立即响应停止信号
+                self._stop_watcher.wait(timeout=1.0)
             except Exception as e:
                 print(f"监视配置出错: {str(e)}")
-                time.sleep(5)
+                # 异常情况下也使用可中断等待，而不是阻塞睡眠
+                self._stop_watcher.wait(timeout=2.0)
         return

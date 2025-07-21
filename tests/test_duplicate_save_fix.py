@@ -20,7 +20,7 @@ def test_no_duplicate_saves_during_initialization():
             config_path=config_path, 
             auto_create=True, 
             watch=True,  # 启用文件监视
-            test_mode=False
+            test_mode=True
         )
         
         # 设置一些配置值

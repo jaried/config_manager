@@ -432,7 +432,7 @@ class TestPathConfiguration:
         config_content = f"project_name: auto_gen_test\nbase_dir: {tmp_path.as_posix()}"
         config_file.write_text(config_content)
         
-        config = get_config_manager(config_path=str(config_file))
+        config = get_config_manager(config_path=str(config_file), test_mode=True)
         
         assert hasattr(config, 'paths')
         assert hasattr(config.paths, 'work_dir')
@@ -449,7 +449,7 @@ base_dir: {base_dir.as_posix()}
         """
         config_file.write_text(config_content)
         
-        config = get_config_manager(config_path=str(config_file))
+        config = get_config_manager(config_path=str(config_file), test_mode=True)
 
         assert Path(config.paths.work_dir).is_absolute()
         assert "my_project" in str(config.paths.work_dir)
@@ -468,7 +468,7 @@ base_dir: {tmp_path.as_posix()}
         """
         config_file.write_text(config_content)
         
-        config = get_config_manager(config_path=str(config_file))
+        config = get_config_manager(config_path=str(config_file), test_mode=True)
 
         work_dir = Path(config.paths.work_dir)
         assert 'debug' in work_dir.parts

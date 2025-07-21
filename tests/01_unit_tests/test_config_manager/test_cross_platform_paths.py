@@ -295,7 +295,7 @@ class TestCrossPlatformPathIntegration:
         config_file = tmp_path / "test_cross_platform.yaml"
         
         # 创建配置管理器
-        config = get_config_manager(config_path=str(config_file))
+        config = get_config_manager(config_path=str(config_file), test_mode=True)
         
         # 设置多平台路径配置
         multi_platform_path = {
@@ -326,7 +326,7 @@ class TestCrossPlatformPathIntegration:
             config_path = os.path.join(temp_dir, 'test_path_config.yaml')
             
             # 创建配置管理器
-            config = get_config_manager(config_path=config_path)
+            config = get_config_manager(config_path=config_path, test_mode=True)
             
             # 设置多平台base_dir
             multi_platform_base_dir = {
@@ -359,7 +359,7 @@ class TestCrossPlatformPathIntegration:
             config_path = os.path.join(temp_dir, 'test_backward.yaml')
             
             # 创建配置管理器
-            config = get_config_manager(config_path=config_path)
+            config = get_config_manager(config_path=config_path, test_mode=True)
             
             # 测试现有的单一路径配置仍然工作
             work_path = os.path.join(temp_dir, 'work')

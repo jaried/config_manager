@@ -34,7 +34,8 @@ __type_hints__: {{}}'''
             
         config = get_config_manager(
             config_path=str(config_path),
-            auto_create=False
+            auto_create=False,
+            test_mode=True
         )
             
         assert config is not None
@@ -57,7 +58,8 @@ __type_hints__: {}'''
             
         config = get_config_manager(
             config_path=str(config_path),
-            auto_create=True
+            auto_create=True,
+            test_mode=True
         )
             
         assert config is None
@@ -72,7 +74,8 @@ __type_hints__: {}'''
             
         config = get_config_manager(
             config_path=str(config_path),
-            auto_create=True
+            auto_create=True,
+            test_mode=True
         )
             
         config.set('project_name', 'TestProject')
@@ -83,7 +86,8 @@ __type_hints__: {}'''
         _clear_instances_for_testing()
         config2 = get_config_manager(
             config_path=str(config_path),
-            auto_create=False
+            auto_create=False,
+            test_mode=True
         )
             
         assert config2.get('project_name') == 'TestProject'
@@ -110,7 +114,8 @@ __type_hints__: {{}}'''
             
         config = get_config_manager(
             config_path=str(config_path),
-            auto_create=False
+            auto_create=False,
+            test_mode=True
         )
             
         assert config is not None
@@ -132,7 +137,8 @@ __type_hints__: {{}}'''
             
         config = get_config_manager(
             config_path=str(config_path),
-            auto_create=True
+            auto_create=True,
+            test_mode=True
         )
             
         assert config is not None

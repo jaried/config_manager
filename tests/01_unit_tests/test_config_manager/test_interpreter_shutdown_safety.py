@@ -151,7 +151,8 @@ class TestInterpreterShutdownSafety:
         config = get_config_manager(
             config_path=self.config_path,
             auto_create=True, 
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 设置一些值
@@ -174,7 +175,8 @@ class TestInterpreterShutdownSafety:
         config = get_config_manager(
             config_path=self.config_path,
             auto_create=True, 
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         exit_error = None

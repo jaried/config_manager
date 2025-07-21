@@ -22,8 +22,8 @@ class TestCrossProjectIsolation:
             os.makedirs(os.path.dirname(config_path_b), exist_ok=True)
             
             # 创建两个配置管理器实例
-            config_a = get_config_manager(config_path=config_path_a, auto_create=True, test_mode=False)
-            config_b = get_config_manager(config_path=config_path_b, auto_create=True, test_mode=False)
+            config_a = get_config_manager(config_path=config_path_a, auto_create=True, test_mode=True)
+            config_b = get_config_manager(config_path=config_path_b, auto_create=True, test_mode=True)
             
             # 验证它们是不同的实例
             assert config_a is not config_b, "不同配置路径应该创建不同的实例"
@@ -53,8 +53,8 @@ class TestCrossProjectIsolation:
             os.makedirs(os.path.dirname(config_path), exist_ok=True)
             
             # 创建两个使用相同路径的配置管理器
-            config_1 = get_config_manager(config_path=config_path, auto_create=True, test_mode=False)
-            config_2 = get_config_manager(config_path=config_path, auto_create=True, test_mode=False)
+            config_1 = get_config_manager(config_path=config_path, auto_create=True, test_mode=True)
+            config_2 = get_config_manager(config_path=config_path, auto_create=True, test_mode=True)
             
             # 验证它们是同一个实例
             assert config_1 is config_2, "相同配置路径应该复用实例"
@@ -93,13 +93,13 @@ class TestCrossProjectIsolation:
             os.makedirs(os.path.dirname(alpha_config_path), exist_ok=True)
             
             # 创建bakamh配置
-            bakamh_config = get_config_manager(config_path=bakamh_config_path, auto_create=True, test_mode=False)
+            bakamh_config = get_config_manager(config_path=bakamh_config_path, auto_create=True, test_mode=True)
             bakamh_config.project_name = "bakamh"
             bakamh_config.titls = ["manga1", "manga2"]  # 模拟漫画标题
             bakamh_config.camoufox = {"intelligent_mode": True}  # 模拟浏览器配置
             
             # 创建alpha_backtrader配置
-            alpha_config = get_config_manager(config_path=alpha_config_path, auto_create=True, test_mode=False)
+            alpha_config = get_config_manager(config_path=alpha_config_path, auto_create=True, test_mode=True)
             alpha_config.project_name = "alpha_backtrader"
             alpha_config.strategy_name = "test_strategy"
             

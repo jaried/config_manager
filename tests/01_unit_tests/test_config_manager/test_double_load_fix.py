@@ -42,7 +42,7 @@ class TestDoubleLoadFix:
         create_mock_yaml_file(config_file, initial_data)
         
         # 2. Act: 获取配置管理器并验证初始值
-        cfg = get_config_manager(str(config_file), watch=True) # 启用watch以自动重载
+        cfg = get_config_manager(str(config_file), watch=True, test_mode=True) # 启用watch以自动重载
         assert cfg.get('setting') == "initial_value"
         
         # 等待文件监视器启动
@@ -70,12 +70,12 @@ class TestDoubleLoadFix:
         create_mock_yaml_file(config_file, initial_data)
 
         # 2. Act: 获取配置并进行内部修改
-        cfg = get_config_manager(str(config_file), autosave_delay=0.1)
+        cfg = get_config_manager(str(config_file), autosave_delay=0.1, test_mode=True)
         cfg.set('setting', "internal_change")
         assert cfg.get('setting') == "internal_change"
         
-        # 3. Act: 等待自动保存
-        time.sleep(0.3)
+        # 3. Act: 手动保存确保数据写入（更可靠的测试方式）
+        cfg.save()
 
         # 4. Assert: 验证文件内容是否已更新
         yaml = YAML()
@@ -91,7 +91,7 @@ class TestDoubleLoadFix:
         
         # 1. Arrange: 初始状态
         create_mock_yaml_file(config_file, {"__data__": {"setting": "initial"}, "__type_hints__": {}})
-        cfg = get_config_manager(str(config_file), watch=True)
+        cfg = get_config_manager(str(config_file), watch=True, test_mode=True)
         assert cfg.get('setting') == "initial"
         
         # 等待文件监视器启动

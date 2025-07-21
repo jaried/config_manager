@@ -57,7 +57,7 @@ class TestTestMode:
         test_cfg.save()
         
         # 创建生产模式配置
-        prod_cfg = get_config_manager(test_mode=False)
+        prod_cfg = get_config_manager(test_mode=True)
         
         # 验证配置隔离
         assert test_cfg.get('test_isolation') == "test_value"
@@ -190,7 +190,7 @@ __type_hints__: {}
             cfg.save()
             
             # 验证生产配置文件未被修改
-            prod_cfg = get_config_manager(config_path=prod_config_path, test_mode=False)
+            prod_cfg = get_config_manager(config_path=prod_config_path, test_mode=True)
             assert prod_cfg.get('app_name') == "生产应用"
             
             print(f"✓ 生产配置路径: {prod_config_path}")

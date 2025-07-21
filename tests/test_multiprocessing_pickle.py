@@ -26,7 +26,8 @@ def test_config_manager_pickle_issue():
             config_path=test_config_path,
             auto_create=True,
             watch=False,
-            first_start_time=datetime.now()
+            first_start_time=datetime.now(),
+            test_mode=True
         )
         
         # 设置一些配置数据
@@ -71,7 +72,8 @@ def test_multiprocessing_with_config():
             config_path=test_config_path,
             auto_create=True,
             watch=False,
-            first_start_time=datetime.now()
+            first_start_time=datetime.now(),
+            test_mode=True
         )
         
         # 设置一些配置数据

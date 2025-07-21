@@ -36,7 +36,8 @@ class TestInternalSaveNoReload:
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 设置初始配置
@@ -69,7 +70,8 @@ class TestInternalSaveNoReload:
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 设置初始配置
@@ -137,7 +139,8 @@ __type_hints__: {}"""
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.1  # 快速自动保存
+            autosave_delay=0.1,  # 快速自动保存
+            test_mode=True
         )
         
         # 设置初始配置
@@ -170,7 +173,8 @@ __type_hints__: {}"""
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 设置初始配置
@@ -195,7 +199,8 @@ __type_hints__: {}"""
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 验证文件监视器存在
@@ -219,7 +224,8 @@ __type_hints__: {}"""
         cfg = get_config_manager(
             config_path=config_file,
             watch=False,  # 禁用文件监视
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 验证文件监视器不存在
@@ -242,7 +248,8 @@ __type_hints__: {}"""
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.05  # 快速自动保存
+            autosave_delay=0.05,  # 快速自动保存
+            test_mode=True
         )
         
         # 快速连续修改配置
@@ -265,7 +272,8 @@ __type_hints__: {}"""
         cfg = get_config_manager(
             config_path=config_file,
             watch=True,  # 启用文件监视
-            autosave_delay=0.1
+            autosave_delay=0.1,
+            test_mode=True
         )
         
         # 记录初始修改时间
