@@ -174,8 +174,9 @@ class ConfigManagerCore(ConfigNode):
             # 设置首次启动时间（只有在auto_create检查通过后才设置）
             self._setup_first_start_time(first_start_time)
 
-            # 注册清理函数
-            atexit.register(self._cleanup)
+            # 注册清理函数（程序退出时自动调用）
+            import atexit
+            atexit.register(self.cleanup)
 
             # 检查是否需要路径配置（避免对简单配置文件意外修改）
             if self._should_setup_paths():

@@ -983,6 +983,33 @@ __type_hints__:
         if autosave:
             self._schedule_autosave()
 
+    def cleanup(self):
+        """清理所有资源，停止线程并关闭文件"""
+        try:
+            # 停止文件监视器
+            if hasattr(self, '_watcher') and self._watcher:
+                self._watcher.stop()
+                
+            # 清理自动保存管理器
+            if hasattr(self, '_autosave_manager') and self._autosave_manager:
+                self._autosave_manager.cleanup()
+                
+        except Exception as e:
+            # 在清理过程中忽略错误，避免影响程序退出
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug(f"清理资源时发生错误: {e}")
+        return
+
+    def __enter__(self):
+        """上下文管理器入口"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """上下文管理器退出时清理资源"""
+        self.cleanup()
+        return
+
     def __getattr__(self, name: str) -> Any:
         """ConfigManager的属性访问，支持选择性自动解包
         
@@ -1041,7 +1068,7 @@ def get_config_manager(
         # 缓存中没有，才生成测试环境路径
         config_path = ConfigManager._setup_test_environment(original_config_path, first_start_time)
         auto_create = True  # 测试模式强制启用自动创建
-        watch = False  # 测试模式禁用文件监视
+        # 保留用户的watch设置，测试模式下允许文件监视（监视临时目录中的测试配置文件）
     else:
         # 非测试模式：智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
         if config_path and not auto_create:
