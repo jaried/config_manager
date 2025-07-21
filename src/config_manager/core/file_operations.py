@@ -429,20 +429,14 @@ class FileOperations:
                     # 这是锚点别名展开产生的重复：
                     # 保留锚点定义(__data__中的，第1个)，删除别名展开(顶层的，第2个)
                     keys_to_remove.append(key)
-                    print(f"删除锚点别名展开重复: '{key}' (保留__data__中的锚点定义)")
+                    pass  # 移除了调试输出
                 else:
                     # 值不同，保留顶层的键（非锚点别名重复，可能有特殊用途）
-                    print(f"保留顶层键 '{key}': 值与__data__中的不同，非锚点别名重复")
+                    pass  # 移除了调试输出
         
         # 移除确认的锚点别名重复键
         for key in keys_to_remove:
             del original_data[key]
-            
-        # 记录移除的键用于调试
-        if keys_to_remove:
-            print(f"移除锚点别名重复键: {keys_to_remove}")
-        else:
-            print("未发现锚点别名重复键需要删除")
     
     def _are_values_identical(self, value1: Any, value2: Any) -> bool:
         """比较两个值是否完全相同，用于判断是否为真正的重复
@@ -621,16 +615,16 @@ class FileOperations:
                         import re
                         if re.search(r'&\w+|:\s*\*\w+', line_content):
                             has_anchor_alias = True
-                            print(f"🔍 检测到锚点别名标记: {line_content.strip()} (第{line_no+1}行)")
+                            pass  # 移除了调试输出
                             break
                 
                 if not has_anchor_alias:
                     # 非锚点别名重复，不删除，可能有特殊用途
-                    print(f"🛡️  保留非锚点别名重复键: '{base_key}' - 可能有特殊用途")
+                    pass  # 移除了调试输出
                     continue
                 
                 # 只有检测到锚点别名标记才进行重复删除
-                print(f"🎯 处理锚点别名重复键: '{base_key}'")
+                pass  # 移除了调试输出
                 
                 # 检查是否存在 __data__ 内部和顶层的重复
                 data_occurrences = [(line_no, indent, section, key) for line_no, indent, section, key in occurrences 
