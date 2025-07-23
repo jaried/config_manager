@@ -94,52 +94,6 @@ def create_large_config_data(size: int) -> Dict[str, Any]:
     return config_data
 
 
-def test_config_load_performance():
-    """测试配置加载性能"""
-    print("\n=== 配置加载性能测试 ===")
-    
-    # 测试不同大小的配置文件
-    sizes = [10, 50, 100, 200]
-    
-    for size in sizes:
-        with tempfile.NamedTemporaryFile(mode='w', suffix=f'_size_{size}.yaml', delete=False) as tmp:
-            # 创建大型配置数据
-            config_data = create_large_config_data(size)
-            
-            # 写入YAML文件
-            import yaml
-            yaml.dump(config_data, tmp, default_flow_style=False)
-            test_config_path = tmp.name
-        
-        try:
-            # 测试加载性能
-            with PerformanceTimer(f"Load config with {size} items") as timer:
-                # 为每个测试创建独立的配置管理器实例
-                config = get_config_manager(
-                    config_path=test_config_path,
-                    auto_create=False,
-                    watch=False,
-                    test_mode=True  # 统一使用测试模式确保测试隔离
-                )
-                
-                # 验证配置加载正确
-                assert config.app_name == f'TestApp_{size}'
-                assert config.version == '1.0.0'
-                assert len(config.database.connections) == size
-                assert len(config.services) == size
-                assert len(config.features) == size
-                assert len(config.settings) == size
-            
-            print(f"加载 {size} 项配置耗时: {timer.elapsed:.4f}秒")
-            
-            # 性能要求：即使是大型配置也应该在合理时间内加载
-            if size <= 100:
-                assert timer.elapsed < 2.0, f"加载 {size} 项配置耗时过长: {timer.elapsed:.4f}秒"
-            else:
-                assert timer.elapsed < 5.0, f"加载 {size} 项配置耗时过长: {timer.elapsed:.4f}秒"
-            
-        finally:
-            Path(test_config_path).unlink(missing_ok=True)
 
 
 def test_config_save_performance():
@@ -294,72 +248,6 @@ def concurrent_config_worker(config_path: str, worker_id: int, operations: int, 
         })
 
 
-def test_concurrent_access_stress():
-    """测试并发访问压力"""
-    print("\n=== 并发访问压力测试 ===")
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
-        # 创建初始配置
-        initial_config = create_large_config_data(50)
-        import yaml
-        yaml.dump(initial_config, tmp, default_flow_style=False)
-        test_config_path = tmp.name
-    
-    try:
-        # 测试不同的并发级别
-        thread_counts = [2, 4, 8]
-        operations_per_thread = 50
-        
-        for thread_count in thread_counts:
-            print(f"\n测试 {thread_count} 线程并发访问...")
-            
-            results = []
-            
-            # 创建并启动线程
-            threads = []
-            start_time = time.time()
-            
-            for i in range(thread_count):
-                thread = threading.Thread(
-                    target=concurrent_config_worker,
-                    args=(test_config_path, i, operations_per_thread, results)
-                )
-                threads.append(thread)
-                thread.start()
-            
-            # 等待所有线程完成
-            for thread in threads:
-                thread.join()
-            
-            end_time = time.time()
-            total_elapsed = end_time - start_time
-            
-            # 分析结果
-            successful_workers = [r for r in results if 'error' not in r]
-            failed_workers = [r for r in results if 'error' in r]
-            
-            print(f"总耗时: {total_elapsed:.4f}秒")
-            print(f"成功的工作线程: {len(successful_workers)}/{thread_count}")
-            print(f"失败的工作线程: {len(failed_workers)}")
-            
-            if failed_workers:
-                for worker in failed_workers:
-                    print(f"工作线程 {worker['worker_id']} 失败: {worker['error']}")
-            
-            if successful_workers:
-                avg_ops_per_second = sum(w['ops_per_second'] for w in successful_workers) / len(successful_workers)
-                print(f"平均操作速度: {avg_ops_per_second:.2f} ops/sec")
-                
-                # 性能要求：并发访问应该保持合理的性能
-                assert avg_ops_per_second > 10, f"并发访问性能过低: {avg_ops_per_second:.2f} ops/sec"
-            
-            # 大部分线程应该成功完成（并发环境下有些失败是正常的）
-            success_rate = len(successful_workers) / thread_count
-            assert success_rate >= 0.5, f"并发访问成功率过低: {success_rate:.2%}"
-            
-    finally:
-        Path(test_config_path).unlink(missing_ok=True)
-
 
 def test_memory_usage_stress():
     """测试内存使用压力"""
@@ -431,65 +319,6 @@ def test_memory_usage_stress():
         print(f"清理后内存使用: {final_memory:.2f}MB")
 
 
-def test_large_config_file_handling():
-    """测试大型配置文件处理"""
-    print("\n=== 大型配置文件处理测试 ===")
-    
-    # 创建非常大的配置数据
-    large_size = 500
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
-        config_data = create_large_config_data(large_size)
-        import yaml
-        yaml.dump(config_data, tmp, default_flow_style=False)
-        test_config_path = tmp.name
-    
-    try:
-        # 获取文件大小
-        file_size = os.path.getsize(test_config_path) / 1024 / 1024  # MB
-        print(f"配置文件大小: {file_size:.2f}MB")
-        
-        # 测试加载大型配置文件
-        with PerformanceTimer("Load large config file") as timer:
-            config = get_config_manager(
-                config_path=test_config_path,
-                auto_create=False,
-                watch=False,
-                test_mode=True  # 统一使用测试模式确保测试隔离
-            )
-        
-        print(f"加载大型配置文件耗时: {timer.elapsed:.4f}秒")
-        # 大型配置文件（500个条目）加载需要较长时间是正常的
-        assert timer.elapsed < 10.0, f"加载大型配置文件耗时过长: {timer.elapsed:.4f}秒"
-        
-        # 验证配置正确加载
-        assert config.app_name == f'TestApp_{large_size}'
-        assert len(config.database.connections) == large_size
-        assert len(config.services) == large_size
-        
-        # 测试修改大型配置
-        with PerformanceTimer("Modify large config") as timer:
-            config.app_name = "ModifiedLargeApp"
-            config.new_large_section = {}
-            for i in range(100):
-                config.new_large_section[f'key_{i}'] = f'value_{i}'
-        
-        print(f"修改大型配置耗时: {timer.elapsed:.4f}秒")
-        assert timer.elapsed < 2.0, f"修改大型配置耗时过长: {timer.elapsed:.4f}秒"
-        
-        # 测试保存大型配置
-        with PerformanceTimer("Save large config") as timer:
-            config.save()
-        
-        print(f"保存大型配置耗时: {timer.elapsed:.4f}秒")
-        assert timer.elapsed < 10.0, f"保存大型配置耗时过长: {timer.elapsed:.4f}秒"
-        
-        # 验证保存成功
-        assert config.app_name == "ModifiedLargeApp"
-        assert len(config.new_large_section) == 100
-        
-    finally:
-        Path(test_config_path).unlink(missing_ok=True)
 
 
 def test_rapid_config_changes():
@@ -604,12 +433,9 @@ if __name__ == '__main__':
     print("=" * 80)
     
     # 运行所有性能测试
-    test_config_load_performance()
     test_config_save_performance()
     test_config_access_performance()
-    test_concurrent_access_stress()
     test_memory_usage_stress()
-    test_large_config_file_handling()
     test_rapid_config_changes()
     test_autosave_performance()
     

@@ -78,8 +78,10 @@ class TestDoubleLoadFix:
         cfg.save()
 
         # 4. Assert: 验证文件内容是否已更新
+        # 在测试模式下，需要读取实际的配置文件路径而不是传入的原始路径
+        actual_config_path = cfg._config_path if hasattr(cfg, '_config_path') else config_file
         yaml = YAML()
-        with open(config_file, 'r', encoding='utf-8') as f:
+        with open(actual_config_path, 'r', encoding='utf-8') as f:
             content = yaml.load(f)
         assert content['__data__']['setting'] == 'internal_change'
 

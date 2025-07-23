@@ -208,7 +208,20 @@ class ConfigManagerCore(ConfigNode):
             
             # 启动文件监视（在所有初始化完成后）
             if watch and self._watcher:
-                self._watcher.start(self._config_path, self._on_file_changed)
+                # 在测试模式下，如果原始配置路径不同于当前配置路径，监视原始路径
+                watch_path = self._config_path
+                true_original = getattr(self, '_true_original_config_path', None)
+                print(f"🔍 调试信息: _test_mode={getattr(self, '_test_mode', 'Not Set')}, _true_original_config_path={true_original}, _config_path={self._config_path}")
+                if (hasattr(self, '_test_mode') and self._test_mode and 
+                    true_original and 
+                    os.path.exists(true_original) and  # 检查文件是否存在
+                    os.path.abspath(true_original) != os.path.abspath(self._config_path)):
+                    watch_path = true_original
+                    print(f"✓ 测试模式下监视真正的原始配置路径: {watch_path}")
+                else:
+                    print(f"✓ 监视当前配置路径: {watch_path}")
+                
+                self._watcher.start(watch_path, self._on_file_changed)
         
         return True
 
@@ -549,27 +562,38 @@ class ConfigManagerCore(ConfigNode):
             return False
 
     def _get_serializable_data(self) -> dict:
-        """获取可序列化的配置数据，使用简化的方法避免递归"""
-        # 设置序列化标志，防止在序列化过程中触发配置修改
-        if not hasattr(self, '_serializing'):
-            self._serializing = False
+        """获取可序列化的配置数据，使用改进的递归保护机制"""
+        # 使用调用深度计数器而不是简单的布尔标志
+        if not hasattr(self, '_serialization_depth'):
+            self._serialization_depth = 0
         
-        if self._serializing:
+        # 如果递归深度过深，返回当前数据的快照而不是空字典
+        if self._serialization_depth > 2:
+            logger.warning("序列化递归深度过深，返回数据快照")
+            # 直接访问_data避免进一步递归
+            if hasattr(self, '_data') and self._data:
+                return dict(self._data) if isinstance(self._data, dict) else {}
             return {}
         
-        self._serializing = True
+        self._serialization_depth += 1
         try:
             # 使用ConfigNode的to_dict方法，这个方法已经有防护机制
             if hasattr(self, '_data'):
-                return self.to_dict()
+                result = self.to_dict()
+                return result
             else:
                 return {}
         except Exception as e:
             logger.warning(f"获取序列化数据失败: {e}")
-            # 如果to_dict失败，返回空字典而不是失败
+            # 如果to_dict失败，尝试直接访问_data
+            if hasattr(self, '_data') and self._data:
+                try:
+                    return dict(self._data) if isinstance(self._data, dict) else {}
+                except Exception:
+                    return {}
             return {}
         finally:
-            self._serializing = False
+            self._serialization_depth -= 1
 
     def _convert_stringified_data(self, value):
         """检测并转换字符串化的数据结构（如字符串化的列表）"""
@@ -641,6 +665,20 @@ class ConfigManagerCore(ConfigNode):
                 print(f"文件变化回调的调用链: {change_call_chain}")
             except Exception as e:
                 print(f"获取文件变化调用链失败: {e}")
+
+        # 在测试模式下，如果监视的是原始路径，需要先同步到测试路径
+        true_original = getattr(self, '_true_original_config_path', None)
+        if (hasattr(self, '_test_mode') and self._test_mode and 
+            true_original and 
+            os.path.abspath(true_original) != os.path.abspath(self._config_path)):
+            try:
+                # 将原始配置文件的变化同步到测试配置路径
+                if os.path.exists(true_original):
+                    import shutil
+                    shutil.copy2(true_original, self._config_path)
+                    print(f"✓ 测试模式下已同步文件变化: {true_original} -> {self._config_path}")
+            except Exception as e:
+                print(f"⚠️  测试模式下同步文件变化失败: {e}")
 
         self.reload()
         return

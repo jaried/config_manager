@@ -51,10 +51,14 @@
 - **用途**：存储训练过程中的模型检查点和最佳模型
 
 ### 2.5 调试目录配置
-- **需求描述**：为调试相关文件提供专用存储目录
+- **需求描述**：为调试相关文件提供专用存储目录，基于first_start_time生成时间戳子目录
 - **配置项**：
-  - `config.paths.debug_dir = config.paths.work_dir/debug/`（自动创建）
-- **用途**：存储调试过程中的临时文件、调试日志、测试数据等
+  - `config.paths.debug_dir = config.paths.work_dir/debug/{YYYYMMDD}/{HHMMSS}/`（自动创建）
+- **时间格式**：
+  - 日期：YYYYMMDD格式（简洁路径格式）
+  - 时间：HHMMSS格式
+- **时间来源**：`config.first_start_time`
+- **用途**：存储调试过程中的临时文件、调试日志、测试数据等，按启动时间隔离
 
 ### 2.6 日志目录配置
 - **需求描述**：基于启动时间生成日志目录结构
@@ -110,7 +114,7 @@ paths:
   work_dir: ''  # 工作目录
   checkpoint_dir: ''  # 检查点目录（自动创建）
   best_checkpoint_dir: ''  # 最佳检查点目录（自动创建）
-  debug_dir: ''  # 调试目录（自动创建）
+  debug_dir: ''  # 调试目录，基于first_start_time的YYYYMMDD/HHMMSS格式（自动创建）
   tsb_logs_dir: ''  # TensorBoard日志目录（自动创建）
   log_dir: ''  # 普通日志目录（自动创建）
 ```

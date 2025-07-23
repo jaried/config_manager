@@ -36,8 +36,9 @@ def test_no_duplicate_saves_during_initialization():
         assert config.test_value == "initial_value"
         assert config.project_name == "test_project"
         
-        # 验证配置文件确实被创建
-        assert os.path.exists(config_path)
+        # 验证配置文件确实被创建（在测试模式下，检查实际的配置路径）
+        actual_config_path = config._config_path if hasattr(config, '_config_path') else config_path
+        assert os.path.exists(actual_config_path)
         
         print(f"初始化耗时: {end_time - start_time:.2f}秒")
         print("初始化完成，无重复保存警告")

@@ -31,24 +31,25 @@ class ConfigManager(ConfigManagerCore):
     def __new__(cls, config_path: str = None,
                 watch: bool = True, auto_create: bool = False,
                 autosave_delay: float = 0.1, first_start_time: datetime = None,
-                test_mode: bool = False):
+                test_mode: bool = False, original_config_path: str = None):
         
         # 设置测试模式标志
         cls._test_mode = test_mode
         
         if test_mode:
             # 测试模式：使用多例模式
-            return cls._create_test_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
+            return cls._create_test_instance(config_path, watch, auto_create, autosave_delay, first_start_time, original_config_path)
         else:
-            # 生产模式：使用基于路径的实例缓存模式
+            # 生产模式：使用基于路径的实例缓存模式  
             return cls._create_production_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
 
     @classmethod
     def _create_test_instance(cls, config_path: str, watch: bool, auto_create: bool, 
-                             autosave_delay: float, first_start_time: datetime):
+                             autosave_delay: float, first_start_time: datetime, original_config_path: str = None, cache_key: str = None):
         """创建测试模式实例（多例模式）"""
-        # 生成缓存键，包含first_start_time信息以区分不同时间的测试实例
-        cache_key = cls._generate_test_cache_key(config_path, first_start_time)
+        # 使用传入的缓存键或生成新的缓存键
+        if cache_key is None:
+            cache_key = cls._generate_test_cache_key(config_path, first_start_time)
         
         if cache_key not in cls._instances:
             with cls._thread_lock:
@@ -60,6 +61,10 @@ class ConfigManager(ConfigManagerCore):
                     
                     # 设置测试模式标志
                     instance._test_mode = True
+                    
+                    # 保存真正的原始配置路径
+                    if original_config_path:
+                        instance._true_original_config_path = original_config_path
                     
                     success = instance.initialize(
                         config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
@@ -139,31 +144,18 @@ class ConfigManager(ConfigManagerCore):
             if first_start_time is not None:
                 time_suffix = f":{first_start_time.strftime('%Y%m%d_%H%M%S')}"
             
-            # 对于测试模式，缓存键主要基于测试标识符，而不是具体的配置路径
-            # 这样同一个测试中的多次调用会使用相同的缓存键
+            # 对于测试模式，缓存键主要基于测试标识符和原始配置路径
+            # 不基于生成的测试路径，这样相同原始路径可以复用实例
             if config_path is not None:
-                # 如果明确指定了配置路径，检查是否是测试环境路径
-                if '/tmp/tests/' in config_path or '\\temp\\tests\\' in config_path.lower():
-                    # 是测试环境路径，使用explicit前缀和完整路径
-                    abs_path = os.path.abspath(config_path)
-                    normalized_path = abs_path.replace('\\', '/')
-                    base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
-                else:
-                    # 是显式指定的路径，包含路径信息
-                    abs_path = os.path.abspath(config_path)
-                    normalized_path = abs_path.replace('\\', '/')
-                    base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
+                # 使用原始路径生成缓存键，确保相同路径复用实例
+                abs_path = os.path.abspath(config_path)
+                normalized_path = abs_path.replace('\\', '/')
+                base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
             else:
-                # 自动路径：生成测试环境路径并使用explicit前缀
-                try:
-                    _, test_config_path = cls._generate_test_environment_path(first_start_time)
-                    normalized_path = os.path.abspath(test_config_path).replace('\\', '/')
-                    base_key = f"explicit:{normalized_path}:test:{test_identifier}{time_suffix}"
-                except Exception:
-                    # 如果生成测试环境路径失败，使用当前工作目录
-                    current_dir = os.getcwd()
-                    normalized_dir = os.path.abspath(current_dir).replace('\\', '/')
-                    base_key = f"auto:{normalized_dir}:test:{test_identifier}{time_suffix}"
+                # 测试模式下即使是自动路径也使用explicit前缀，保持一致性
+                current_dir = os.getcwd()
+                normalized_dir = os.path.abspath(current_dir).replace('\\', '/')
+                base_key = f"explicit:{normalized_dir}:test:{test_identifier}{time_suffix}"
             
             return base_key
         except Exception:
@@ -217,7 +209,7 @@ class ConfigManager(ConfigManagerCore):
     def __init__(self, config_path: str = None,
                  watch: bool = False, auto_create: bool = False,
                  autosave_delay: float = 0.1, first_start_time: datetime = None,
-                 test_mode: bool = False):
+                 test_mode: bool = False, original_config_path: str = None):
         """初始化配置管理器，单例模式下可能被多次调用"""
         # 单例模式下，__init__可能被多次调用，但只有第一次有效
         pass
@@ -235,8 +227,8 @@ class ConfigManager(ConfigManagerCore):
         cwd = os.getcwd()
         print(f"✓ 基于当前工作目录生成测试路径: {cwd}")
         
-        # 生成测试环境路径
-        test_base_dir, test_config_path = cls._generate_test_environment_path(first_start_time)
+        # 生成测试环境路径（传递原始配置路径以确保隔离）
+        test_base_dir, test_config_path = cls._generate_test_environment_path(first_start_time, original_config_path)
         
         # 设置测试模式环境变量
         os.environ['CONFIG_MANAGER_TEST_MODE'] = 'true'
@@ -391,7 +383,7 @@ class ConfigManager(ConfigManagerCore):
             return test_config_path
 
     @classmethod
-    def _generate_test_environment_path(cls, first_start_time: datetime = None) -> tuple[
+    def _generate_test_environment_path(cls, first_start_time: datetime = None, original_config_path: str = None) -> tuple[
         str, str]:
         """生成测试环境路径"""
         from datetime import datetime
@@ -423,11 +415,32 @@ class ConfigManager(ConfigManagerCore):
             test_base_dir = pytest_tmp_path
             print(f"✓ 检测到pytest环境，使用pytest tmp_path: {test_base_dir}")
         else:
-            # 基于当前工作目录生成唯一的测试目录
+            # 基于当前工作目录和原始配置路径生成唯一的测试目录
             # 使用当前工作目录的哈希值来确保不同目录生成不同的路径
             import hashlib
             cwd_hash = hashlib.md5(cwd.encode()).hexdigest()[:8]
-            test_base_dir = os.path.join(tempfile.gettempdir(), 'tests', date_str, time_str, cwd_hash)
+            
+            # 添加微秒精度确保唯一性，但保持相同参数下的一致性
+            microsecond_str = first_start_time.strftime("%f")[:6]  # 微秒精度
+            
+            # 为保证测试一致性，基于时间戳和原始配置路径生成稳定的标识符
+            # 而不是使用随机UUID
+            stability_components = [
+                str(first_start_time.timestamp()),
+                cwd,
+                original_config_path or "none"
+            ]
+            stability_input = "|".join(stability_components)
+            stability_hash = hashlib.md5(stability_input.encode()).hexdigest()[:8]
+            
+            # 如果有原始配置路径，也加入哈希计算以确保不同配置路径的隔离
+            if original_config_path:
+                config_hash = hashlib.md5(original_config_path.encode()).hexdigest()[:8]
+                unique_id = f"{cwd_hash}_{config_hash}_{microsecond_str}_{stability_hash}"
+            else:
+                unique_id = f"{cwd_hash}_{microsecond_str}_{stability_hash}"
+                
+            test_base_dir = os.path.join(tempfile.gettempdir(), 'tests', date_str, time_str, unique_id)
             print(f"✓ 基于当前工作目录生成测试路径: {test_base_dir}")
         
         test_config_path = os.path.join(test_base_dir, 'src', 'config', 'config.yaml')
@@ -1059,16 +1072,19 @@ def get_config_manager(
     if test_mode:
         # 测试模式下，先检查缓存，避免重复生成测试环境
         original_config_path = config_path  # 保存原始路径
-        cache_key = ConfigManager._generate_test_cache_key(original_config_path)
+        cache_key = ConfigManager._generate_test_cache_key(original_config_path, first_start_time)
         
         # 如果缓存中已有实例，直接返回
         if cache_key in ConfigManager._instances:
             return ConfigManager._instances[cache_key]
         
-        # 缓存中没有，才生成测试环境路径
-        config_path = ConfigManager._setup_test_environment(original_config_path, first_start_time)
-        auto_create = True  # 测试模式强制启用自动创建
-        # 保留用户的watch设置，测试模式下允许文件监视（监视临时目录中的测试配置文件）
+        # 缓存中没有，才生成测试环境路径并创建实例
+        test_config_path = ConfigManager._setup_test_environment(original_config_path, first_start_time)
+        # 直接调用_create_test_instance，传入正确的缓存键避免重复计算
+        return ConfigManager._create_test_instance(
+            test_config_path, watch, True, autosave_delay, first_start_time, 
+            original_config_path, cache_key
+        )
     else:
         # 非测试模式：智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
         if config_path and not auto_create:
@@ -1082,8 +1098,13 @@ def get_config_manager(
                 auto_create = True
                 print(f"✓ 检测到测试环境，自动启用auto_create: {config_path}")
 
-    manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
-                            test_mode=test_mode)
+    # 在测试模式下传递原始配置路径
+    if test_mode:
+        manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
+                                test_mode=test_mode, original_config_path=original_config_path)
+    else:
+        manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
+                                test_mode=test_mode)
 
     if manager:
         # 修复：只在首次初始化时设置项目路径，避免重复初始化

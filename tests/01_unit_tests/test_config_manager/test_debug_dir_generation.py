@@ -34,11 +34,13 @@ class TestDebugDirGeneration:
         
         # 测试debug_dir生成方法，使用Windows风格路径
         work_dir = 'C:\\test\\work\\dir'
-        debug_dirs = generator.generate_debug_directory(work_dir)
+        date_str = '20250722'
+        time_str = '143000'
+        debug_dirs = generator.generate_debug_directory(work_dir, date_str, time_str)
         
         # 验证返回结果
         assert 'paths.debug_dir' in debug_dirs
-        expected_debug_dir = os.path.join(work_dir, 'debug')
+        expected_debug_dir = os.path.join(work_dir, 'debug', date_str, time_str)
         assert debug_dirs['paths.debug_dir'] == expected_debug_dir
     
     def test_debug_dir_with_mock_debug_mode(self):

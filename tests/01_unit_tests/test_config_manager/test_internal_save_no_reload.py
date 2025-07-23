@@ -87,15 +87,32 @@ class TestInternalSaveNoReload:
             watcher_last_mtime = cfg._watcher._last_mtime
             print(f"文件监视器记录的修改时间: {watcher_last_mtime}")
         
+        # 在测试模式下，需要操作监视器实际监视的文件
+        # 获取文件监视器监视的路径 
+        watched_file = cfg._watcher._config_path if cfg._watcher else config_file
+        
+        # 确保监视的文件存在，如果不存在则创建
+        if not os.path.exists(watched_file):
+            print(f"监视文件不存在，创建: {watched_file}")
+            os.makedirs(os.path.dirname(watched_file), exist_ok=True)
+            # 复制当前配置到监视文件
+            if os.path.exists(cfg._config_path):
+                import shutil
+                shutil.copy2(cfg._config_path, watched_file)
+            else:
+                # 如果实际配置文件也不存在，创建一个基本的配置文件
+                with open(watched_file, 'w', encoding='utf-8') as f:
+                    f.write('__data__:\n  test_value: initial_value\n  nested:\n    deep_value: deep_initial\n__type_hints__: {}')
+        
         # 记录修改前的文件时间
-        initial_mtime = os.path.getmtime(config_file)
+        initial_mtime = os.path.getmtime(watched_file)
         print(f"修改前文件时间: {initial_mtime}")
         
         # 确保文件时间比监视器记录的时间更新
         if cfg._watcher and initial_mtime <= watcher_last_mtime:
             print("等待文件时间更新...")
             time.sleep(1.0)
-            initial_mtime = os.path.getmtime(config_file)
+            initial_mtime = os.path.getmtime(watched_file)
             print(f"更新后文件时间: {initial_mtime}")
         
         # 外部修改文件
@@ -106,11 +123,11 @@ class TestInternalSaveNoReload:
   external_change: true
 __type_hints__: {}"""
 
-        with open(config_file, 'w', encoding='utf-8') as f:
+        with open(watched_file, 'w', encoding='utf-8') as f:
             f.write(external_config)
         
         # 记录修改后的文件时间
-        updated_mtime = os.path.getmtime(config_file)
+        updated_mtime = os.path.getmtime(watched_file)
         print(f"修改后文件时间: {updated_mtime}")
         print(f"文件时间变化: {updated_mtime - initial_mtime}")
         
@@ -276,8 +293,11 @@ __type_hints__: {}"""
             test_mode=True
         )
         
+        # 在测试模式下，获取实际配置文件的修改时间
+        actual_config_file = cfg._config_path if hasattr(cfg, '_config_path') else config_file
+        
         # 记录初始修改时间
-        initial_mtime = os.path.getmtime(config_file)
+        initial_mtime = os.path.getmtime(actual_config_file)
         
         # 保存配置
         cfg.timing_test = "timing_value"
@@ -285,7 +305,7 @@ __type_hints__: {}"""
         assert saved is True, "保存应该成功"
         
         # 验证文件修改时间已更新
-        updated_mtime = os.path.getmtime(config_file)
+        updated_mtime = os.path.getmtime(actual_config_file)
         assert updated_mtime > initial_mtime, "文件修改时间应该已更新"
         
         # 验证配置值正确

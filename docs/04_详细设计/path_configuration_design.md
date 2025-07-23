@@ -76,7 +76,7 @@
 生成子目录路径
     ├── paths.checkpoint_dir: paths.work_dir/checkpoint/
     ├── paths.best_checkpoint_dir: paths.work_dir/checkpoint/best
-    ├── paths.debug_dir: paths.work_dir/debug/
+    ├── paths.debug_dir: paths.work_dir/debug/YYYYMMDD/HHMMSS/
     ├── paths.tsb_logs_dir: paths.work_dir/tsb_logs/date/time
     └── paths.log_dir: paths.work_dir/logs/date/time
     ↓
@@ -229,6 +229,23 @@ class PathGenerator:
             
         Returns:
             Dict[str, str]: 检查点目录配置
+        """
+        
+    def generate_debug_directory(
+        self, 
+        work_dir: str, 
+        date_str: str, 
+        time_str: str
+    ) -> Dict[str, str]:
+        """生成调试目录路径
+        
+        Args:
+            work_dir: 工作目录
+            date_str: 日期字符串（YYYYMMDD）
+            time_str: 时间字符串（HHMMSS）
+            
+        Returns:
+            Dict[str, str]: 调试目录路径字典
         """
         
     def generate_log_directories(self, work_dir: str, date_str: str, time_str: str) -> Dict[str, str]:
@@ -416,7 +433,7 @@ def _create_dirs_for_fields(self, node, visited=None) -> None:
 - **paths.work_dir**: 工作目录路径
 - **paths.checkpoint_dir**: 检查点目录（自动创建）
 - **paths.best_checkpoint_dir**: 最佳检查点目录（自动创建）
-- **paths.debug_dir**: 调试目录（自动创建）
+- **paths.debug_dir**: 调试目录，基于first_start_time的YYYYMMDD/HHMMSS格式（自动创建）
 - **paths.tsb_logs_dir**: TensorBoard日志目录（自动创建）
 - **paths.log_dir**: 普通日志目录（自动创建）
 
@@ -440,13 +457,15 @@ config.set('project_name', 'ml_experiment')
 config.set('experiment_name', 'test_run')
 
 # 路径配置会自动生成并创建目录
-print(config.paths.work_dir)  # d:\my_project\ml_experiment\test_run
-print(config.paths.log_dir)   # d:\my_project\ml_experiment\test_run\logs\20250629\073230
+print(config.paths.work_dir)    # d:\my_project\ml_experiment\test_run
+print(config.paths.log_dir)     # d:\my_project\ml_experiment\test_run\logs\20250629\073230
+print(config.paths.debug_dir)   # d:\my_project\ml_experiment\test_run\debug\20250629\073230
 
 # 检查目录是否已创建
 import os
 assert os.path.exists(config.paths.work_dir)
 assert os.path.exists(config.paths.log_dir)
+assert os.path.exists(config.paths.debug_dir)
 ```
 
 ### 6.2 调试模式使用
@@ -454,8 +473,9 @@ assert os.path.exists(config.paths.log_dir)
 ```python
 # 在调试模式下，路径会自动调整
 # 假设is_debug()返回True
-print(config.debug_mode)  # True
-print(config.paths.work_dir)  # d:\my_project\debug\ml_experiment\test_run
+print(config.debug_mode)         # True
+print(config.paths.work_dir)     # d:\my_project\debug\ml_experiment\test_run
+print(config.paths.debug_dir)    # d:\my_project\debug\ml_experiment\test_run\debug\20250629\073230
 ```
 
 ### 6.3 跨平台使用

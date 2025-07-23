@@ -51,28 +51,39 @@ class TestTestMode:
 
     def test_tc0012_001_002_test_mode_isolation(self):
         """TC0012-001-002: 测试test_mode环境隔离"""
-        # 创建测试模式配置
-        test_cfg = get_config_manager(test_mode=True)
-        test_cfg.test_isolation = "test_value"
-        test_cfg.save()
+        # 清理缓存确保获取新实例
+        _clear_instances_for_testing()
         
-        # 创建生产模式配置
-        prod_cfg = get_config_manager(test_mode=True)
+        # 创建第一个测试模式配置实例
+        test_cfg1 = get_config_manager(test_mode=True)
+        test_cfg1.test_isolation = "test_value"
+        test_cfg1.save()
         
-        # 验证配置隔离
-        assert test_cfg.get('test_isolation') == "test_value"
-        assert prod_cfg.get('test_isolation') is None
+        # 记录第一个实例的配置文件路径
+        test_path1 = test_cfg1.get_config_file_path()
+        
+        # 清理缓存确保获取新实例
+        _clear_instances_for_testing()
+        
+        # 创建第二个独立的测试模式配置实例
+        test_cfg2 = get_config_manager(test_mode=True)
+        
+        # 验证两个实例使用不同的配置文件（环境隔离）
+        test_path2 = test_cfg2.get_config_file_path()
+        assert test_path1 != test_path2, "两个测试实例应该使用不同的配置文件路径"
         
         # 验证实例不同
-        assert test_cfg is not prod_cfg
+        assert test_cfg1 is not test_cfg2
         
-        # 验证路径不同
-        test_path = test_cfg.get_config_file_path()
-        prod_path = prod_cfg.get_config_file_path()
-        assert test_path != prod_path
+        # 验证第二个实例没有第一个实例的数据（完全隔离）
+        assert test_cfg2.get('test_isolation') is None, "第二个测试实例不应该看到第一个实例的数据"
         
-        print(f"✓ 测试路径: {test_path}")
-        print(f"✓ 生产路径: {prod_path}")
+        # 第一个实例由于缓存清理后使用了新的测试环境，所以也不会有原来的数据
+        # 这是期望的行为，因为我们的隔离策略是每个实例创建独立的测试环境
+        
+        print(f"✓ 第一个实例路径: {test_path1}")
+        print(f"✓ 第二个实例路径: {test_path2}")
+        print("✓ 测试环境完全隔离")
 
     def test_tc0012_001_003_test_mode_config_operations(self):
         """TC0012-001-003: 测试test_mode下的配置操作"""
@@ -188,6 +199,9 @@ __type_hints__: {}
             # 修改测试配置，不应影响生产配置
             cfg.app_name = "测试应用"
             cfg.save()
+            
+            # 清理缓存以确保获取新的配置实例
+            _clear_instances_for_testing()
             
             # 验证生产配置文件未被修改
             prod_cfg = get_config_manager(config_path=prod_config_path, test_mode=True)

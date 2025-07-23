@@ -218,11 +218,15 @@ class TestSingletonPathResolution:
         # 应该有一个缓存键
         assert len(cache_keys) == 1, f"应该只有一个缓存实例，当前缓存键: {cache_keys}"
         
-        # 检查缓存键格式为explicit:前缀，且路径为测试环境路径
+        # 检查缓存键格式：应该基于原始路径，而不是测试环境路径
         key = cache_keys[0]
         assert key.startswith('explicit:'), f"缓存键应该以explicit:开头，实际: {key}"
-        test_env_path = cm1.get_config_path().replace('\\', '/')
-        assert test_env_path in key, f"缓存键应包含测试环境路径，实际: {key}，测试环境路径: {test_env_path}"
+        assert ':test:' in key, f"缓存键应该包含测试标识符，实际: {key}"
+        
+        # 验证实例能正确获取测试环境路径
+        test_env_path = cm1.get_config_path()
+        assert '/tmp/tests/' in test_env_path, f"实例应该返回测试环境路径，实际: {test_env_path}"
+        assert test_env_path.endswith('src/config/config.yaml'), f"路径格式应该正确，实际: {test_env_path}"
         
         # 2. 测试显式路径的缓存键格式
         temp_dir = tempfile.mkdtemp(prefix="test_cache_key_")
@@ -232,10 +236,20 @@ class TestSingletonPathResolution:
             cm2 = get_config_manager(config_path=explicit_path, test_mode=True)
             cache_keys_after = list(ConfigManager._instances.keys())
             
-            # 应该有显式路径的缓存键（考虑标准化后的路径）
-            normalized_explicit_path = cm2.get_config_path().replace('\\', '/')
-            explicit_keys = [key for key in cache_keys_after if normalized_explicit_path in key]
-            assert len(explicit_keys) >= 1, f"应该有包含测试环境路径的缓存键，测试环境路径: {normalized_explicit_path}，当前缓存键: {cache_keys_after}"
+            # 应该有显式路径的缓存键，基于原始路径
+            assert len(cache_keys_after) == 2, f"应该有两个缓存实例，当前缓存键: {cache_keys_after}"
+            
+            # 新缓存键应该包含原始显式路径的标准化版本
+            new_keys = [k for k in cache_keys_after if k not in cache_keys]
+            assert len(new_keys) == 1, f"应该有一个新的缓存键，新键: {new_keys}"
+            
+            new_key = new_keys[0]
+            normalized_explicit_path = os.path.abspath(explicit_path).replace('\\', '/')
+            assert normalized_explicit_path in new_key, f"缓存键应包含原始显式路径，实际键: {new_key}，原始路径: {normalized_explicit_path}"
+            
+            # 验证第二个实例也能正确获取测试环境路径
+            test_env_path2 = cm2.get_config_path()
+            assert '/tmp/tests/' in test_env_path2, f"第二个实例应该返回测试环境路径，实际: {test_env_path2}"
             
         finally:
             try:

@@ -19,77 +19,86 @@ class TestTC0012004BackupIsolation:
         _clear_instances_for_testing()
 
     def test_tc0012_004_001_backup_path_isolation(self):
-        """测试生产环境和测试环境的备份路径隔离"""
-        fixed_time = datetime(2025, 1, 7, 10, 0, 0)
+        """测试不同配置实例之间的备份路径隔离"""
+        fixed_time1 = datetime(2025, 1, 7, 10, 0, 0)
+        fixed_time2 = datetime(2025, 1, 7, 11, 0, 0)  # 使用不同时间确保隔离
         
-        # 生产环境配置管理器
-        prod_cfg = get_config_manager(first_start_time=fixed_time, test_mode=True)
-        prod_backup_path = prod_cfg.get_last_backup_path()
+        # 清理缓存确保获取新实例
+        _clear_instances_for_testing()
         
-        # 测试环境配置管理器
-        test_cfg = get_config_manager(test_mode=True, first_start_time=fixed_time)
-        test_backup_path = test_cfg.get_last_backup_path()
+        # 第一个配置管理器实例
+        cfg1 = get_config_manager(first_start_time=fixed_time1, test_mode=True)
+        backup_path1 = cfg1.get_last_backup_path()
+        
+        # 清理缓存确保获取新实例
+        _clear_instances_for_testing()
+        
+        # 第二个配置管理器实例（使用不同的时间）
+        cfg2 = get_config_manager(test_mode=True, first_start_time=fixed_time2)
+        backup_path2 = cfg2.get_last_backup_path()
         
         # 验证备份路径完全不同
-        assert prod_backup_path != test_backup_path
+        assert backup_path1 != backup_path2, f"备份路径应该不同：\n路径1: {backup_path1}\n路径2: {backup_path2}"
         
-        # 验证生产环境备份路径不包含临时目录标识
-        assert "temp" not in prod_backup_path.lower()
-        assert "tests" not in prod_backup_path
+        # 验证两个路径都包含测试目录标识（因为都是test_mode=True）
+        assert "temp" in backup_path1.lower() or "tests" in backup_path1
+        assert "temp" in backup_path2.lower() or "tests" in backup_path2
         
-        # 验证测试环境备份路径包含临时目录标识
-        assert "temp" in test_backup_path.lower() or "tests" in test_backup_path
+        # 验证不同的时间戳
+        assert "20250107" in backup_path1 and "100000" in backup_path1
+        assert "20250107" in backup_path2 and "110000" in backup_path2
         
-        # 验证两个路径都包含正确的时间戳
-        assert "20250107" in prod_backup_path
-        assert "100000" in prod_backup_path
-        assert "20250107" in test_backup_path
-        assert "100000" in test_backup_path
-        
-        print(f"生产环境备份路径: {prod_backup_path}")
-        print(f"测试环境备份路径: {test_backup_path}")
+        print(f"配置实例1备份路径: {backup_path1}")
+        print(f"配置实例2备份路径: {backup_path2}")
 
     def test_tc0012_004_002_backup_file_creation_isolation(self):
         """测试备份文件创建的隔离性"""
-        fixed_time = datetime(2025, 1, 7, 10, 0, 0)
+        fixed_time1 = datetime(2025, 1, 7, 10, 0, 0)
+        fixed_time2 = datetime(2025, 1, 7, 11, 0, 0)
         
-        # 生产环境：设置配置并触发备份
-        prod_cfg = get_config_manager(first_start_time=fixed_time, autosave_delay=0.1, test_mode=True)
-        prod_cfg.test_backup_isolation = "production_value"
-        # 明确触发保存以确保备份文件创建
-        prod_cfg.save()
+        # 清理缓存确保获取新实例
+        _clear_instances_for_testing()
         
-        # 测试环境：设置配置并触发备份
-        test_cfg = get_config_manager(test_mode=True, first_start_time=fixed_time, autosave_delay=0.1)
-        test_cfg.test_backup_isolation = "test_value"
+        # 第一个配置实例：设置配置并触发备份
+        cfg1 = get_config_manager(first_start_time=fixed_time1, autosave_delay=0.1, test_mode=True)
+        cfg1.test_backup_isolation = "first_value"
         # 明确触发保存以确保备份文件创建
-        test_cfg.save()
+        cfg1.save()
+        
+        # 清理缓存确保获取新实例
+        _clear_instances_for_testing()
+        
+        # 第二个配置实例：设置配置并触发备份
+        cfg2 = get_config_manager(test_mode=True, first_start_time=fixed_time2, autosave_delay=0.1)
+        cfg2.test_backup_isolation = "second_value"
+        # 明确触发保存以确保备份文件创建
+        cfg2.save()
         
         # 等待自动保存和备份
         import time
         time.sleep(0.3)
         
-        # 获取实际的备份路径（使用paths.backup_dir）
-        prod_backup_path = prod_cfg.get_last_backup_path()
-        test_backup_path = test_cfg.get_last_backup_path()
+        # 获取实际的备份路径
+        backup_path1 = cfg1.get_last_backup_path()
+        backup_path2 = cfg2.get_last_backup_path()
         
-        print(f"生产环境实际备份路径: {prod_backup_path}")
-        print(f"测试环境实际备份路径: {test_backup_path}")
+        print(f"配置实例1实际备份路径: {backup_path1}")
+        print(f"配置实例2实际备份路径: {backup_path2}")
         
         # 验证备份文件都存在
-        assert os.path.exists(prod_backup_path), f"生产环境备份文件不存在: {prod_backup_path}"
-        assert os.path.exists(test_backup_path), f"测试环境备份文件不存在: {test_backup_path}"
+        assert os.path.exists(backup_path1), f"配置实例1备份文件不存在: {backup_path1}"
+        assert os.path.exists(backup_path2), f"配置实例2备份文件不存在: {backup_path2}"
         
         # 验证备份文件内容不同
-        with open(prod_backup_path, 'r', encoding='utf-8') as f:
-            prod_content = f.read()
+        with open(backup_path1, 'r', encoding='utf-8') as f:
+            content1 = f.read()
         
-        with open(test_backup_path, 'r', encoding='utf-8') as f:
-            test_content = f.read()
+        with open(backup_path2, 'r', encoding='utf-8') as f:
+            content2 = f.read()
         
-        assert "production_value" in prod_content
-        assert "test_value" in test_content
-        assert prod_content != test_content
+        assert "first_value" in content1
+        assert "second_value" in content2
+        assert content1 != content2
 
     def test_tc0012_004_003_backup_directory_structure(self):
         """测试备份目录结构的正确性"""

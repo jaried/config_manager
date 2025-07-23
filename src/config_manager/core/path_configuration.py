@@ -246,11 +246,18 @@ class PathGenerator:
         
         return log_dirs
     
-    def generate_debug_directory(self, work_dir: str) -> Dict[str, str]:
+    def generate_debug_directory(
+        self, 
+        work_dir: str, 
+        date_str: str, 
+        time_str: str
+    ) -> Dict[str, str]:
         """生成调试目录路径
         
         Args:
             work_dir: 工作目录
+            date_str: 日期字符串（YYYYMMDD）
+            time_str: 时间字符串（HHMMSS）
             
         Returns:
             dict: 调试目录路径字典
@@ -258,7 +265,7 @@ class PathGenerator:
         work_path = Path(work_dir)
         
         debug_dirs = {
-            'paths.debug_dir': str(work_path / 'debug')
+            'paths.debug_dir': str(work_path / 'debug' / date_str / time_str)
         }
         
         return debug_dirs
@@ -646,9 +653,6 @@ class PathConfigurationManager:
         # 生成检查点目录
         checkpoint_dirs = self._path_generator.generate_checkpoint_directories(work_dir)
         
-        # 生成调试目录
-        debug_dirs = self._path_generator.generate_debug_directory(work_dir)
-        
         # 生成TensorBoard目录
         tensorboard_dirs = self._path_generator.generate_tensorboard_directory(work_dir)
         
@@ -662,6 +666,9 @@ class PathConfigurationManager:
                 date_str, time_str = self._time_processor.get_current_time_components()
         else:
             date_str, time_str = self._time_processor.get_current_time_components()
+        
+        # 生成调试目录（需要在时间组件解析之后）
+        debug_dirs = self._path_generator.generate_debug_directory(work_dir, date_str, time_str)
         
         # 生成日志目录
         log_dirs = self._path_generator.generate_log_directories(work_dir, date_str, time_str, first_start_time)
