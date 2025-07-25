@@ -310,6 +310,23 @@ class PathGenerator:
         }
         
         return backup_dirs
+    
+    def generate_cache_directory(self, work_dir: str) -> Dict[str, str]:
+        """生成缓存目录路径
+        
+        Args:
+            work_dir: 工作目录
+            
+        Returns:
+            dict: 缓存目录路径字典
+        """
+        work_path = Path(work_dir)
+        
+        cache_dirs = {
+            'paths.cache_dir': str(work_path / 'cache')
+        }
+        
+        return cache_dirs
 
 
 class PathValidator:
@@ -676,6 +693,9 @@ class PathConfigurationManager:
         # 生成备份目录
         backup_dirs = self._path_generator.generate_backup_directory(work_dir, date_str, time_str)
         
+        # 生成缓存目录
+        cache_dirs = self._path_generator.generate_cache_directory(work_dir)
+        
         # 合并所有路径配置
         path_configs = {
             'work_dir': work_dir,
@@ -683,7 +703,8 @@ class PathConfigurationManager:
             **{k.replace('paths.', ''): v for k, v in debug_dirs.items()},
             **{k.replace('paths.', ''): v for k, v in tensorboard_dirs.items()},
             **{k.replace('paths.', ''): v for k, v in log_dirs.items()},
-            **{k.replace('paths.', ''): v for k, v in backup_dirs.items()}
+            **{k.replace('paths.', ''): v for k, v in backup_dirs.items()},
+            **{k.replace('paths.', ''): v for k, v in cache_dirs.items()}
         }
         
         return {'paths': path_configs}
