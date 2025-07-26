@@ -270,19 +270,32 @@ class PathGenerator:
         
         return debug_dirs
     
-    def generate_tensorboard_directory(self, work_dir: str) -> Dict[str, str]:
+    def generate_tensorboard_directory(
+        self, 
+        work_dir: str, 
+        date_str: str, 
+        time_str: str,
+        first_start_time_str: str
+    ) -> Dict[str, str]:
         """生成TensorBoard目录路径
         
         Args:
             work_dir: 工作目录
+            date_str: 日期字符串（YYYYMMDD）
+            time_str: 时间字符串（HHMMSS）
+            first_start_time_str: 原始时间字符串（ISO格式），用于计算tensorboard_dir的周数路径
             
         Returns:
             dict: TensorBoard目录路径字典
         """
         work_path = Path(work_dir)
         
+        # 为tensorboard_dir使用新的周数格式: yyyy/ww/mm/dd/HHMMSS
+        year, week, month, day, time = TimeProcessor.parse_time_with_week(first_start_time_str)
+        tensorboard_path = str(work_path / 'tensorboard' / year / week / month / day / time)
+        
         tensorboard_dirs = {
-            'paths.tensorboard_dir': str(work_path / 'tensorboard')
+            'paths.tensorboard_dir': tensorboard_path
         }
         
         return tensorboard_dirs
@@ -670,9 +683,6 @@ class PathConfigurationManager:
         # 生成检查点目录
         checkpoint_dirs = self._path_generator.generate_checkpoint_directories(work_dir)
         
-        # 生成TensorBoard目录
-        tensorboard_dirs = self._path_generator.generate_tensorboard_directory(work_dir)
-        
         # 解析时间组件
         if first_start_time:
             try:
@@ -683,6 +693,9 @@ class PathConfigurationManager:
                 date_str, time_str = self._time_processor.get_current_time_components()
         else:
             date_str, time_str = self._time_processor.get_current_time_components()
+        
+        # 生成TensorBoard目录（需要在时间组件解析之后）
+        tensorboard_dirs = self._path_generator.generate_tensorboard_directory(work_dir, date_str, time_str, first_start_time)
         
         # 生成调试目录（需要在时间组件解析之后）
         debug_dirs = self._path_generator.generate_debug_directory(work_dir, date_str, time_str)
