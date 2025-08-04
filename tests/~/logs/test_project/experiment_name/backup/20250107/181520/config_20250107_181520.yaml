@@ -2,6 +2,22 @@ __data__:
   project_name: test_project
   first_start_time: '2025-01-07T18:15:20'
   test_mode: true
+  base_dir:
+    windows: D:\Windows\Project
+    linux: ~/logs
+  experiment_name: experiment_name
+  config_file_path: /tmp/tests/20250726/072342/b9a7c5a5_545639_21a250b1/src/config/config.yaml
+  paths:
+    work_dir: ~/logs/test_project/experiment_name
+    log_dir: ~/logs/test_project/experiment_name/logs/20250107/181520
+    data_dir: /tmp/default/data
+    checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint
+    best_checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint/best
+    debug_dir: ~/logs/test_project/experiment_name/debug/20250107/181520
+    tensorboard_dir: ~/logs/test_project/experiment_name/tensorboard/2025/02/01/07/181520
+    tsb_logs_dir: ~/logs/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
+    backup_dir: ~/logs/test_project/experiment_name/backup/20250107/181520
+    cache_dir: ~/logs/test_project/experiment_name/cache
   concurrency: 5
   timeout: 30
   proxy:
@@ -17,30 +33,9 @@ __data__:
       - \.jpg$
       - \.png$
       - \.gif$
-  base_dir:
-    windows: D:\Windows\Project
-    linux: ~/logs
   work_dir: /tmp/original/work/path
   log_dir: /tmp/original/log/path
-  config_file_path: /tmp/tests/20250720/140639/b9a7c5a5/src/config/config.yaml
-  experiment_name: experiment_name
-  paths:
-    checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint
-    best_checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint/best
-    debug_dir: ~/logs/test_project/experiment_name/debug
-    tensorboard_dir: ~/logs/test_project/experiment_name/tensorboard
-    tsb_logs_dir: ~/logs/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
-    backup_dir: ~/logs/test_project/experiment_name/backup/20250107/181520
-    work_dir: ~/logs/test_project/experiment_name
-    log_dir: ~/logs/test_project/experiment_name/logs/20250107/181520
-  missing_config_error: 配置文件中缺少 'titls' 配置项
-  test_async_value: async_test_data
-  scheduler_status: running
-  scheduler_start_time: '2025-07-20T13:30:57.630314'
-  scheduler_progress: completed
-  __type_hints__:
-    first_start_time: datetime
-  test_backup_isolation: production_value
-__type_hints__: {}
-base_dir: /tmp/tests/20250720/140639/b9a7c5a5
-first_start_time: '2025-07-20T14:06:39.089582'
+__type_hints__:
+  first_start_time: datetime
+base_dir: /tmp/tests/20250726/072342/b9a7c5a5_545639_21a250b1
+first_start_time: '2025-07-26T07:23:42.559591'
