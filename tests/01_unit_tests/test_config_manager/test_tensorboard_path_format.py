@@ -11,7 +11,7 @@ class TestTensorboardPathFormat:
     """测试TensorBoard路径格式"""
     
     def test_tensorboard_dir_uses_week_format(self):
-        """测试tensorboard_dir使用年/周/月/日/时间格式"""
+        """测试tensorboard_dir使用年/周/月日/时间格式"""
         # 创建测试时间
         test_time = datetime(2025, 7, 26, 10, 30, 45)
         test_time_str = test_time.isoformat()
@@ -31,8 +31,8 @@ class TestTensorboardPathFormat:
             work_dir, date_str, time_str, test_time_str
         )
         
-        # 验证路径格式
-        expected_path = f"/test/work/dir/tensorboard/{year}/{week}/{month}/{day}/{time}"
+        # 验证路径格式 - 新格式直接在work_dir下，无tensorboard子目录
+        expected_path = f"/test/work/dir/{year}/W{week}/{month}{day}/{time}"
         assert result['paths.tensorboard_dir'] == expected_path
         
         # 验证各个组件
@@ -52,24 +52,31 @@ class TestTensorboardPathFormat:
         tensorboard_dir = config.paths.tensorboard_dir
         tsb_logs_dir = config.paths.tsb_logs_dir
         
-        # 提取路径中的日期时间部分
-        tb_parts = tensorboard_dir.split('/tensorboard/')[1] if '/tensorboard/' in tensorboard_dir else ""
-        tsb_parts = tsb_logs_dir.split('/tsb_logs/')[1] if '/tsb_logs/' in tsb_logs_dir else ""
+        # 根据新的需求，两个路径应该完全相同
+        assert tensorboard_dir == tsb_logs_dir, f"tensorboard_dir和tsb_logs_dir应该相同: tb={tensorboard_dir}, tsb={tsb_logs_dir}"
         
-        # 验证格式相同
-        assert tb_parts == tsb_parts, f"路径格式不匹配: tensorboard={tb_parts}, tsb_logs={tsb_parts}"
+        # 验证路径格式符合新规范：年/W周/月日/时间
+        # 找到年份部分来定位时间部分
+        path_parts = tensorboard_dir.split('/')
+        # 查找4位数字的年份
+        year_idx = None
+        for i, part in enumerate(path_parts):
+            if len(part) == 4 and part.isdigit():
+                year_idx = i
+                break
         
-        # 验证格式符合年/周/月/日/时间
-        parts = tb_parts.split('/')
-        assert len(parts) == 5, f"路径格式应该包含5个部分（年/周/月/日/时间），实际: {parts}"
+        assert year_idx is not None, f"路径中未找到年份: {tensorboard_dir}"
         
-        year, week, month, day, time = parts
+        # 从年份开始的路径部分
+        time_parts = path_parts[year_idx:]
+        assert len(time_parts) >= 4, f"路径格式应该至少包含4个部分（年/W周/月日/时间），实际: {time_parts}"
+        
+        year, week, monthday, time = time_parts[:4]
         # 验证各部分格式
         assert len(year) == 4 and year.isdigit(), f"年份格式错误: {year}"
-        assert len(week) == 2 and week.isdigit(), f"周数格式错误: {week}"
-        assert len(month) == 2 and month.isdigit(), f"月份格式错误: {month}"
-        assert len(day) == 2 and day.isdigit(), f"日期格式错误: {day}"
-        assert len(time) == 6 and time.isdigit(), f"时间格式错误: {time}"
+        assert week.startswith('W') and len(week) == 3 and week[1:].isdigit(), f"周数格式错误（应为WXX）: {week}"
+        assert len(monthday) == 4 and monthday.isdigit(), f"月日格式错误（应为MMDD）: {monthday}"
+        assert len(time) == 6 and time.isdigit(), f"时间格式错误（应为HHMMSS）: {time}"
         pass
     
     def test_path_generator_with_different_dates(self):
@@ -79,10 +86,10 @@ class TestTensorboardPathFormat:
         
         # 测试多个不同的日期
         test_cases = [
-            # (datetime对象, 预期周数)
-            (datetime(2025, 1, 1, 0, 0, 0), "01"),   # 新年第一天
-            (datetime(2025, 12, 31, 23, 59, 59), "01"),  # 年末（可能是下一年第1周）
-            (datetime(2025, 7, 15, 12, 0, 0), "29"),  # 年中
+            # (datetime对象, 预期周数带W前缀)
+            (datetime(2025, 1, 1, 0, 0, 0), "W01"),   # 新年第一天
+            (datetime(2025, 12, 31, 23, 59, 59), "W01"),  # 年末（可能是下一年第1周）
+            (datetime(2025, 7, 15, 12, 0, 0), "W29"),  # 年中
         ]
         
         for test_time, expected_week in test_cases:
@@ -124,17 +131,24 @@ class TestTensorboardPathFormat:
             tb_dir1 = config1.paths.tensorboard_dir
             tsb_dir1 = config1.paths.tsb_logs_dir
             
-            # 提取时间部分
-            tb_time1 = tb_dir1.split('/tensorboard/')[1] if '/tensorboard/' in tb_dir1 else ""
-            tsb_time1 = tsb_dir1.split('/tsb_logs/')[1] if '/tsb_logs/' in tsb_dir1 else ""
+            # 根据新需求，两个路径应该完全相同
+            assert tb_dir1 == tsb_dir1, "tensorboard和tsb_logs路径应该完全相同"
             
-            # 验证格式一致
-            assert tb_time1 == tsb_time1, "同一实例中tensorboard和tsb_logs格式应该一致"
+            # 验证路径格式符合新规范
+            path_parts = tb_dir1.split('/')
+            # 查找4位数字的年份
+            year_idx = None
+            for i, part in enumerate(path_parts):
+                if len(part) == 4 and part.isdigit() and part == "2025":
+                    year_idx = i
+                    break
             
-            # 验证包含周数（格式应该是 年/周/月/日/时间）
-            parts = tb_time1.split('/')
-            assert len(parts) == 5, "路径应该包含5个部分"
-            assert parts[1] == "33", f"2025年8月15日应该是第33周，实际: {parts[1]}"
+            assert year_idx is not None, f"路径中未找到2025年份: {tb_dir1}"
+            
+            # 验证包含周数（格式应该是 年/W周/月日/时间）
+            time_parts = path_parts[year_idx:]
+            assert len(time_parts) >= 4, "路径应该包含至少4个部分"
+            assert time_parts[1] == "W33", f"2025年8月15日应该是第33周，实际: {time_parts[1]}"
         pass
     
     def test_path_configuration_integration(self):
@@ -146,26 +160,28 @@ class TestTensorboardPathFormat:
         tb_path = config.paths.tensorboard_dir
         tsb_path = config.paths.tsb_logs_dir
         
-        # 验证都包含周数格式（格式: 年/周/月/日/时间）
-        # 提取时间部分
-        tb_time = tb_path.split('/tensorboard/')[1] if '/tensorboard/' in tb_path else ""
-        tsb_time = tsb_path.split('/tsb_logs/')[1] if '/tsb_logs/' in tsb_path else ""
+        # 根据新需求，两个路径应该完全相同
+        assert tb_path == tsb_path, f"路径应该相同: tb={tb_path}, tsb={tsb_path}"
         
-        # 验证格式包含5个部分
-        tb_parts = tb_time.split('/')
-        tsb_parts = tsb_time.split('/')
+        # 验证路径格式符合新规范
+        path_parts = tb_path.split('/')
+        # 查找4位数字的年份
+        year_idx = None
+        for i, part in enumerate(path_parts):
+            if len(part) == 4 and part.isdigit():
+                year_idx = i
+                break
         
-        assert len(tb_parts) == 5, f"tensorboard路径应包含5个部分，实际: {tb_parts}"
-        assert len(tsb_parts) == 5, f"tsb_logs路径应包含5个部分，实际: {tsb_parts}"
+        assert year_idx is not None, f"路径中未找到年份: {tb_path}"
         
-        # 验证时间部分完全相同
-        assert tb_time == tsb_time, f"路径时间部分应该相同: tb={tb_time}, tsb={tsb_time}"
+        # 从年份开始的路径部分应该是：年/W周/月日/时间
+        time_parts = path_parts[year_idx:]
+        assert len(time_parts) >= 4, f"路径应包含至少4个部分，实际: {time_parts}"
         
         # 验证每个部分的格式
-        year, week, month, day, time = tb_parts
+        year, week, monthday, time = time_parts[:4]
         assert len(year) == 4 and year.isdigit()
-        assert len(week) == 2 and week.isdigit()
-        assert len(month) == 2 and month.isdigit()
-        assert len(day) == 2 and day.isdigit()
+        assert week.startswith('W') and len(week) == 3 and week[1:].isdigit()
+        assert len(monthday) == 4 and monthday.isdigit()
         assert len(time) == 6 and time.isdigit()
         pass

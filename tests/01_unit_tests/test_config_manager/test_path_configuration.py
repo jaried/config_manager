@@ -140,7 +140,7 @@ class TestPathGenerator:
         # 测试不传递first_start_time_str参数的情况（应该使用原有格式）
         result = generator.generate_log_directories(str(work_dir), date_str, time_str)
         expected = {
-            'paths.tsb_logs_dir': str(work_dir / 'tsb_logs' / date_str / time_str),
+            'paths.tsb_logs_dir': str(work_dir / date_str / time_str),  # 新规范：直接在work_dir下
             'paths.log_dir': str(work_dir / 'logs' / date_str / time_str)
         }
         assert result == expected
@@ -149,7 +149,7 @@ class TestPathGenerator:
         first_start_time = '2025-01-08T10:30:45'
         result_with_time = generator.generate_log_directories(str(work_dir), date_str, time_str, first_start_time)
         expected_with_time = {
-            'paths.tsb_logs_dir': str(work_dir / 'tsb_logs' / '2025' / '02' / '01' / '08' / time_str),  # 2025-01-08是第2周
+            'paths.tsb_logs_dir': str(work_dir / '2025' / 'W02' / '0108' / time_str),  # 新格式：年/W周/月日/时间
             'paths.log_dir': str(work_dir / 'logs' / date_str / time_str)  # log_dir保持原有格式
         }
         assert result_with_time == expected_with_time
