@@ -226,22 +226,25 @@ class PathGenerator:
         Returns:
             str: 统一的TensorBoard路径
         """
-        work_path = Path(work_dir)
-
+        # 导入PathResolver以使用新的路径生成方法
+        from .path_resolver import PathResolver
+        
         if first_start_time_str:
             try:
-                year, week, month, day, time = TimeProcessor.parse_time_with_week(
-                    first_start_time_str
-                )
-                # 新格式：直接在work_dir下创建年/周/月日/时间结构
-                # 周数格式使用W前缀，如W02
-                week_str = f"W{week}"
-                return str(work_path / year / week_str / f"{month}{day}" / time)
+                # 解析时间戳
+                if isinstance(first_start_time_str, datetime):
+                    timestamp = first_start_time_str
+                else:
+                    timestamp = datetime.fromisoformat(first_start_time_str.replace("Z", "+00:00"))
+                
+                # 使用新的路径生成方法
+                return PathResolver.generate_tsb_logs_path(work_dir, timestamp)
             except Exception:
                 # 降级到旧格式
-                return str(work_path / date_str / time_str)
+                return str(Path(work_dir) / date_str / time_str)
         else:
-            return str(work_path / date_str / time_str)
+            # 使用当前时间生成路径
+            return PathResolver.generate_tsb_logs_path(work_dir)
 
     def generate_log_directories(
         self,
@@ -256,20 +259,15 @@ class PathGenerator:
             work_dir: 工作目录
             date_str: 日期字符串（YYYYMMDD）
             time_str: 时间字符串（HHMMSS）
-            first_start_time_str: 原始时间字符串（ISO格式），用于计算tsb_logs_dir的周数路径
+            first_start_time_str: 原始时间字符串（ISO格式）（不再使用）
 
         Returns:
             dict: 日志目录路径字典
         """
         work_path = Path(work_dir)
 
-        # 生成统一的TensorBoard路径
-        tensorboard_path = self.generate_unified_tensorboard_path(
-            work_dir, date_str, time_str, first_start_time_str
-        )
-
+        # 注意：tsb_logs_dir现在是动态生成的，不在这里生成
         log_dirs = {
-            "paths.tsb_logs_dir": tensorboard_path,
             "paths.log_dir": str(work_path / "logs" / date_str / time_str),
         }
 
@@ -517,23 +515,30 @@ class PathConfigurationManager:
             path_configs = self.generate_all_paths()
 
             # 修复：直接设置到_data中，避免触发__setattr__和自动保存
+            # 使用PathsConfigNode替代普通的ConfigNode以支持动态路径
+            from .dynamic_paths import PathsConfigNode
+            
             if not hasattr(self._config_manager, "paths"):
                 # 如果paths属性不存在，直接创建
-                self._config_manager._data["paths"] = ConfigNode(
-                    path_configs.get("paths", {}), _root=self._config_manager
+                self._config_manager._data["paths"] = PathsConfigNode(
+                    path_configs.get("paths", {}), root=self._config_manager
                 )
             else:
-                # 如果paths属性已存在，直接更新其_data
+                # 如果paths属性已存在，需要保留现有数据并合并新数据
+                existing_data = {}
                 if hasattr(self._config_manager.paths, "_data"):
-                    self._config_manager.paths._data.clear()
-                    self._config_manager.paths._data.update(
-                        path_configs.get("paths", {})
-                    )
-                else:
-                    # 如果paths没有_data属性，重新创建
-                    self._config_manager._data["paths"] = ConfigNode(
-                        path_configs.get("paths", {}), _root=self._config_manager
-                    )
+                    existing_data = dict(self._config_manager.paths._data)
+                elif isinstance(self._config_manager.paths, dict):
+                    existing_data = dict(self._config_manager.paths)
+                
+                # 合并现有数据和新生成的路径
+                merged_data = existing_data.copy()
+                merged_data.update(path_configs.get("paths", {}))
+                
+                # 创建新的PathsConfigNode
+                self._config_manager._data["paths"] = PathsConfigNode(
+                    merged_data, root=self._config_manager
+                )
 
         except Exception as e:
             # 其他错误，不影响主流程
@@ -730,10 +735,7 @@ class PathConfigurationManager:
         else:
             date_str, time_str = self._time_processor.get_current_time_components()
 
-        # 生成TensorBoard目录（需要在时间组件解析之后）
-        tensorboard_dirs = self._path_generator.generate_tensorboard_directory(
-            work_dir, date_str, time_str, first_start_time
-        )
+        # TensorBoard目录现在是动态生成的，不需要在这里生成
 
         # 生成调试目录（需要在时间组件解析之后）
         debug_dirs = self._path_generator.generate_debug_directory(
@@ -742,7 +744,7 @@ class PathConfigurationManager:
 
         # 生成日志目录
         log_dirs = self._path_generator.generate_log_directories(
-            work_dir, date_str, time_str, first_start_time
+            work_dir, date_str, time_str
         )
 
         # 生成备份目录
@@ -753,12 +755,11 @@ class PathConfigurationManager:
         # 生成缓存目录
         cache_dirs = self._path_generator.generate_cache_directory(work_dir)
 
-        # 合并所有路径配置
+        # 合并所有路径配置（移除tensorboard_dirs，因为它现在是动态的）
         path_configs = {
             "work_dir": work_dir,
             **{k.replace("paths.", ""): v for k, v in checkpoint_dirs.items()},
             **{k.replace("paths.", ""): v for k, v in debug_dirs.items()},
-            **{k.replace("paths.", ""): v for k, v in tensorboard_dirs.items()},
             **{k.replace("paths.", ""): v for k, v in log_dirs.items()},
             **{k.replace("paths.", ""): v for k, v in backup_dirs.items()},
             **{k.replace("paths.", ""): v for k, v in cache_dirs.items()},

@@ -1,6 +1,6 @@
 __data__:
   project_name: test_project
-  first_start_time: '2025-01-07T18:15:20'
+  first_start_time: '2025-01-15T10:30:45'
   test_mode: true
   base_dir: /tmp/original/base/path
   experiment_name: experiment_name
@@ -8,14 +8,14 @@ __data__:
     /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
   paths:
     work_dir: /tmp/original/base/path/test_project/experiment_name
-    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520
+    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250115/103045
     data_dir: /tmp/default/data
     checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint
     best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best
-    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug/20250107/181520
+    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug/20250115/103045
     tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/2025/W02/0107/181520
     tsb_logs_dir: /tmp/original/base/path/test_project/experiment_name/2025/W02/0107/181520
-    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520
+    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250115/103045
     cache_dir: /tmp/original/base/path/test_project/experiment_name/cache
   concurrency: 5
   timeout: 30

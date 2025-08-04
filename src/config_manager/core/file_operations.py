@@ -183,10 +183,13 @@ class FileOperations:
             if backup_dir:
                 os.makedirs(backup_dir, exist_ok=True)
 
-            # 直接使用传入的数据创建备份（不需要准备数据，因为不涉及主配置文件）
+            # 转换PathsConfigNode为普通字典
+            data_to_save = self._convert_paths_config_nodes(data)
+            
+            # 创建备份
             tmp_backup_path = f"{backup_path}.tmp"
             with open(tmp_backup_path, 'w', encoding='utf-8') as f:
-                self._yaml.dump(data, f)
+                self._yaml.dump(data_to_save, f)
 
             os.replace(tmp_backup_path, backup_path)
             return True
@@ -196,6 +199,9 @@ class FileOperations:
 
     def _prepare_data_for_save(self, config_path: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """准备要保存的数据，尽可能保留原始结构和注释"""
+        # 首先转换所有PathsConfigNode为普通字典
+        data = self._convert_paths_config_nodes(data)
+        
         # 如果有原始YAML数据且路径匹配，则更新原始结构
         if (self._original_yaml_data is not None and
                 self._config_path == config_path and
@@ -215,6 +221,21 @@ class FileOperations:
                     return updated_data
             
             # 没有原始结构，直接返回新数据
+            return data
+    
+    def _convert_paths_config_nodes(self, data: Any) -> Any:
+        """递归转换所有PathsConfigNode为普通字典"""
+        if hasattr(data, '_data') and hasattr(data.__class__, '__name__') and data.__class__.__name__ == 'PathsConfigNode':
+            # 从PathsConfigNode提取数据字典
+            return dict(data._data)
+        elif isinstance(data, dict):
+            # 递归处理字典中的每个值
+            return {k: self._convert_paths_config_nodes(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            # 递归处理列表中的每个元素
+            return [self._convert_paths_config_nodes(item) for item in data]
+        else:
+            # 其他类型直接返回
             return data
 
     def _deep_update_yaml_data(self, original: Any, new_data: Any) -> Any:
