@@ -13,8 +13,6 @@ __data__:
     checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint
     best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best
     debug_dir: /tmp/original/base/path/test_project/experiment_name/debug/20250115/103045
-    tensorboard_dir: /tmp/original/base/path/test_project/experiment_name/2025/W02/0107/181520
-    tsb_logs_dir: /tmp/original/base/path/test_project/experiment_name/2025/W02/0107/181520
     backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250115/103045
     cache_dir: /tmp/original/base/path/test_project/experiment_name/cache
   concurrency: 5

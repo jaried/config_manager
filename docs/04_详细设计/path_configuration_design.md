@@ -434,8 +434,10 @@ def _create_dirs_for_fields(self, node, visited=None) -> None:
 - **paths.checkpoint_dir**: 检查点目录（自动创建）
 - **paths.best_checkpoint_dir**: 最佳检查点目录（自动创建）
 - **paths.debug_dir**: 调试目录，基于first_start_time的YYYYMMDD/HHMMSS格式（自动创建）
-- **paths.tsb_logs_dir**: TensorBoard日志目录（自动创建）
+- **paths.tsb_logs_dir**: TensorBoard日志目录，格式：`{work_dir}/tsb_logs/{yyyy}/{ww}/{mmdd}/{HHMMSS}`（自动创建）
+- **paths.tensorboard_dir**: 只读属性，始终等于tsb_logs_dir
 - **paths.log_dir**: 普通日志目录（自动创建）
+- **paths.cache_dir**: 缓存目录（自动创建）
 
 ### 5.3 动态属性
 
