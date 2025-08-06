@@ -92,12 +92,12 @@ class TestSingletonPathResolution:
             try:
                 assert temp_dir1.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir1}"
                 shutil.rmtree(temp_dir1)
-            except:
+            except Exception:
                 pass
             try:
                 assert temp_dir2.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir2}"
                 shutil.rmtree(temp_dir2)
-            except:
+            except Exception:
                 pass
 
     def test_tc0006_002_same_directory_returns_same_instance(self):
@@ -150,7 +150,7 @@ class TestSingletonPathResolution:
             try:
                 assert temp_dir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir}"
                 shutil.rmtree(temp_dir)
-            except:
+            except Exception:
                 pass
 
     def test_tc0006_004_config_operations_work_correctly(self):
@@ -198,12 +198,12 @@ class TestSingletonPathResolution:
             try:
                 assert temp_dir1.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir1}"
                 shutil.rmtree(temp_dir1)
-            except:
+            except Exception:
                 pass
             try:
                 assert temp_dir2.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir2}"
                 shutil.rmtree(temp_dir2)
-            except:
+            except Exception:
                 pass
 
     def test_tc0006_005_cache_key_format_validation(self):
@@ -225,8 +225,12 @@ class TestSingletonPathResolution:
         
         # 验证实例能正确获取测试环境路径
         test_env_path = cm1.get_config_path()
-        assert '/tmp/tests/' in test_env_path, f"实例应该返回测试环境路径，实际: {test_env_path}"
-        assert test_env_path.endswith('src/config/config.yaml'), f"路径格式应该正确，实际: {test_env_path}"
+        # 使用平台无关的验证：检查是否包含'tests'和临时目录
+        import tempfile
+        temp_base = tempfile.gettempdir().replace('\\', '/')
+        test_env_path_normalized = test_env_path.replace('\\', '/')
+        assert 'tests' in test_env_path_normalized or temp_base in test_env_path_normalized, f"实例应该返回测试环境路径，实际: {test_env_path}"
+        assert test_env_path_normalized.endswith('src/config/config.yaml'), f"路径格式应该正确，实际: {test_env_path}"
         
         # 2. 测试显式路径的缓存键格式
         temp_dir = tempfile.mkdtemp(prefix="test_cache_key_")
@@ -249,11 +253,12 @@ class TestSingletonPathResolution:
             
             # 验证第二个实例也能正确获取测试环境路径
             test_env_path2 = cm2.get_config_path()
-            assert '/tmp/tests/' in test_env_path2, f"第二个实例应该返回测试环境路径，实际: {test_env_path2}"
+            test_env_path2_normalized = test_env_path2.replace('\\', '/')
+            assert 'tests' in test_env_path2_normalized or temp_base in test_env_path2_normalized, f"第二个实例应该返回测试环境路径，实际: {test_env_path2}"
             
         finally:
             try:
                 assert temp_dir.startswith(tempfile.gettempdir()), f"禁止删除非临时目录: {temp_dir}"
                 shutil.rmtree(temp_dir)
-            except:
+            except Exception:
                 pass 

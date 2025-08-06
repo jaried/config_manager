@@ -23,7 +23,19 @@
       "WebFetch(domain:stackoverflow.com)",
       "Bash(git stash:*)",
       "Bash(git fetch:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(rm:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git reset)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(ruff format:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

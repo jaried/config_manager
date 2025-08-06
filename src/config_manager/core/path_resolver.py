@@ -14,6 +14,64 @@ class PathResolver:
     _cached_project_root = None  # 类级别缓存，确保一致性
 
     @staticmethod
+    def normalize_path(path: str) -> str:
+        """
+        规范化路径为统一格式（使用正斜杠）
+        
+        Args:
+            path: 需要规范化的路径
+            
+        Returns:
+            规范化后的路径（正斜杠格式）
+        """
+        if not path:
+            return path
+        # 统一使用正斜杠格式
+        return path.replace('\\', '/')
+    
+    @staticmethod
+    def generate_tsb_logs_path(work_dir: str, timestamp: datetime = None) -> str:
+        """
+        生成TSB日志路径
+        
+        Args:
+            work_dir: 工作目录根路径
+            timestamp: 时间戳，默认为当前时间
+            
+        Returns:
+            格式化的TSB日志路径: {work_dir}/tsb_logs/{yyyy}/{week_number}/{mmdd}/{HHMMSS}
+        """
+        if timestamp is None:
+            timestamp = datetime.now()
+        
+        # 提取时间组件
+        # 使用ISO日历，因为ISO周可能跨年
+        iso_year, iso_week, iso_weekday = timestamp.isocalendar()
+        year = str(iso_year)  # 使用ISO年份而不是日历年份
+        week_str = f"{iso_week:02d}"  # 格式化为两位数字，不带W前缀
+        date_str = timestamp.strftime('%m%d')
+        time_str = timestamp.strftime('%H%M%S')
+        
+        # 确保work_dir是绝对路径
+        if not os.path.isabs(work_dir):
+            work_dir = os.path.abspath(work_dir)
+        
+        # 构建路径
+        path_components = [
+            work_dir,
+            'tsb_logs',
+            year,
+            week_str,
+            date_str,
+            time_str
+        ]
+        
+        # 使用os.path.join构建路径
+        path = os.path.join(*path_components)
+        # 使用normalize_path确保跨平台一致性
+        return PathResolver.normalize_path(path)
+
+    @staticmethod
     def resolve_config_path(config_path: str) -> str:
         """解析配置文件路径"""
         if config_path is not None:

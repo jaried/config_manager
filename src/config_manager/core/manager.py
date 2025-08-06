@@ -939,6 +939,12 @@ class ConfigManagerCore(ConfigNode):
                 f"config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
                 f"这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
             )
+        
+        # 特殊处理paths.tensorboard_dir：只读属性
+        if key == 'paths.tensorboard_dir':
+            raise AttributeError(
+                "tensorboard_dir是只读属性，其值自动等于tsb_logs_dir"
+            )
 
         # 特殊处理first_start_time：如果只是first_start_time变化，不应该触发自动保存
         if key == 'first_start_time':

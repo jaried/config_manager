@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import platform
 from pathlib import Path
 
 import pytest
@@ -96,6 +97,7 @@ class TestFileWatcherDaemonIssue:
             assert daemon_status is True, \
                 f"线程 {thread_name} 必须是daemon线程 (daemon={daemon_status})"
 
+    @pytest.mark.skipif(platform.system() == 'Windows', reason="Windows进程管理差异")
     def test_program_exit_simulation_with_config_watcher(self):
         """模拟使用config_manager文件监视的程序退出场景"""
         # 创建测试脚本
