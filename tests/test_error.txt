@@ -1,57 +1,50 @@
-D:\anaconda3\envs\base_python3.12\python.exe "D:/Program Files/JetBrains/PyCharm Community Edition 2025.1.2/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py" --path D:\Tony\Documents\invest2025\project\config_manager\tests -- --last-failed
-Testing started at 01:49 ...
-Launching pytest with arguments --last-failed D:\Tony\Documents\invest2025\project\config_manager\tests --no-header --no-summary -q in D:\Tony\Documents\invest2025\project\config_manager\tests
 
-============================= test session starts =============================
-collecting ... collected 455 items / 449 deselected / 6 selected
-run-last-failure: rerun previous 6 failures (skipped 11 files)
-
-test_config_manager\test_tc0006_singleton_path_resolution.py::TestSingletonPathResolution::test_tc0006_005_cache_key_format_validation
 test_config_manager\test_tsb_path_cross_platform.py::TestTsbPathCrossPlatform::test_relative_vs_absolute_paths
-test_yaml_comments_preservation.py::test_yaml_comments_preservation FAILED [ 16%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee, temp_base: d:\temp
+test_config_manager\test_tsb_path_integration.py::TestTsbPathIntegration::test_complete_path_generation_workflow
+test_yaml_comments_preservation.py::test_yaml_comments_preservation FAILED [ 14%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385, temp_base: d:\temp
 ✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 01:49:53.896378
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
+✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385\src\config\config.yaml
+✓ 使用当前时间作为first_start_time: 2025-08-07 01:55:15.292117
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385, temp_base: d:\temp
+配置已从 d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385\src\config\config.yaml 加载
+🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385\src\config\config.yaml
+✓ 监视当前配置路径: d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385\src\config\config.yaml
 配置文件监视器已启动
 
 tests\test_config_manager\test_tc0006_singleton_path_resolution.py:208 (TestSingletonPathResolution.test_tc0006_005_cache_key_format_validation)
-'/tmp/tests/' != 'd:\\temp\\tests\\20250807\\014953\\fd94be28_882380_26977dee\\src\\config\\config.yaml'
+'/tmp/tests/' != 'd:\\temp\\tests\\20250807\\015515\\fd94be28_278118_3ee1f385\\src\\config\\config.yaml'
 
-预期:'d:\\temp\\tests\\20250807\\014953\\fd94be28_882380_26977dee\\src\\config\\config.yaml'
+预期:'d:\\temp\\tests\\20250807\\015515\\fd94be28_278118_3ee1f385\\src\\config\\config.yaml'
 实际:'/tmp/tests/'
 <点击以查看差异>
 
 D:\Tony\Documents\invest2025\project\config_manager\tests\test_config_manager\test_tc0006_singleton_path_resolution.py:228: in test_tc0006_005_cache_key_format_validation
     assert '/tmp/tests/' in test_env_path, f"实例应该返回测试环境路径，实际: {test_env_path}"
-E   AssertionError: 实例应该返回测试环境路径，实际: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
-E   assert '/tmp/tests/' in 'd:\\temp\\tests\\20250807\\014953\\fd94be28_882380_26977dee\\src\\config\\config.yaml'
-配置已自动备份到 d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 33%]
+E   AssertionError: 实例应该返回测试环境路径，实际: d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385\src\config\config.yaml
+E   assert '/tmp/tests/' in 'd:\\temp\\tests\\20250807\\015515\\fd94be28_278118_3ee1f385\\src\\config\\config.yaml'
+配置已自动备份到 d:\temp\tests\20250807\015515\fd94be28_278118_3ee1f385\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
+FAILED [ 28%]
 tests\test_config_manager\test_tsb_path_cross_platform.py:269 (TestTsbPathCrossPlatform.test_relative_vs_absolute_paths)
 test_config_manager\test_tsb_path_cross_platform.py:294: in test_relative_vs_absolute_paths
     assert os.path.isabs(result), (
 E   AssertionError: 结果应该是绝对路径：work/tsb_logs/2025/02/0108/000000
 E   assert False
-E    +  where False = <function isabs at 0x000001DE00614CC0>('work/tsb_logs/2025/02/0108/000000')
-E    +    where <function isabs at 0x000001DE00614CC0> = <module 'ntpath' (frozen)>.isabs
+E    +  where False = <function isabs at 0x000001F8B35A4CC0>('work/tsb_logs/2025/02/0108/000000')
+E    +    where <function isabs at 0x000001F8B35A4CC0> = <module 'ntpath' (frozen)>.isabs
 E    +      where <module 'ntpath' (frozen)> = os.path
 
 During handling of the above exception, another exception occurred:
 D:\anaconda3\envs\base_python3.12\Lib\shutil.py:637: in _rmtree_unsafe
     os.rmdir(path)
-E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpfacd3qwi'
+E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpkqgiksvl'
 
 During handling of the above exception, another exception occurred:
 D:\anaconda3\envs\base_python3.12\Lib\tempfile.py:909: in onexc
     _os.unlink(path)
-E   PermissionError: [WinError 5] 拒绝访问。: 'd:\\temp\\tmpfacd3qwi'
+E   PermissionError: [WinError 5] 拒绝访问。: 'd:\\temp\\tmpkqgiksvl'
 
 During handling of the above exception, another exception occurred:
 test_config_manager\test_tsb_path_cross_platform.py:278: in test_relative_vs_absolute_paths
@@ -76,22 +69,45 @@ D:\anaconda3\envs\base_python3.12\Lib\shutil.py:639: in _rmtree_unsafe
     onexc(os.rmdir, path, err)
 D:\anaconda3\envs\base_python3.12\Lib\shutil.py:637: in _rmtree_unsafe
     os.rmdir(path)
-E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpfacd3qwi'
+E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpkqgiksvl'
+FAILED [ 42%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb, temp_base: d:\temp
+✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
+✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb\src\config\config.yaml
+✓ 使用传入的first_start_time: 2025-03-15 14:30:45
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb, temp_base: d:\temp
+配置已从 d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb\src\config\config.yaml 加载
+🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb\src\config\config.yaml
+✓ 监视当前配置路径: d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb\src\config\config.yaml
+配置文件监视器已启动
+
+tests\test_config_manager\test_tsb_path_integration.py:43 (TestTsbPathIntegration.test_complete_path_generation_workflow)
+test_config_manager\test_tsb_path_integration.py:82: in test_complete_path_generation_workflow
+    assert tsb_path.startswith(config.paths.work_dir), (
+E   AssertionError: TSB路径应该在work_dir下
+E   assert False
+E    +  where False = <built-in method startswith of str object at 0x000001F8B774FF50>('d:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name')
+E    +    where <built-in method startswith of str object at 0x000001F8B774FF50> = 'd:/temp/tests/20250315/143045/446682ee_000000_a07e70eb/test_project/experiment_name/tsb_logs/2025/11/0315/143045'.startswith
+E    +    and   'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name' = PathsConfigNode({'work_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name', 'log_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\logs\\20250315\\143045', 'data_dir': '/tmp/default/data', 'checkpoint_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\checkpoint', 'best_checkpoint_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\checkpoint\\best', 'debug_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\debug\\20250315\\143045', 'backup_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\backup\\20250315\\143045', 'cache_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\cache'}).work_dir
+E    +      where PathsConfigNode({'work_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name', 'log_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\logs\\20250315\\143045', 'data_dir': '/tmp/default/data', 'checkpoint_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\checkpoint', 'best_checkpoint_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\checkpoint\\best', 'debug_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\debug\\20250315\\143045', 'backup_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\backup\\20250315\\143045', 'cache_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\cache'}) = ConfigManager({'project_name': 'test_project', 'first_start_time': '2025-03-15T14:30:45', 'test_mode': True, 'base_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb', 'experiment_name': 'experiment_name', 'config_file_path': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\src\\config\\config.yaml', 'paths': PathsConfigNode({'work_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name', 'log_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\logs\\20250315\\143045', 'data_dir': '/tmp/default/data', 'checkpoint_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\checkpoint', 'best_checkpoint_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\checkpoint\\best', 'debug_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\debug\\20250315\\143045', 'backup_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\backup\\20250315\\143045', 'cache_dir': 'd:\\temp\\tests\\20250315\\143045\\446682ee_000000_a07e70eb\\test_project\\experiment_name\\cache'}), 'concurrency': 5, 'timeout': 30, 'proxy': ConfigNode({'http': 'http://localhost:3213', 'https': 'https://localhost:3214', 'url': 'http://proxy.example.com:8080'}), 'headers': ConfigNode({'Accept': 'text/html,application/xhtml+xml', 'Content_Type': 'application/json'}), 'url_validation': ConfigNode({'level2_pattern': '^https?://[^/]+/chapter/\\d+$', 'exclude_image_patterns': ['\\.jpg$', '\\.png$', '\\.gif$']}), 'work_dir': '/tmp/original/work/path', 'log_dir': '/tmp/original/log/path'}).paths
+配置已自动备份到 d:\temp\tests\20250315\143045\446682ee_000000_a07e70eb\test_project\experiment_name\backup\20250315\143045\config_20250315_143045.yaml
 
 test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_new_keys
 test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_nested_structures
 test_yaml_comments_preservation.py::test_yaml_comments_preservation_edge_cases
 
-====================== 6 failed, 449 deselected in 0.99s ======================
-FAILED [ 50%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmps6a67s_9.yaml -> d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957\src\config\config.yaml
+====================== 7 failed, 448 deselected in 1.05s ======================
+FAILED [ 57%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\015515\446682ee_5deb867e_516118_3f990128
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_5deb867e_516118_3f990128, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_5deb867e_516118_3f990128, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmpnamitpxf.yaml -> d:\temp\tests\20250807\015515\446682ee_5deb867e_516118_3f990128\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xd3 in position 4: invalid continuation byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\015515\446682ee_5deb867e_516118_3f990128\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:16 (test_yaml_comments_preservation)
 'project_name系统' != 'TestApp'
@@ -106,16 +122,16 @@ E   AssertionError: assert 'project_name系统' == 'TestApp'
 E
 E     - TestApp
 E     + project_name系统
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
-FAILED [ 66%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmpjcvoszvb.yaml -> d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75\src\config\config.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\015515\config_20250807_015515.yaml
+FAILED [ 71%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\015515\446682ee_fc23cb0a_559104_ce3cc596
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_fc23cb0a_559104_ce3cc596, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_fc23cb0a_559104_ce3cc596, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmp9o06_3cw.yaml -> d:\temp\tests\20250807\015515\446682ee_fc23cb0a_559104_ce3cc596\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xbb in position 2: invalid start byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\015515\446682ee_fc23cb0a_559104_ce3cc596\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:127 (test_yaml_comments_preservation_with_new_keys)
 test_yaml_comments_preservation.py:155: in test_yaml_comments_preservation_with_new_keys
@@ -127,16 +143,16 @@ test_yaml_comments_preservation.py:155: in test_yaml_comments_preservation_with_
 ..\src\config_manager\config_node.py:95: in __getattr__
     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 E   AttributeError: 'ConfigManager' object has no attribute 'database'
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
-FAILED [ 83%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmpl0zlu2ff.yaml -> d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d\src\config\config.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\015515\config_20250807_015515.yaml
+FAILED [ 85%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\015515\446682ee_d19e8f03_643118_97b59d70
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_d19e8f03_643118_97b59d70, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_d19e8f03_643118_97b59d70, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmplymglufh.yaml -> d:\temp\tests\20250807\015515\446682ee_d19e8f03_643118_97b59d70\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xd3 in position 4: invalid continuation byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\015515\446682ee_d19e8f03_643118_97b59d70\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:190 (test_yaml_comments_preservation_with_nested_structures)
 test_yaml_comments_preservation.py:238: in test_yaml_comments_preservation_with_nested_structures
@@ -148,16 +164,16 @@ test_yaml_comments_preservation.py:238: in test_yaml_comments_preservation_with_
 ..\src\config_manager\config_node.py:95: in __getattr__
     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 E   AttributeError: 'ConfigManager' object has no attribute 'app'
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\015515\config_20250807_015515.yaml
 FAILED [100%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmpdu2x1id3.yaml -> d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752\src\config\config.yaml
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\015515\446682ee_4a038cc3_728104_72380d24
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_4a038cc3_728104_72380d24, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\015515\446682ee_4a038cc3_728104_72380d24, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmpm06ndctp.yaml -> d:\temp\tests\20250807\015515\446682ee_4a038cc3_728104_72380d24\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xb6 in position 2: invalid start byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\015515\446682ee_4a038cc3_728104_72380d24\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:298 (test_yaml_comments_preservation_edge_cases)
 test_yaml_comments_preservation.py:346: in test_yaml_comments_preservation_edge_cases
@@ -169,6 +185,4 @@ test_yaml_comments_preservation.py:346: in test_yaml_comments_preservation_edge_
 ..\src\config_manager\config_node.py:95: in __getattr__
     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 E   AttributeError: 'ConfigManager' object has no attribute 'list_items'
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
-
-进程已结束，退出代码为 1
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\015515\config_20250807_015515.yaml
