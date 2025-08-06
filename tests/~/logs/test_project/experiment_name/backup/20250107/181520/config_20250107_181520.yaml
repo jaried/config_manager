@@ -6,7 +6,7 @@ __data__:
     windows: D:\Windows\Project
     linux: ~/logs
   experiment_name: experiment_name
-  config_file_path: /tmp/tests/20250726/072342/b9a7c5a5_545639_21a250b1/src/config/config.yaml
+  config_file_path: /tmp/tests/20250807/001933/b9a7c5a5_073894_5a4745db/src/config/config.yaml
   paths:
     work_dir: ~/logs/test_project/experiment_name
     log_dir: ~/logs/test_project/experiment_name/logs/20250107/181520
@@ -14,8 +14,6 @@ __data__:
     checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint
     best_checkpoint_dir: ~/logs/test_project/experiment_name/checkpoint/best
     debug_dir: ~/logs/test_project/experiment_name/debug/20250107/181520
-    tensorboard_dir: ~/logs/test_project/experiment_name/tensorboard/2025/02/01/07/181520
-    tsb_logs_dir: ~/logs/test_project/experiment_name/tsb_logs/2025/02/01/07/181520
     backup_dir: ~/logs/test_project/experiment_name/backup/20250107/181520
     cache_dir: ~/logs/test_project/experiment_name/cache
   concurrency: 5
@@ -37,5 +35,5 @@ __data__:
   log_dir: /tmp/original/log/path
 __type_hints__:
   first_start_time: datetime
-base_dir: /tmp/tests/20250726/072342/b9a7c5a5_545639_21a250b1
-first_start_time: '2025-07-26T07:23:42.559591'
+base_dir: /tmp/tests/20250807/001933/b9a7c5a5_073894_5a4745db
+first_start_time: '2025-08-07T00:19:33.086636'

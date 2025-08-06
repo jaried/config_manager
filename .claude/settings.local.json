@@ -34,7 +34,8 @@
       "Bash(ruff format:*)",
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.npmjs.com)"
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

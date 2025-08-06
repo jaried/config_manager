@@ -5,16 +5,21 @@ __data__:
   base_dir: /tmp/original/base/path
   experiment_name: experiment_name
   config_file_path: 
-    /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager/src/config/config.yaml
+    D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
   paths:
-    work_dir: /tmp/original/base/path/test_project/experiment_name
-    log_dir: /tmp/original/base/path/test_project/experiment_name/logs/20250107/181520
+    work_dir: \tmp\original\base\path\test_project\experiment_name
+    log_dir: 
+      \tmp\original\base\path\test_project\experiment_name\logs\20250107\181520
     data_dir: /tmp/default/data
-    checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint
-    best_checkpoint_dir: /tmp/original/base/path/test_project/experiment_name/checkpoint/best
-    debug_dir: /tmp/original/base/path/test_project/experiment_name/debug/20250107/181520
-    backup_dir: /tmp/original/base/path/test_project/experiment_name/backup/20250107/181520
-    cache_dir: /tmp/original/base/path/test_project/experiment_name/cache
+    checkpoint_dir: 
+      \tmp\original\base\path\test_project\experiment_name\checkpoint
+    best_checkpoint_dir: 
+      \tmp\original\base\path\test_project\experiment_name\checkpoint\best
+    debug_dir: 
+      \tmp\original\base\path\test_project\experiment_name\debug\20250107\181520
+    backup_dir: 
+      \tmp\original\base\path\test_project\experiment_name\backup\20250107\181520
+    cache_dir: \tmp\original\base\path\test_project\experiment_name\cache
   concurrency: 5
   timeout: 30
   proxy:

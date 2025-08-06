@@ -1,0 +1,38 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.2, pytest-8.4.1, pluggy-1.5.0 -- /home/tony/programs/miniconda3/envs/base_python3.12/bin/python
+cachedir: .pytest_cache
+rootdir: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+configfile: pytest.ini
+plugins: anyio-4.9.0, asyncio-0.25.3, cov-6.2.1
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function
+collecting ... collected 480 items
+
+tests/01_unit_tests/test_config_manager/test_auto_directory_creation.py::TestAutoDirectoryCreation::test_paths_namespace_auto_creation PASSED [  0%]
+tests/01_unit_tests/test_config_manager/test_auto_directory_creation.py::TestAutoDirectoryCreation::test_nested_path_auto_creation FAILED [  0%]
+
+=================================== FAILURES ===================================
+___________ TestAutoDirectoryCreation.test_nested_path_auto_creation ___________
+/home/tony/project/config_manager/tests/01_unit_tests/test_config_manager/test_auto_directory_creation.py:41: in test_nested_path_auto_creation
+    assert Path(nested_path_str).exists()
+E   AssertionError: assert False
+E    +  where False = exists()
+E    +    where exists = PosixPath('/tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/level1/level2/level3/logs').exists
+E    +      where PosixPath('/tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/level1/level2/level3/logs') = Path('/tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/level1/level2/level3/logs')
+----------------------------- Captured stdout call -----------------------------
+✓ 基于当前工作目录生成测试路径: /mnt/ntfs/ubuntu_data/NutstoreFiles/invest2025/project/config_manager
+✓ 检测到pytest环境，使用pytest tmp_path: /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0
+✓ 开始执行路径替换，test_base_dir: /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0, temp_base: /tmp
+✓ 开始执行路径替换，test_base_dir: /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0, temp_base: /tmp
+✓ 已从自定义配置复制: /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/config.yaml -> /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/src/config/config.yaml
+✓ 使用当前时间作为first_start_time: 2025-08-06 22:39:52.044758
+✓ 开始执行路径替换，test_base_dir: /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0, temp_base: /tmp
+配置已从 /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/src/config/config.yaml 加载
+🔍 调试信息: _test_mode=True, _true_original_config_path=/tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/config.yaml, _config_path=/tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/src/config/config.yaml
+✓ 测试模式下监视真正的原始配置路径: /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/config.yaml
+配置文件监视器已启动
+--------------------------- Captured stdout teardown ---------------------------
+配置已自动备份到 /tmp/pytest-of-tony/pytest-7/test_nested_path_auto_creation0/test_project/test_experiment/backup/20250806/223952/config_20250806_223952.yaml
+=========================== short test summary info ============================
+FAILED tests/01_unit_tests/test_config_manager/test_auto_directory_creation.py::TestAutoDirectoryCreation::test_nested_path_auto_creation
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+========================= 1 failed, 1 passed in 2.68s ==========================
