@@ -1,8 +1,6 @@
 # tests/test_yaml_comments_preservation.py
 from __future__ import annotations
-from datetime import datetime
 
-import pytest
 import tempfile
 import os
 import sys
@@ -47,7 +45,7 @@ features:
 """
     
     # 创建临时配置文件
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp:
         tmp.write(yaml_content_with_comments)
         test_config_path = tmp.name
     
@@ -138,7 +136,7 @@ database:
   port: 5432      # 端口号
 """
     
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp:
         tmp.write(yaml_content)
         test_config_path = tmp.name
     
@@ -222,7 +220,7 @@ services:
     rate_limit: 100 # 请求限制
 """
     
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp:
         tmp.write(yaml_content)
         test_config_path = tmp.name
     
@@ -328,7 +326,7 @@ special_chars: "test"  # 包含特殊字符的注释
 # 最后的注释
 """
     
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as tmp:
         tmp.write(yaml_content)
         test_config_path = tmp.name
     

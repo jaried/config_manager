@@ -3,11 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 import os
 import tempfile
-import shutil
 import threading
-import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-import pytest
 
 from config_manager import get_config_manager
 from config_manager.serializable_config import SerializableConfigData
@@ -79,8 +76,11 @@ class TestTsbPathIntegration:
             )
             
             # 5. 验证路径的完整性
-            assert tsb_path.startswith(config.paths.work_dir), (
-                "TSB路径应该在work_dir下"
+            # 统一路径分隔符后再比较
+            tsb_path_normalized = tsb_path.replace('\\', '/')
+            work_dir_normalized = config.paths.work_dir.replace('\\', '/')
+            assert tsb_path_normalized.startswith(work_dir_normalized), (
+                f"TSB路径应该在work_dir下\nTSB路径: {tsb_path_normalized}\nwork_dir: {work_dir_normalized}"
             )
             
             # 6. 验证路径创建
@@ -238,7 +238,7 @@ class TestTsbPathIntegration:
             avg_cache_time = cache_time / iterations * 1000  # 转换为毫秒
             avg_regenerate_time = sum(regenerate_times) / len(regenerate_times) * 1000
             
-            print(f"\n路径生成性能报告：")
+            print("\n路径生成性能报告：")
             print(f"  缓存访问：{avg_cache_time:.3f}ms/次 ({iterations}次)")
             print(f"  重新生成：{avg_regenerate_time:.3f}ms/次 (10次)")
             print(f"  性能比率：{avg_regenerate_time/avg_cache_time:.1f}x")
@@ -432,10 +432,10 @@ class TestTsbPathIntegration:
             )
             assert all_equal, "所有访问应返回相同且相等的路径对"
             
-            print(f"\n大规模访问测试完成：")
+            print("\n大规模访问测试完成：")
             print(f"  总访问次数：{access_count}")
             print(f"  并发线程数：{thread_count}")
-            print(f"  路径一致性：通过")
+            print("  路径一致性：通过")
             
         finally:
             if hasattr(config, 'cleanup'):

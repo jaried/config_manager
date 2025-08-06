@@ -5,8 +5,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import patch
 
 from config_manager import get_config_manager
 from config_manager.core.path_resolver import PathResolver
@@ -274,8 +273,8 @@ class TestTsbPathCrossPlatform:
         # 保存当前目录
         original_cwd = os.getcwd()
         
-        try:
-            with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
                 # 切换到临时目录
                 os.chdir(temp_dir)
                 
@@ -303,12 +302,15 @@ class TestTsbPathCrossPlatform:
                 abs_path = os.path.join(temp_dir, "absolute", "work")
                 result = PathResolver.generate_tsb_logs_path(abs_path, test_time)
                 
-                assert abs_path in result
+                # 统一路径分隔符后再比较
+                abs_path_normalized = abs_path.replace('\\', '/')
+                result_normalized = result.replace('\\', '/')
+                assert abs_path_normalized in result_normalized
                 assert os.path.isabs(result)
                 
-        finally:
-            # 恢复原始目录
-            os.chdir(original_cwd)
+            finally:
+                # 在with块结束前恢复原始目录，避免Windows权限问题
+                os.chdir(original_cwd)
     
     def test_path_separator_consistency(self):
         """测试路径分隔符的一致性"""

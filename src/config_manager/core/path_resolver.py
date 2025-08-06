@@ -52,6 +52,10 @@ class PathResolver:
         date_str = timestamp.strftime('%m%d')
         time_str = timestamp.strftime('%H%M%S')
         
+        # 确保work_dir是绝对路径
+        if not os.path.isabs(work_dir):
+            work_dir = os.path.abspath(work_dir)
+        
         # 构建路径
         path_components = [
             work_dir,
