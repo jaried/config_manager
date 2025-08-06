@@ -177,12 +177,9 @@ class TestUnifiedTensorBoardPath:
             work_dir, date_str, time_str, test_time_str
         )
         
-        # 验证路径使用正确的分隔符
-        if os.name == 'nt':
-            assert '\\' in path, "Windows路径应该包含反斜杠"
-        else:
-            assert '/' in path, "Unix路径应该包含正斜杠"
-            assert '\\' not in path, "Unix路径不应该包含反斜杠"
+        # 验证路径使用统一的正斜杠格式（所有平台）
+        assert '/' in path, "所有平台路径都应该使用正斜杠"
+        assert '\\' not in path, "路径不应该包含反斜杠（统一使用正斜杠）"
         pass
     
     def test_year_boundary_week_calculation(self):

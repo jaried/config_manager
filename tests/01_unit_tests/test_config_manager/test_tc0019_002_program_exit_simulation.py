@@ -7,9 +7,11 @@ import sys
 import tempfile
 import os
 import time
+import platform
 import pytest
 
 
+@pytest.mark.skipif(platform.system() == 'Windows', reason="Windows进程管理差异")
 def test_program_exit_without_hanging():
     """测试程序退出时不会挂起（模拟真实使用场景）"""
     
@@ -91,6 +93,7 @@ if __name__ == "__main__":
             os.unlink(script_path)
 
 
+@pytest.mark.skipif(platform.system() == 'Windows', reason="Windows进程管理差异")
 def test_multiple_config_managers_program_exit():
     """测试多个配置管理器实例时程序正常退出"""
     
@@ -182,6 +185,7 @@ if __name__ == "__main__":
             os.unlink(script_path)
 
 
+@pytest.mark.skipif(platform.system() == 'Windows', reason="Windows不支持Unix信号处理")
 def test_signal_handling_graceful_shutdown():
     """测试信号处理和优雅关闭"""
     

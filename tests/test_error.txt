@@ -1,784 +1,57 @@
-
-01_unit_tests\test_config_manager\test_path_consistency.py::TestPathConsistency::test_tensorboard_dir_consistency
-01_unit_tests\test_config_manager\test_path_consistency.py::TestPathConsistency::test_first_start_time_usage
-01_unit_tests\test_config_manager\test_path_consistency.py::TestPathConsistency::test_cache_performance
-01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py::test_program_exit_without_hanging
-01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py::test_multiple_config_managers_program_exit
-01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py::test_signal_handling_graceful_shutdown
-01_unit_tests\test_config_manager\test_tc0020_001_filewatcher_daemon_issue.py::TestFileWatcherDaemonIssue::test_program_exit_simulation_with_config_watcher
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py::TestTensorboardPathFormat::test_tensorboard_dir_uses_week_format
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py::TestTensorboardPathFormat::test_tensorboard_dir_matches_tsb_logs_dir_format
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py::TestTensorboardPathFormat::test_path_generator_with_different_dates
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py::TestTensorboardPathFormat::test_tensorboard_and_tsb_logs_consistency_across_instances
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py::TestTensorboardPathFormat::test_path_configuration_integration
-01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py::TestTensorBoardReadOnlyProperty::test_tensorboard_dir_always_equals_tsb_logs_dir
-01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py::TestTensorBoardReadOnlyProperty::test_readonly_property_in_different_access_methods
-01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py::TestTensorBoardReadOnlyProperty::test_tensorboard_dir_persistence
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py::TestTsbLogsPathGeneration::test_tsb_logs_path_format
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py::TestTsbLogsPathGeneration::test_year_boundary
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py::TestTsbLogsPathGeneration::test_default_timestamp
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py::TestTsbLogsPathGeneration::test_config_manager_tsb_logs_dir
-01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py::TestTsbPathCacheMechanism::test_cache_duration_1_second
-01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py::TestTsbPathCacheMechanism::test_cache_isolation_between_instances
-01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py::TestTsbPathCacheMechanism::test_cache_with_dynamic_timestamp
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py::TestTsbPathEdgeCases::test_path_generation_with_none_timestamp
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py::TestTsbPathEdgeCases::test_special_week_53_handling
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py::TestTsbPathEdgeCases::test_path_resolver_without_root
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py::TestTsbPathEdgeCases::test_cache_with_changing_work_dir
-01_unit_tests\test_config_manager\test_tsb_path_week_format.py::TestTsbPathWeekFormat::test_year_boundary_week_numbers
-01_unit_tests\test_config_manager\test_tsb_path_week_format.py::TestTsbPathWeekFormat::test_week_53_special_cases
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py::TestUnifiedTensorBoardPath::test_generate_unified_tensorboard_path_basic
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py::TestUnifiedTensorBoardPath::test_tsb_logs_dir_and_tensorboard_dir_are_identical
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py::TestUnifiedTensorBoardPath::test_fallback_to_old_format_on_error
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py::TestUnifiedTensorBoardPath::test_no_first_start_time_uses_old_format
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py::TestUnifiedTensorBoardPath::test_integration_with_config_manager
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py::TestUnifiedTensorBoardPath::test_year_boundary_week_calculation
-test_config_manager\test_tc0006_singleton_path_resolution.py::TestSingletonPathResolution::test_tc0006_005_cache_key_format_validation FAILED [  2%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155, temp_base: d:\temp
-⚠️  生产配置不存在，尝试更广泛的搜索...
-当前工作目录: D:\Tony\Documents\invest2025\project\config_manager\tests
-在当前目录未找到，向上查找...
-查找第1级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第2级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第3级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第4级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第5级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:39.642780
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=d:\temp\tmpjkr2ylbc\test_external_change.yaml, _config_path=d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155\src\config\config.yaml
-配置文件监视器已启动
-配置已自动备份到 d:\temp\tests\20250807\002839\446682ee_62667e1b_627782_13037155\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-文件监视器记录的修改时间: 1754497719.7727978
-修改前文件时间: 1754497719.8915758
-修改后文件时间: 1754497720.7803035
-文件时间变化: 0.8887276649475098
-等待文件监视器检测外部变化...
-🔒 跳过内部保存触发的文件变化检测
-检测到的 test_value: initial_value
-检测到的 nested.deep_value: deep_initial
-检测到的 external_change: False
-
-tests\01_unit_tests\test_config_manager\test_internal_save_no_reload.py:64 (TestInternalSaveNoReload.test_external_file_change_triggers_reload)
-'initial_value' != 'external_modified_value'
-
-预期:'external_modified_value'
-实际:'initial_value'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_internal_save_no_reload.py:147: in test_external_file_change_triggers_reload
-    assert updated_value == "external_modified_value", "外部修改的test_value应该被检测到"
-E   AssertionError: 外部修改的test_value应该被检测到
-E   assert 'initial_value' == 'external_modified_value'
-E
-E     - external_modified_value
-E     + initial_value
-FAILED [  4%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-01-15 10:30:45
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388, temp_base: d:\temp
-配置已从 d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_path_consistency.py:25 (TestPathConsistency.test_tensorboard_dir_consistency)
-'/tsb_logs/' != 'd:\\temp\\tests\\20250115\\103045\\446682ee_000000_8cfe5388\\test_project\\experiment_name\\tsb_logs\\2025\\03\\0115\\103045'
-
-预期:'d:\\temp\\tests\\20250115\\103045\\446682ee_000000_8cfe5388\\test_project\\experiment_name\\tsb_logs\\2025\\03\\0115\\103045'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_path_consistency.py:44: in test_tensorboard_dir_consistency
-    assert "/tsb_logs/" in tsb_dir
-E   AssertionError: assert '/tsb_logs/' in 'd:\\temp\\tests\\20250115\\103045\\446682ee_000000_8cfe5388\\test_project\\experiment_name\\tsb_logs\\2025\\03\\0115\\103045'
-配置已自动备份到 d:\temp\tests\20250115\103045\446682ee_000000_8cfe5388\test_project\experiment_name\backup\20250115\103045\config_20250115_103045.yaml
-FAILED [  6%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250701\120000\446682ee_000000_99928f64
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250701\120000\446682ee_000000_99928f64, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250701\120000\446682ee_000000_99928f64, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250701\120000\446682ee_000000_99928f64\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-07-01 12:00:00
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250701\120000\446682ee_000000_99928f64, temp_base: d:\temp
-配置已从 d:\temp\tests\20250701\120000\446682ee_000000_99928f64\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250701\120000\446682ee_000000_99928f64\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250701\120000\446682ee_000000_99928f64\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_path_consistency.py:181 (TestPathConsistency.test_first_start_time_usage)
-'/2025/27/0701/120000' != 'd:\\temp\\tests\\20250701\\120000\\446682ee_000000_99928f64\\test_project\\experiment_name\\tsb_logs\\2025\\27\\0701\\120000'
-
-预期:'d:\\temp\\tests\\20250701\\120000\\446682ee_000000_99928f64\\test_project\\experiment_name\\tsb_logs\\2025\\27\\0701\\120000'
-实际:'/2025/27/0701/120000'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_path_consistency.py:196: in test_first_start_time_usage
-    assert "/2025/27/0701/120000" in tsb_dir, f"应该使用指定的first_start_time生成路径，实际: {tsb_dir}"
-E   AssertionError: 应该使用指定的first_start_time生成路径，实际: d:\temp\tests\20250701\120000\446682ee_000000_99928f64\test_project\experiment_name\tsb_logs\2025\27\0701\120000
-E   assert '/2025/27/0701/120000' in 'd:\\temp\\tests\\20250701\\120000\\446682ee_000000_99928f64\\test_project\\experiment_name\\tsb_logs\\2025\\27\\0701\\120000'
-配置已自动备份到 d:\temp\tests\20250701\120000\446682ee_000000_99928f64\test_project\experiment_name\backup\20250701\120000\config_20250701_120000.yaml
-FAILED [  8%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002843\446682ee_923781_99dd4581
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002843\446682ee_923781_99dd4581, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002843\446682ee_923781_99dd4581, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002843\446682ee_923781_99dd4581\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:43.929780
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002843\446682ee_923781_99dd4581, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002843\446682ee_923781_99dd4581\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002843\446682ee_923781_99dd4581\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002843\446682ee_923781_99dd4581\src\config\config.yaml
-配置文件监视器已启动
-缓存访问1000次耗时: 0.0020秒
-非缓存访问1次耗时: 0.0000秒
-
-tests\01_unit_tests\test_config_manager\test_path_consistency.py:239 (TestPathConsistency.test_cache_performance)
-2.0008087158203124e-06 != 0.0
-
-预期:0.0
-实际:2.0008087158203124e-06
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_path_consistency.py:267: in test_cache_performance
-    assert (cached_time / 1000) < uncached_time, "缓存访问应该更快"
-E   AssertionError: 缓存访问应该更快
-E   assert (0.0020008087158203125 / 1000) < 0.0
-配置已自动备份到 d:\temp\tests\20250807\002843\446682ee_923781_99dd4581\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 11%]
-tests\01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py:12 (test_program_exit_without_hanging)
-01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py:55: in test_program_exit_without_hanging
-    f.write(test_script)
-D:\anaconda3\envs\base_python3.12\Lib\tempfile.py:499: in func_wrapper
-    return func(*args, **kwargs)
-E   UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 791: illegal multibyte sequence
-FAILED [ 13%]
-tests\01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py:93 (test_multiple_config_managers_program_exit)
-01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py:148: in test_multiple_config_managers_program_exit
-    f.write(test_script)
-D:\anaconda3\envs\base_python3.12\Lib\tempfile.py:499: in func_wrapper
-    return func(*args, **kwargs)
-E   UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 973: illegal multibyte sequence
-FAILED [ 15%]
-tests\01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py:184 (test_signal_handling_graceful_shutdown)
-01_unit_tests\test_config_manager\test_tc0019_002_program_exit_simulation.py:243: in test_signal_handling_graceful_shutdown
-    f.write(test_script)
-D:\anaconda3\envs\base_python3.12\Lib\tempfile.py:499: in func_wrapper
-    return func(*args, **kwargs)
-E   UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 395: illegal multibyte sequence
-FAILED [ 17%]
-tests\01_unit_tests\test_config_manager\test_tc0020_001_filewatcher_daemon_issue.py:98 (TestFileWatcherDaemonIssue.test_program_exit_simulation_with_config_watcher)
-1 != 0
-
-预期:0
-实际:1
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tc0020_001_filewatcher_daemon_issue.py:146: in test_program_exit_simulation_with_config_watcher
-    assert result.returncode == 0, \
-E   AssertionError: 程序应该正常退出，但返回码为1
-E     stdout:
-E     stderr: SyntaxError: Non-UTF-8 code starting with '\xcc' in file d:\temp\tmpv65py4hd.py on line 7, but no encoding declared; see https://peps.python.org/pep-0263/ for details
-E
-E   assert 1 == 0
-E    +  where 1 = CompletedProcess(args=['python', 'd:\\temp\\tmpv65py4hd.py'], returncode=1, stdout='', stderr="SyntaxError: Non-UTF-8 code starting with '\\xcc' in file d:\\temp\\tmpv65py4hd.py on line 7, but no encoding declared; see https://peps.python.org/pep-0263/ for details\n").returncode
-FAILED [ 20%]
-tests\01_unit_tests\test_config_manager\test_tensorboard_path_format.py:12 (TestTensorboardPathFormat.test_tensorboard_dir_uses_week_format)
-'D:\\test\\work\\dir\\tsb_logs\\2025\\30\\0726\\103045' != '/test/work/dir/tsb_logs/2025/30/0726/103045'
-
-预期:'/test/work/dir/tsb_logs/2025/30/0726/103045'
-实际:'D:\\test\\work\\dir\\tsb_logs\\2025\\30\\0726\\103045'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py:36: in test_tensorboard_dir_uses_week_format
-    assert result['paths.tensorboard_dir'] == expected_path
-E   AssertionError: assert 'D:\\test\\work\\dir\\tsb_logs\\2025\\30\\0726\\103045' == '/test/work/dir/tsb_logs/2025/30/0726/103045'
-E
-E     - /test/work/dir/tsb_logs/2025/30/0726/103045
-E     ? ^    ^    ^   ^        ^    ^  ^    ^
-E     + D:\test\work\dir\tsb_logs\2025\30\0726\103045
-E     ? ^^^    ^    ^   ^        ^    ^  ^    ^
-FAILED [ 22%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:45.235616
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tensorboard_path_format.py:45 (TestTensorboardPathFormat.test_tensorboard_dir_matches_tsb_logs_dir_format)
-None != None
-
-预期:None
-实际:None
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py:68: in test_tensorboard_dir_matches_tsb_logs_dir_format
-    assert year_idx is not None, f"路径中未找到年份: {tensorboard_dir}"
-E   AssertionError: 路径中未找到年份: d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f\test_project\experiment_name\tsb_logs\2025\02\0107\181520
-E   assert None is not None
-配置已自动备份到 d:\temp\tests\20250807\002845\446682ee_229617_1bcdd13f\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 24%]
-tests\01_unit_tests\test_config_manager\test_tensorboard_path_format.py:81 (TestTensorboardPathFormat.test_path_generator_with_different_dates)
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py:113: in test_path_generator_with_different_dates
-    year_idx = parts.index(expected_iso_year)
-E   ValueError: '2025' is not in list
-
-During handling of the above exception, another exception occurred:
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py:123: in test_path_generator_with_different_dates
-    raise ValueError(f"未在路径中找到ISO年份 {expected_iso_year}: {path}")
-E   ValueError: 未在路径中找到ISO年份 2025: D:\test\work\tsb_logs\2025\01\0101\000000
-FAILED [ 26%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870, temp_base: d:\temp
-⚠️  生产配置不存在，尝试更广泛的搜索...
-当前工作目录: D:\Tony\Documents\invest2025\project\config_manager\tests
-在当前目录未找到，向上查找...
-查找第1级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第2级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第3级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第4级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-查找第5级上级目录: D:\Tony\Documents\invest2025\project\config_manager
-✓ 在上级目录找到配置文件: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-08-15 14:30:00
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870, temp_base: d:\temp
-配置已从 d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=d:\temp\tmpkg1yvxi5\test_config.yaml, _config_path=d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tensorboard_path_format.py:130 (TestTensorboardPathFormat.test_tensorboard_and_tsb_logs_consistency_across_instances)
-None != None
-
-预期:None
-实际:None
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py:160: in test_tensorboard_and_tsb_logs_consistency_across_instances
-    assert year_idx is not None, f"路径中未找到2025年份: {tb_dir1}"
-E   AssertionError: 路径中未找到2025年份: d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870\test_project\experiment_name\tsb_logs\2025\33\0815\143000
-E   assert None is not None
-配置已自动备份到 d:\temp\tests\20250815\143000\446682ee_3aaaf88e_000000_07ae0870\test_project\experiment_name\backup\20250815\143000\config_20250815_143000.yaml
-FAILED [ 28%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:45.381629
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tensorboard_path_format.py:167 (TestTensorboardPathFormat.test_path_configuration_integration)
-None != None
-
-预期:None
-实际:None
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_path_format.py:189: in test_path_configuration_integration
-    assert year_idx is not None, f"路径中未找到年份: {tb_path}"
-E   AssertionError: 路径中未找到年份: d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7\test_project\experiment_name\tsb_logs\2025\02\0107\181520
-E   assert None is not None
-配置已自动备份到 d:\temp\tests\20250807\002845\446682ee_374625_dd4c37f7\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 31%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-01-08 15:30:45
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd, temp_base: d:\temp
-配置已从 d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py:45 (TestTensorBoardReadOnlyProperty.test_tensorboard_dir_always_equals_tsb_logs_dir)
-'/modified/work/dir' != 'D:\\modified\\work\\dir\\tsb_logs\\2025\\02\\0108\\153045'
-
-预期:'D:\\modified\\work\\dir\\tsb_logs\\2025\\02\\0108\\153045'
-实际:'/modified/work/dir'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py:79: in test_tensorboard_dir_always_equals_tsb_logs_dir
-    assert "/modified/work/dir" in new_tb_dir, (
-E   AssertionError: 新路径应反映work_dir的变化
-E   assert '/modified/work/dir' in 'D:\\modified\\work\\dir\\tsb_logs\\2025\\02\\0108\\153045'
-配置已自动备份到 d:\temp\tests\20250108\153045\446682ee_000000_d8e9ffcd\test_project\experiment_name\backup\20250108\153045\config_20250108_153045.yaml
-FAILED [ 33%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002846\446682ee_601193_d8de311d
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002846\446682ee_601193_d8de311d, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002846\446682ee_601193_d8de311d, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002846\446682ee_601193_d8de311d\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:46.608194
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002846\446682ee_601193_d8de311d, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002846\446682ee_601193_d8de311d\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002846\446682ee_601193_d8de311d\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002846\446682ee_601193_d8de311d\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py:116 (TestTensorBoardReadOnlyProperty.test_readonly_property_in_different_access_methods)
-'/tsb_logs/' != 'd:\\temp\\tests\\20250807\\002846\\446682ee_601193_d8de311d\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-
-预期:'d:\\temp\\tests\\20250807\\002846\\446682ee_601193_d8de311d\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py:140: in test_readonly_property_in_different_access_methods
-    assert "/tsb_logs/" in tb_dir, "路径应包含tsb_logs"
-E   AssertionError: 路径应包含tsb_logs
-E   assert '/tsb_logs/' in 'd:\\temp\\tests\\20250807\\002846\\446682ee_601193_d8de311d\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-配置已自动备份到 d:\temp\tests\20250807\002846\446682ee_601193_d8de311d\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 35%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-01-08 20:00:00
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1, temp_base: d:\temp
-配置已从 d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml
-配置文件监视器已启动
-配置已自动备份到 d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\test_project\experiment_name\backup\20250108\200000\config_20250108_200000.yaml
-✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml -> d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b\src\config\config.yaml
-✓ 保留原配置中的first_start_time: 2025-01-08T20:00:00
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml, _config_path=d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b\src\config\config.yaml
-✓ 测试模式下监视真正的原始配置路径: d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py:213 (TestTensorBoardReadOnlyProperty.test_tensorboard_dir_persistence)
-'/tsb_logs/' != 'd:\\temp\\tests\\20250807\\002846\\446682ee_113de75e_907818_b5b5594b\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0108\\200000'
-
-预期:'d:\\temp\\tests\\20250807\\002846\\446682ee_113de75e_907818_b5b5594b\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0108\\200000'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tensorboard_readonly_property.py:252: in test_tensorboard_dir_persistence
-    assert "/tsb_logs/" in tb_dir2, (
-E   AssertionError: 路径应包含tsb_logs目录
-E   assert '/tsb_logs/' in 'd:\\temp\\tests\\20250807\\002846\\446682ee_113de75e_907818_b5b5594b\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0108\\200000'
-配置已自动备份到 d:\temp\tests\20250108\200000\446682ee_000000_41e020b1\test_project\experiment_name\backup\20250108\200000\config_20250108_200000.yaml
-配置已自动备份到 d:\temp\tests\20250807\002846\446682ee_113de75e_907818_b5b5594b\test_project\experiment_name\backup\20250108\200000\config_20250108_200000.yaml
-FAILED [ 37%]
-tests\01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:24 (TestTsbLogsPathGeneration.test_tsb_logs_path_format)
-'D:\\home\\user\\project\\work\\tsb_logs\\2025\\02\\0107\\181520' != '/home/user/project/work\\tsb_logs\\2025\\02\\0107\\181520'
-
-预期:'/home/user/project/work\\tsb_logs\\2025\\02\\0107\\181520'
-实际:'D:\\home\\user\\project\\work\\tsb_logs\\2025\\02\\0107\\181520'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:36: in test_tsb_logs_path_format
-    assert path == expected_path, f"期望路径: {expected_path}, 实际路径: {path}"
-E   AssertionError: 期望路径: /home/user/project/work\tsb_logs\2025\02\0107\181520, 实际路径: D:\home\user\project\work\tsb_logs\2025\02\0107\181520
-E   assert 'D:\\home\\user\\project\\work\\tsb_logs\\2025\\02\\0107\\181520' == '/home/user/project/work\\tsb_logs\\2025\\02\\0107\\181520'
-E
-E     - /home/user/project/work\tsb_logs\2025\02\0107\181520
-E     ? ^    ^    ^       ^
-E     + D:\home\user\project\work\tsb_logs\2025\02\0107\181520
-E     ? ^^^    ^    ^       ^
-FAILED [ 40%]
-tests\01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:55 (TestTsbLogsPathGeneration.test_year_boundary)
-'2025/01' != 'D:\\test\\tsb_logs\\2025\\01\\0101\\000000'
-
-预期:'D:\\test\\tsb_logs\\2025\\01\\0101\\000000'
-实际:'2025/01'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:61: in test_year_boundary
-    assert "2025/01" in path_start, "2025年1月1日应该在2025年第1周"
-E   AssertionError: 2025年1月1日应该在2025年第1周
-E   assert '2025/01' in 'D:\\test\\tsb_logs\\2025\\01\\0101\\000000'
-FAILED [ 42%]
-tests\01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:68 (TestTsbLogsPathGeneration.test_default_timestamp)
-'/tsb_logs/' != 'D:\\test\\tsb_logs\\2025\\32\\0807\\002847'
-
-预期:'D:\\test\\tsb_logs\\2025\\32\\0807\\002847'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:75: in test_default_timestamp
-    assert "/tsb_logs/" in path
-E   AssertionError: assert '/tsb_logs/' in 'D:\\test\\tsb_logs\\2025\\32\\0807\\002847'
-FAILED [ 44%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-01-07 18:15:20
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c, temp_base: d:\temp
-配置已从 d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:80 (TestTsbLogsPathGeneration.test_config_manager_tsb_logs_dir)
-'/tsb_logs/' != 'd:\\temp\\tests\\20250107\\181520\\446682ee_000000_e9f5405c\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-
-预期:'d:\\temp\\tests\\20250107\\181520\\446682ee_000000_e9f5405c\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_logs_path_generation.py:95: in test_config_manager_tsb_logs_dir
-    assert "/tsb_logs/" in tsb_dir, "路径应包含/tsb_logs/子目录"
-E   AssertionError: 路径应包含/tsb_logs/子目录
-E   assert '/tsb_logs/' in 'd:\\temp\\tests\\20250107\\181520\\446682ee_000000_e9f5405c\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-配置已自动备份到 d:\temp\tests\20250107\181520\446682ee_000000_e9f5405c\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 46%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002847\446682ee_092387_86900477
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002847\446682ee_092387_86900477, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002847\446682ee_092387_86900477, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002847\446682ee_092387_86900477\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:47.100396
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002847\446682ee_092387_86900477, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002847\446682ee_092387_86900477\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002847\446682ee_092387_86900477\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002847\446682ee_092387_86900477\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py:15 (TestTsbPathCacheMechanism.test_cache_duration_1_second)
-0.0 != 0.0
-
-预期:0.0
-实际:0.0
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py:39: in test_cache_duration_1_second
-    assert cache_access_time < first_access_time / 5, (
-E   AssertionError: 缓存访问应该更快，首次：0.000000s，缓存：0.000000s
-E   assert 0.0 < (0.0 / 5)
-配置已自动备份到 d:\temp\tests\20250807\002847\446682ee_092387_86900477\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 48%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250108\100000\446682ee_000000_0d248563
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\100000\446682ee_000000_0d248563, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\100000\446682ee_000000_0d248563, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250108\100000\446682ee_000000_0d248563\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-01-08 10:00:00
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\100000\446682ee_000000_0d248563, temp_base: d:\temp
-配置已从 d:\temp\tests\20250108\100000\446682ee_000000_0d248563\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250108\100000\446682ee_000000_0d248563\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250108\100000\446682ee_000000_0d248563\src\config\config.yaml
-配置文件监视器已启动
-✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-01-08 11:00:00
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8, temp_base: d:\temp
-配置已从 d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py:218 (TestTsbPathCacheMechanism.test_cache_isolation_between_instances)
-'/modified/work' != 'D:\\modified\\work\\tsb_logs\\2025\\02\\0108\\100000'
-
-预期:'D:\\modified\\work\\tsb_logs\\2025\\02\\0108\\100000'
-实际:'/modified/work'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_cache_mechanism.py:258: in test_cache_isolation_between_instances
-    assert "/modified/work" in new_path1, (
-E   AssertionError: config1的路径应该反映work_dir变化，实际：D:\modified\work\tsb_logs\2025\02\0108\100000
-E   assert '/modified/work' in 'D:\\modified\\work\\tsb_logs\\2025\\02\\0108\\100000'
-配置已自动备份到 d:\temp\tests\20250108\100000\446682ee_000000_0d248563\test_project\experiment_name\backup\20250108\100000\config_20250108_100000.yaml
-配置已自动备份到 d:\temp\tests\20250108\110000\446682ee_000000_4e4ca6d8\test_project\experiment_name\backup\20250108\110000\config_20250108_110000.yaml
-PASSED [ 51%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002848\446682ee_360566_15cef23d
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002848\446682ee_360566_15cef23d, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002848\446682ee_360566_15cef23d, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002848\446682ee_360566_15cef23d\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:48.372565
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002848\446682ee_360566_15cef23d, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002848\446682ee_360566_15cef23d\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002848\446682ee_360566_15cef23d\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002848\446682ee_360566_15cef23d\src\config\config.yaml
-配置文件监视器已启动
-配置已自动备份到 d:\temp\tests\20250807\002848\446682ee_360566_15cef23d\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 53%]
-tests\01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:28 (TestTsbPathEdgeCases.test_path_generation_with_none_timestamp)
-'/tsb_logs/' != 'D:\\test\\work\\tsb_logs\\2025\\32\\0807\\002850'
-
-预期:'D:\\test\\work\\tsb_logs\\2025\\32\\0807\\002850'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:36: in test_path_generation_with_none_timestamp
-    assert "/tsb_logs/" in path
-E   AssertionError: assert '/tsb_logs/' in 'D:\\test\\work\\tsb_logs\\2025\\32\\0807\\002850'
-FAILED [ 55%]
-tests\01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:86 (TestTsbPathEdgeCases.test_special_week_53_handling)
-'/53/' != 'D:\\test\\tsb_logs\\2020\\53\\1231\\000000'
-
-预期:'D:\\test\\tsb_logs\\2020\\53\\1231\\000000'
-实际:'/53/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:98: in test_special_week_53_handling
-    assert "/53/" in path, f"路径应包含第53周：{path}"
-E   AssertionError: 路径应包含第53周：D:\test\tsb_logs\2020\53\1231\000000
-E   assert '/53/' in 'D:\\test\\tsb_logs\\2020\\53\\1231\\000000'
-FAILED [ 57%]
-tests\01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:187 (TestTsbPathEdgeCases.test_path_resolver_without_root)
-'/tsb_logs/' != 'D:\\test\\tsb_logs\\2025\\32\\0807\\002850'
-
-预期:'D:\\test\\tsb_logs\\2025\\32\\0807\\002850'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:197: in test_path_resolver_without_root
-    assert '/tsb_logs/' in path
-E   AssertionError: assert '/tsb_logs/' in 'D:\\test\\tsb_logs\\2025\\32\\0807\\002850'
-FAILED [ 60%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:50.291752
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:289 (TestTsbPathEdgeCases.test_cache_with_changing_work_dir)
-'/new/work/dir' != 'D:\\new\\work\\dir\\tsb_logs\\2025\\02\\0107\\181520'
-
-预期:'D:\\new\\work\\dir\\tsb_logs\\2025\\02\\0107\\181520'
-实际:'/new/work/dir'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_edge_cases.py:316: in test_cache_with_changing_work_dir
-    assert "/new/work/dir" in path3, "新路径应包含新的work_dir"
-E   AssertionError: 新路径应包含新的work_dir
-E   assert '/new/work/dir' in 'D:\\new\\work\\dir\\tsb_logs\\2025\\02\\0107\\181520'
-配置已自动备份到 d:\temp\tests\20250807\002850\446682ee_277751_2e125c9f\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 62%]
-tests\01_unit_tests\test_config_manager\test_tsb_path_week_format.py:83 (TestTsbPathWeekFormat.test_year_boundary_week_numbers)
-'/2024/' != 'D:\\test\\tsb_logs\\2024\\52\\1229\\000000'
-
-预期:'D:\\test\\tsb_logs\\2024\\52\\1229\\000000'
-实际:'/2024/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_week_format.py:112: in test_year_boundary_week_numbers
-    assert f"/{expected_year}/" in path, (
-E   AssertionError: 路径应包含ISO年份2024，实际路径：D:\test\tsb_logs\2024\52\1229\000000
-E   assert '/2024/' in 'D:\\test\\tsb_logs\\2024\\52\\1229\\000000'
-FAILED [ 64%]
-tests\01_unit_tests\test_config_manager\test_tsb_path_week_format.py:147 (TestTsbPathWeekFormat.test_week_53_special_cases)
-'/53/' != 'D:\\test\\tsb_logs\\2020\\53\\1231\\000000'
-
-预期:'D:\\test\\tsb_logs\\2020\\53\\1231\\000000'
-实际:'/53/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_tsb_path_week_format.py:158: in test_week_53_special_cases
-    assert "/53/" in path, f"路径应包含第53周，实际路径：{path}"
-E   AssertionError: 路径应包含第53周，实际路径：D:\test\tsb_logs\2020\53\1231\000000
-E   assert '/53/' in 'D:\\test\\tsb_logs\\2020\\53\\1231\\000000'
-FAILED [ 66%]
-tests\01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:13 (TestUnifiedTensorBoardPath.test_generate_unified_tensorboard_path_basic)
-'D:\\test\\work\\tsb_logs\\2025\\02\\0108\\143025' != '/test/work/tsb_logs/2025/02/0108/143025'
-
-预期:'/test/work/tsb_logs/2025/02/0108/143025'
-实际:'D:\\test\\work\\tsb_logs\\2025\\02\\0108\\143025'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:30: in test_generate_unified_tensorboard_path_basic
-    assert path == expected_path, f"期望路径: {expected_path}, 实际路径: {path}"
-E   AssertionError: 期望路径: /test/work/tsb_logs/2025/02/0108/143025, 实际路径: D:\test\work\tsb_logs\2025\02\0108\143025
-E   assert 'D:\\test\\work\\tsb_logs\\2025\\02\\0108\\143025' == '/test/work/tsb_logs/2025/02/0108/143025'
-E
-E     - /test/work/tsb_logs/2025/02/0108/143025
-E     ? ^    ^    ^        ^    ^  ^    ^
-E     + D:\test\work\tsb_logs\2025\02\0108\143025
-E     ? ^^^    ^    ^        ^    ^  ^    ^
-FAILED [ 68%]
-tests\01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:32 (TestUnifiedTensorBoardPath.test_tsb_logs_dir_and_tensorboard_dir_are_identical)
-'D:\\test\\work\\tsb_logs\\2025\\33\\0815\\103045' != '/test/work/tsb_logs/2025/33/0815/103045'
-
-预期:'/test/work/tsb_logs/2025/33/0815/103045'
-实际:'D:\\test\\work\\tsb_logs\\2025\\33\\0815\\103045'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:58: in test_tsb_logs_dir_and_tensorboard_dir_are_identical
-    assert tsb_path == expected_path, f"路径格式不正确: 期望={expected_path}, 实际={tsb_path}"
-E   AssertionError: 路径格式不正确: 期望=/test/work/tsb_logs/2025/33/0815/103045, 实际=D:\test\work\tsb_logs\2025\33\0815\103045
-E   assert 'D:\\test\\work\\tsb_logs\\2025\\33\\0815\\103045' == '/test/work/tsb_logs/2025/33/0815/103045'
-E
-E     - /test/work/tsb_logs/2025/33/0815/103045
-E     ? ^    ^    ^        ^    ^  ^    ^
-E     + D:\test\work\tsb_logs\2025\33\0815\103045
-E     ? ^^^    ^    ^        ^    ^  ^    ^
-FAILED [ 71%]
-tests\01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:98 (TestUnifiedTensorBoardPath.test_fallback_to_old_format_on_error)
-'\\test\\work\\20250108\\143025' != '/test/work/20250108/143025'
-
-预期:'/test/work/20250108/143025'
-实际:'\\test\\work\\20250108\\143025'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:116: in test_fallback_to_old_format_on_error
-    assert path == expected_path, f"降级格式不正确: 期望={expected_path}, 实际={path}"
-E   AssertionError: 降级格式不正确: 期望=/test/work/20250108/143025, 实际=\test\work\20250108\143025
-E   assert '\\test\\work\\20250108\\143025' == '/test/work/20250108/143025'
-E
-E     - /test/work/20250108/143025
-E     ? ^    ^    ^        ^
-E     + \test\work\20250108\143025
-E     ? ^    ^    ^        ^
-FAILED [ 73%]
-tests\01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:118 (TestUnifiedTensorBoardPath.test_no_first_start_time_uses_old_format)
-'/tsb_logs/' != 'D:\\test\\work\\tsb_logs\\2025\\32\\0807\\002851'
-
-预期:'D:\\test\\work\\tsb_logs\\2025\\32\\0807\\002851'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:132: in test_no_first_start_time_uses_old_format
-    assert "/tsb_logs/" in path, f"路径应包含tsb_logs目录: {path}"
-E   AssertionError: 路径应包含tsb_logs目录: D:\test\work\tsb_logs\2025\32\0807\002851
-E   assert '/tsb_logs/' in 'D:\\test\\work\\tsb_logs\\2025\\32\\0807\\002851'
-FAILED [ 75%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250315\094530\446682ee_000000_f763d780
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250315\094530\446682ee_000000_f763d780, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250315\094530\446682ee_000000_f763d780, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250315\094530\446682ee_000000_f763d780\src\config\config.yaml
-✓ 使用传入的first_start_time: 2025-03-15 09:45:30
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250315\094530\446682ee_000000_f763d780, temp_base: d:\temp
-配置已从 d:\temp\tests\20250315\094530\446682ee_000000_f763d780\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250315\094530\446682ee_000000_f763d780\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250315\094530\446682ee_000000_f763d780\src\config\config.yaml
-配置文件监视器已启动
-
-tests\01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:143 (TestUnifiedTensorBoardPath.test_integration_with_config_manager)
-'/2025/11/0315/094530' != 'd:\\temp\\tests\\20250315\\094530\\446682ee_000000_f763d780\\test_project\\experiment_name\\tsb_logs\\2025\\11\\0315\\094530'
-
-预期:'d:\\temp\\tests\\20250315\\094530\\446682ee_000000_f763d780\\test_project\\experiment_name\\tsb_logs\\2025\\11\\0315\\094530'
-实际:'/2025/11/0315/094530'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:163: in test_integration_with_config_manager
-    assert "/2025/11/0315/094530" in tsb_path, f"路径格式不正确: {tsb_path}"
-E   AssertionError: 路径格式不正确: d:\temp\tests\20250315\094530\446682ee_000000_f763d780\test_project\experiment_name\tsb_logs\2025\11\0315\094530
-E   assert '/2025/11/0315/094530' in 'd:\\temp\\tests\\20250315\\094530\\446682ee_000000_f763d780\\test_project\\experiment_name\\tsb_logs\\2025\\11\\0315\\094530'
-配置已自动备份到 d:\temp\tests\20250315\094530\446682ee_000000_f763d780\test_project\experiment_name\backup\20250315\094530\config_20250315_094530.yaml
-FAILED [ 77%]
-tests\01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:187 (TestUnifiedTensorBoardPath.test_year_boundary_week_calculation)
-'/2025/01/' != 'D:\\test\\work\\tsb_logs\\2025\\01\\1230\\000000'
-
-预期:'D:\\test\\work\\tsb_logs\\2025\\01\\1230\\000000'
-实际:'/2025/01/'
-<点击以查看差异>
-
-01_unit_tests\test_config_manager\test_unified_tensorboard_path.py:214: in test_year_boundary_week_calculation
-    assert f"/{expected_year}/{expected_week}/" in path, \
-E   AssertionError: 日期 2024-12-30T00:00:00 的路径应包含 2025/01，实际路径: D:\test\work\tsb_logs\2025\01\1230\000000
-E   assert '/2025/01/' in 'D:\\test\\work\\tsb_logs\\2025\\01\\1230\\000000'
-
-test_config_manager\test_tsb_path_cross_platform.py::TestTsbPathCrossPlatform::test_unix_path_format
-test_config_manager\test_tsb_path_cross_platform.py::TestTsbPathCrossPlatform::test_path_with_environment_variables
+D:\anaconda3\envs\base_python3.12\python.exe "D:/Program Files/JetBrains/PyCharm Community Edition 2025.1.2/plugins/python-ce/helpers/pycharm/_jb_pytest_runner.py" --path D:\Tony\Documents\invest2025\project\config_manager\tests -- --last-failed
+Testing started at 01:49 ...
+Launching pytest with arguments --last-failed D:\Tony\Documents\invest2025\project\config_manager\tests --no-header --no-summary -q in D:\Tony\Documents\invest2025\project\config_manager\tests
+
+============================= test session starts =============================
+collecting ... collected 455 items / 449 deselected / 6 selected
+run-last-failure: rerun previous 6 failures (skipped 11 files)
+
+test_config_manager\test_tc0006_singleton_path_resolution.py::TestSingletonPathResolution::test_tc0006_005_cache_key_format_validation
 test_config_manager\test_tsb_path_cross_platform.py::TestTsbPathCrossPlatform::test_relative_vs_absolute_paths
-test_config_manager\test_tsb_path_integration.py::TestTsbPathIntegration::test_path_with_config_reload
-test_config_manager\test_tsb_path_integration.py::TestTsbPathIntegration::test_path_with_different_platforms
-test_yaml_comments_preservation.py::test_yaml_comments_preservation FAILED [ 80%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2, temp_base: d:\temp
+test_yaml_comments_preservation.py::test_yaml_comments_preservation FAILED [ 16%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee, temp_base: d:\temp
 ✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:51.654104
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2\src\config\config.yaml
+✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
+✓ 使用当前时间作为first_start_time: 2025-08-07 01:49:53.896378
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee, temp_base: d:\temp
+配置已从 d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml 加载
+🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
+✓ 监视当前配置路径: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
 配置文件监视器已启动
 
 tests\test_config_manager\test_tc0006_singleton_path_resolution.py:208 (TestSingletonPathResolution.test_tc0006_005_cache_key_format_validation)
-'/tmp/tests/' != 'd:\\temp\\tests\\20250807\\002851\\fd94be28_647104_8f0002c2\\src\\config\\config.yaml'
+'/tmp/tests/' != 'd:\\temp\\tests\\20250807\\014953\\fd94be28_882380_26977dee\\src\\config\\config.yaml'
 
-预期:'d:\\temp\\tests\\20250807\\002851\\fd94be28_647104_8f0002c2\\src\\config\\config.yaml'
+预期:'d:\\temp\\tests\\20250807\\014953\\fd94be28_882380_26977dee\\src\\config\\config.yaml'
 实际:'/tmp/tests/'
 <点击以查看差异>
 
 D:\Tony\Documents\invest2025\project\config_manager\tests\test_config_manager\test_tc0006_singleton_path_resolution.py:228: in test_tc0006_005_cache_key_format_validation
     assert '/tmp/tests/' in test_env_path, f"实例应该返回测试环境路径，实际: {test_env_path}"
-E   AssertionError: 实例应该返回测试环境路径，实际: d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2\src\config\config.yaml
-E   assert '/tmp/tests/' in 'd:\\temp\\tests\\20250807\\002851\\fd94be28_647104_8f0002c2\\src\\config\\config.yaml'
-配置已自动备份到 d:\temp\tests\20250807\002851\fd94be28_647104_8f0002c2\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
-FAILED [ 82%]
-tests\test_config_manager\test_tsb_path_cross_platform.py:36 (TestTsbPathCrossPlatform.test_unix_path_format)
-test_config_manager\test_tsb_path_cross_platform.py:50: in test_unix_path_format
-    assert path.startswith("/home/user/work")
-E   AssertionError: assert False
-E    +  where False = <built-in method startswith of str object at 0x000001A512D76010>('/home/user/work')
-E    +    where <built-in method startswith of str object at 0x000001A512D76010> = 'D:\\home\\user\\work\\tsb_logs\\2025\\02\\0108\\103045'.startswith
-FAILED [ 84%]
-tests\test_config_manager\test_tsb_path_cross_platform.py:248 (TestTsbPathCrossPlatform.test_path_with_environment_variables)
-'/test/base/dir' != 'D:\\test\\base\\dir\\work\\tsb_logs\\2025\\02\\0108\\000000'
-
-预期:'D:\\test\\base\\dir\\work\\tsb_logs\\2025\\02\\0108\\000000'
-实际:'/test/base/dir'
-<点击以查看差异>
-
-test_config_manager\test_tsb_path_cross_platform.py:266: in test_path_with_environment_variables
-    assert test_value in result
-E   AssertionError: assert '/test/base/dir' in 'D:\\test\\base\\dir\\work\\tsb_logs\\2025\\02\\0108\\000000'
-FAILED [ 86%]
+E   AssertionError: 实例应该返回测试环境路径，实际: d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\src\config\config.yaml
+E   assert '/tmp/tests/' in 'd:\\temp\\tests\\20250807\\014953\\fd94be28_882380_26977dee\\src\\config\\config.yaml'
+配置已自动备份到 d:\temp\tests\20250807\014953\fd94be28_882380_26977dee\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
+FAILED [ 33%]
 tests\test_config_manager\test_tsb_path_cross_platform.py:269 (TestTsbPathCrossPlatform.test_relative_vs_absolute_paths)
+test_config_manager\test_tsb_path_cross_platform.py:294: in test_relative_vs_absolute_paths
+    assert os.path.isabs(result), (
+E   AssertionError: 结果应该是绝对路径：work/tsb_logs/2025/02/0108/000000
+E   assert False
+E    +  where False = <function isabs at 0x000001DE00614CC0>('work/tsb_logs/2025/02/0108/000000')
+E    +    where <function isabs at 0x000001DE00614CC0> = <module 'ntpath' (frozen)>.isabs
+E    +      where <module 'ntpath' (frozen)> = os.path
+
+During handling of the above exception, another exception occurred:
 D:\anaconda3\envs\base_python3.12\Lib\shutil.py:637: in _rmtree_unsafe
     os.rmdir(path)
-E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpc2bnq_oz'
+E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpfacd3qwi'
 
 During handling of the above exception, another exception occurred:
 D:\anaconda3\envs\base_python3.12\Lib\tempfile.py:909: in onexc
     _os.unlink(path)
-E   PermissionError: [WinError 5] 拒绝访问。: 'd:\\temp\\tmpc2bnq_oz'
+E   PermissionError: [WinError 5] 拒绝访问。: 'd:\\temp\\tmpfacd3qwi'
 
 During handling of the above exception, another exception occurred:
 test_config_manager\test_tsb_path_cross_platform.py:278: in test_relative_vs_absolute_paths
@@ -803,67 +76,22 @@ D:\anaconda3\envs\base_python3.12\Lib\shutil.py:639: in _rmtree_unsafe
     onexc(os.rmdir, path, err)
 D:\anaconda3\envs\base_python3.12\Lib\shutil.py:637: in _rmtree_unsafe
     os.rmdir(path)
-E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpc2bnq_oz'
-FAILED [ 88%]配置文件不存在，创建新配置: d:\temp\tmpxm11pgrt\test_config.yaml
-🔍 调试信息: _test_mode=False, _true_original_config_path=None, _config_path=d:\temp\tmpxm11pgrt\test_config.yaml
-✓ 监视当前配置路径: d:\temp\tmpxm11pgrt\test_config.yaml
-配置文件监视器已启动
-配置已自动备份到 \tmp\tests\test_project\test_exp\backup\20250108\173000\test_config_20250108_173000.yaml
-✓ 检测到测试环境，自动启用auto_create: d:\temp\tmpxm11pgrt\test_config.yaml
-
-tests\test_config_manager\test_tsb_path_integration.py:139 (TestTsbPathIntegration.test_path_with_config_reload)
-'/tsb_logs/' != 'D:\\tmp\\tests\\test_project\\test_exp\\tsb_logs\\2025\\02\\0108\\173000'
-
-预期:'D:\\tmp\\tests\\test_project\\test_exp\\tsb_logs\\2025\\02\\0108\\173000'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-test_config_manager\test_tsb_path_integration.py:203: in test_path_with_config_reload
-    raise e
-test_config_manager\test_tsb_path_integration.py:193: in test_path_with_config_reload
-    assert '/tsb_logs/' in tsb_path2
-E   AssertionError: assert '/tsb_logs/' in 'D:\\tmp\\tests\\test_project\\test_exp\\tsb_logs\\2025\\02\\0108\\173000'
-配置已自动备份到 \tmp\tests\test_project\test_exp\backup\20250108\173000\test_config_20250108_173000.yaml
-FAILED [ 91%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002852\446682ee_089104_a540be98
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_089104_a540be98, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_089104_a540be98, temp_base: d:\temp
-✓ 检测到生产配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml
-✓ 已从生产环境复制配置: D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml -> d:\temp\tests\20250807\002852\446682ee_089104_a540be98\src\config\config.yaml
-✓ 使用当前时间作为first_start_time: 2025-08-07 00:28:52.100088
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_089104_a540be98, temp_base: d:\temp
-配置已从 d:\temp\tests\20250807\002852\446682ee_089104_a540be98\src\config\config.yaml 加载
-🔍 调试信息: _test_mode=True, _true_original_config_path=None, _config_path=d:\temp\tests\20250807\002852\446682ee_089104_a540be98\src\config\config.yaml
-✓ 监视当前配置路径: d:\temp\tests\20250807\002852\446682ee_089104_a540be98\src\config\config.yaml
-配置文件监视器已启动
-
-tests\test_config_manager\test_tsb_path_integration.py:327 (TestTsbPathIntegration.test_path_with_different_platforms)
-'/tsb_logs/' != 'd:\\temp\\tests\\20250807\\002852\\446682ee_089104_a540be98\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-
-预期:'d:\\temp\\tests\\20250807\\002852\\446682ee_089104_a540be98\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-实际:'/tsb_logs/'
-<点击以查看差异>
-
-test_config_manager\test_tsb_path_integration.py:372: in test_path_with_different_platforms
-    assert '/tsb_logs/' in unix_tsb_path, (
-E   AssertionError: Unix路径应使用正斜杠，实际：d:\temp\tests\20250807\002852\446682ee_089104_a540be98\test_project\experiment_name\tsb_logs\2025\02\0107\181520
-E   assert '/tsb_logs/' in 'd:\\temp\\tests\\20250807\\002852\\446682ee_089104_a540be98\\test_project\\experiment_name\\tsb_logs\\2025\\02\\0107\\181520'
-配置已自动备份到 d:\temp\tests\20250807\002852\446682ee_089104_a540be98\test_project\experiment_name\backup\20250107\181520\config_20250107_181520.yaml
+E   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'd:\\temp\\tmpfacd3qwi'
 
 test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_new_keys
 test_yaml_comments_preservation.py::test_yaml_comments_preservation_with_nested_structures
 test_yaml_comments_preservation.py::test_yaml_comments_preservation_edge_cases
 
-================ 44 failed, 1 passed, 72 deselected in 13.26s =================
-FAILED [ 93%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002852\446682ee_9da6dd0b_159858_d51da3d7
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_9da6dd0b_159858_d51da3d7, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_9da6dd0b_159858_d51da3d7, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmpg_n4_gaj.yaml -> d:\temp\tests\20250807\002852\446682ee_9da6dd0b_159858_d51da3d7\src\config\config.yaml
+====================== 6 failed, 449 deselected in 0.99s ======================
+FAILED [ 50%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmps6a67s_9.yaml -> d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xd3 in position 4: invalid continuation byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\002852\446682ee_9da6dd0b_159858_d51da3d7\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\014954\446682ee_f1c64ec4_059366_978a7957\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:16 (test_yaml_comments_preservation)
 'project_name系统' != 'TestApp'
@@ -878,16 +106,16 @@ E   AssertionError: assert 'project_name系统' == 'TestApp'
 E
 E     - TestApp
 E     + project_name系统
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\002852\config_20250807_002852.yaml
-FAILED [ 95%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002852\446682ee_6eaa9528_209854_adc675ad
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_6eaa9528_209854_adc675ad, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_6eaa9528_209854_adc675ad, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmpusph46gh.yaml -> d:\temp\tests\20250807\002852\446682ee_6eaa9528_209854_adc675ad\src\config\config.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
+FAILED [ 66%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmpjcvoszvb.yaml -> d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xbb in position 2: invalid start byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\002852\446682ee_6eaa9528_209854_adc675ad\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\014954\446682ee_d17df83d_111365_c9b6fd75\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:127 (test_yaml_comments_preservation_with_new_keys)
 test_yaml_comments_preservation.py:155: in test_yaml_comments_preservation_with_new_keys
@@ -899,16 +127,16 @@ test_yaml_comments_preservation.py:155: in test_yaml_comments_preservation_with_
 ..\src\config_manager\config_node.py:95: in __getattr__
     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 E   AttributeError: 'ConfigManager' object has no attribute 'database'
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\002852\config_20250807_002852.yaml
-FAILED [ 97%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002852\446682ee_43d56f8d_290870_0e376308
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_43d56f8d_290870_0e376308, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_43d56f8d_290870_0e376308, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmp3sgissqk.yaml -> d:\temp\tests\20250807\002852\446682ee_43d56f8d_290870_0e376308\src\config\config.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
+FAILED [ 83%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmpl0zlu2ff.yaml -> d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xd3 in position 4: invalid continuation byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\002852\446682ee_43d56f8d_290870_0e376308\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\014954\446682ee_831be3e5_196379_1b75e05d\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:190 (test_yaml_comments_preservation_with_nested_structures)
 test_yaml_comments_preservation.py:238: in test_yaml_comments_preservation_with_nested_structures
@@ -920,16 +148,16 @@ test_yaml_comments_preservation.py:238: in test_yaml_comments_preservation_with_
 ..\src\config_manager\config_node.py:95: in __getattr__
     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 E   AttributeError: 'ConfigManager' object has no attribute 'app'
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\002852\config_20250807_002852.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
 FAILED [100%]✓ 基于当前工作目录生成测试路径: D:\Tony\Documents\invest2025\project\config_manager\tests
-✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\002852\446682ee_37db043f_367855_ed7eba38
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_37db043f_367855_ed7eba38, temp_base: d:\temp
-✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\002852\446682ee_37db043f_367855_ed7eba38, temp_base: d:\temp
-✓ 已从自定义配置复制: d:\temp\tmpud_4ghxh.yaml -> d:\temp\tests\20250807\002852\446682ee_37db043f_367855_ed7eba38\src\config\config.yaml
+✓ 基于当前工作目录生成测试路径: d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752, temp_base: d:\temp
+✓ 开始执行路径替换，test_base_dir: d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752, temp_base: d:\temp
+✓ 已从自定义配置复制: d:\temp\tmpdu2x1id3.yaml -> d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752\src\config\config.yaml
 ⚠️  更新测试配置路径失败: 'utf-8' codec can't decode byte 0xb6 in position 2: invalid start byte
 尝试创建基本配置文件...
 ✓ 已创建基本配置文件
-配置已从 d:\temp\tests\20250807\002852\446682ee_37db043f_367855_ed7eba38\src\config\config.yaml 加载
+配置已从 d:\temp\tests\20250807\014954\446682ee_c561d282_272380_a078f752\src\config\config.yaml 加载
 
 tests\test_yaml_comments_preservation.py:298 (test_yaml_comments_preservation_edge_cases)
 test_yaml_comments_preservation.py:346: in test_yaml_comments_preservation_edge_cases
@@ -941,4 +169,6 @@ test_yaml_comments_preservation.py:346: in test_yaml_comments_preservation_edge_
 ..\src\config_manager\config_node.py:95: in __getattr__
     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 E   AttributeError: 'ConfigManager' object has no attribute 'list_items'
-配置已自动备份到 d:\temp\project_name\default\backup\20250807\002852\config_20250807_002852.yaml
+配置已自动备份到 d:\temp\project_name\default\backup\20250807\014954\config_20250807_014954.yaml
+
+进程已结束，退出代码为 1

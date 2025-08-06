@@ -2,9 +2,12 @@
 from __future__ import annotations
 from datetime import datetime
 import os
+import sys
 import pytest
 from unittest.mock import patch, MagicMock
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from utils.path_test_helper import PathTestHelper
 from config_manager import get_config_manager
 from config_manager.core.path_resolver import PathResolver
 from config_manager.core.dynamic_paths import DynamicPathProperty, PathsConfigNode
@@ -33,10 +36,12 @@ class TestTsbPathEdgeCases:
         
         # 应该使用当前时间
         assert isinstance(path, str)
-        assert "/tsb_logs/" in path
+        PathTestHelper.assert_path_contains(path, "/tsb_logs/")
         
         # 验证路径包含合理的时间组件
-        path_parts = path.split(os.sep)
+        # 规范化路径后再分割
+        normalized_path = PathTestHelper.normalize_path(path)
+        path_parts = normalized_path.split('/')
         # 找到tsb_logs后的年份部分
         tsb_idx = path_parts.index('tsb_logs')
         year_part = path_parts[tsb_idx + 1]  # tsb_logs后面是年份

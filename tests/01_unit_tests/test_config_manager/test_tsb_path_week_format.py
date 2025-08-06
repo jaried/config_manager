@@ -2,8 +2,11 @@
 from __future__ import annotations
 from datetime import datetime
 import os
+import sys
 import pytest
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from utils.path_test_helper import PathTestHelper
 from config_manager.core.path_resolver import PathResolver
 from config_manager.core.path_configuration import TimeProcessor
 
@@ -169,7 +172,9 @@ class TestTsbPathWeekFormat:
         
         for date in dates:
             path = PathResolver.generate_tsb_logs_path("/work", date)
-            parts = path.split(os.sep)
+            # 规范化路径后再分割
+            normalized_path = PathTestHelper.normalize_path(path)
+            parts = normalized_path.split('/')
             
             # 找到年份后的周数部分
             year_str = str(date.isocalendar()[0])

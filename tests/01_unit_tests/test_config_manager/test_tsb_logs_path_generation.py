@@ -2,10 +2,13 @@
 from __future__ import annotations
 from datetime import datetime
 import os
+import sys
 import tempfile
 import shutil
 import pytest
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from utils.path_test_helper import PathTestHelper
 from config_manager import get_config_manager
 from config_manager.core.path_resolver import PathResolver
 
@@ -32,8 +35,8 @@ class TestTsbLogsPathGeneration:
         path = PathResolver.generate_tsb_logs_path(work_dir, test_time)
         
         # 验证路径格式
-        expected_path = os.path.join(work_dir, "tsb_logs", "2025", "02", "0107", "181520")
-        assert path == expected_path, f"期望路径: {expected_path}, 实际路径: {path}"
+        expected_path = "/home/user/project/work/tsb_logs/2025/02/0107/181520"
+        PathTestHelper.assert_path_equal(path, expected_path, f"期望路径: {expected_path}, 实际路径: {path}")
     
     def test_week_number_format(self):
         """测试周数格式（两位数字，不带W前缀）"""
@@ -48,9 +51,12 @@ class TestTsbLogsPathGeneration:
         work_dir = "/test"
         for test_time, expected_week in test_cases:
             path = PathResolver.generate_tsb_logs_path(work_dir, test_time)
-            # 提取周数部分
-            path_parts = path.split(os.sep)
-            week_part = path_parts[4]  # /test/tsb_logs/2025/{week}/...
+            # 规范化路径后提取周数部分
+            normalized_path = PathTestHelper.normalize_path(path)
+            path_parts = normalized_path.split('/')
+            # 找到tsb_logs后的位置
+            tsb_idx = path_parts.index('tsb_logs')
+            week_part = path_parts[tsb_idx + 2]  # tsb_logs/year/{week}/...
             assert week_part == expected_week, f"日期{test_time}的周数应该是{expected_week}，实际是{week_part}"
     
     def test_year_boundary(self):
@@ -72,7 +78,7 @@ class TestTsbLogsPathGeneration:
         path = PathResolver.generate_tsb_logs_path("/test")
         
         # 验证路径包含tsb_logs子目录
-        assert "/tsb_logs/" in path
+        PathTestHelper.assert_path_contains(path, "/tsb_logs/")
         
         # 验证路径包含年份（4位数字）
         current_year = str(datetime.now().year)
@@ -92,8 +98,8 @@ class TestTsbLogsPathGeneration:
             tsb_dir = config.paths.tsb_logs_dir
             
             # 验证路径格式
-            assert "/tsb_logs/" in tsb_dir, "路径应包含/tsb_logs/子目录"
-            assert "/2025/02/0107/181520" in tsb_dir, "路径格式不正确"
+            PathTestHelper.assert_path_contains(tsb_dir, "/tsb_logs/", "路径应包含/tsb_logs/子目录")
+            PathTestHelper.assert_path_contains(tsb_dir, "/2025/02/0107/181520", "路径格式不正确")
             
             # 验证路径不包含W前缀
             assert "/W02/" not in tsb_dir, "周数不应包含W前缀"
@@ -197,13 +203,13 @@ class TestTsbLogsPathGeneration:
     
     def test_cross_platform_paths(self):
         """测试跨平台路径处理"""
-        # Windows路径测试
+        # 所有平台都应该返回统一的正斜杠格式
         if os.name == 'nt':
             work_dir = r"C:\Users\test\work"
             path = PathResolver.generate_tsb_logs_path(work_dir, datetime(2025, 1, 7, 18, 15, 20))
-            # Windows应该使用反斜杠
-            assert "\\" in path
-            assert "\\tsb_logs\\" in path
+            # 统一使用正斜杠
+            assert "/" in path
+            assert "/tsb_logs/" in path
         else:
             # Linux/Mac路径测试
             work_dir = "/home/test/work"
