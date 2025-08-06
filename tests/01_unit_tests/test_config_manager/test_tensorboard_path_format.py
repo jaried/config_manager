@@ -3,6 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 import tempfile
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from utils.path_test_helper import PathTestHelper
 from config_manager import get_config_manager
 from config_manager.core.path_configuration import PathGenerator, TimeProcessor
 
@@ -57,7 +60,9 @@ class TestTensorboardPathFormat:
         
         # 验证路径格式符合新规范：年/W周/月日/时间
         # 找到年份部分来定位时间部分
-        path_parts = tensorboard_dir.split('/')
+        # 规范化路径后再分割
+        normalized_dir = PathTestHelper.normalize_path(tensorboard_dir)
+        path_parts = normalized_dir.split('/')
         # 查找4位数字的年份
         year_idx = None
         for i, part in enumerate(path_parts):
@@ -104,7 +109,9 @@ class TestTensorboardPathFormat:
             
             # 验证路径包含正确的周数
             path = result['paths.tensorboard_dir']
-            parts = path.split('/')
+            # 规范化路径后再分割
+            normalized_path = PathTestHelper.normalize_path(path)
+            parts = normalized_path.split('/')
             
             # 找到周数部分（在年份后面）
             # 路径格式是 /test/work/tsb_logs/YYYY/Www/mmdd/HHMMSS
@@ -149,7 +156,9 @@ class TestTensorboardPathFormat:
             assert tb_dir1 == tsb_dir1, "tensorboard和tsb_logs路径应该完全相同"
             
             # 验证路径格式符合新规范
-            path_parts = tb_dir1.split('/')
+            # 规范化路径后再分割
+            normalized_tb_dir1 = PathTestHelper.normalize_path(tb_dir1)
+            path_parts = normalized_tb_dir1.split('/')
             # 查找4位数字的年份
             year_idx = None
             for i, part in enumerate(path_parts):
@@ -178,7 +187,9 @@ class TestTensorboardPathFormat:
         assert tb_path == tsb_path, f"路径应该相同: tb={tb_path}, tsb={tsb_path}"
         
         # 验证路径格式符合新规范
-        path_parts = tb_path.split('/')
+        # 规范化路径后再分割
+        normalized_tb_path = PathTestHelper.normalize_path(tb_path)
+        path_parts = normalized_tb_path.split('/')
         # 查找4位数字的年份
         year_idx = None
         for i, part in enumerate(path_parts):

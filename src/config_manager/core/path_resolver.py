@@ -14,6 +14,22 @@ class PathResolver:
     _cached_project_root = None  # 类级别缓存，确保一致性
 
     @staticmethod
+    def normalize_path(path: str) -> str:
+        """
+        规范化路径为统一格式（使用正斜杠）
+        
+        Args:
+            path: 需要规范化的路径
+            
+        Returns:
+            规范化后的路径（正斜杠格式）
+        """
+        if not path:
+            return path
+        # 统一使用正斜杠格式
+        return path.replace('\\', '/')
+    
+    @staticmethod
     def generate_tsb_logs_path(work_dir: str, timestamp: datetime = None) -> str:
         """
         生成TSB日志路径
@@ -46,10 +62,10 @@ class PathResolver:
             time_str
         ]
         
-        # 使用os.path.join构建路径，然后规范化以确保一致的分隔符
+        # 使用os.path.join构建路径
         path = os.path.join(*path_components)
-        # 确保返回绝对路径并规范化，修复混合分隔符问题
-        return os.path.normpath(os.path.abspath(path))
+        # 使用normalize_path确保跨平台一致性
+        return PathResolver.normalize_path(path)
 
     @staticmethod
     def resolve_config_path(config_path: str) -> str:

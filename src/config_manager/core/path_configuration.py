@@ -237,13 +237,14 @@ class PathGenerator:
                 else:
                     timestamp = datetime.fromisoformat(first_start_time_str.replace("Z", "+00:00"))
                 
-                # 使用新的路径生成方法
+                # 使用新的路径生成方法（已经返回规范化的路径）
                 return PathResolver.generate_tsb_logs_path(work_dir, timestamp)
             except Exception:
-                # 降级到旧格式
-                return str(Path(work_dir) / date_str / time_str)
+                # 降级到旧格式，但也要规范化
+                path = str(Path(work_dir) / date_str / time_str)
+                return PathResolver.normalize_path(path)
         else:
-            # 使用当前时间生成路径
+            # 使用当前时间生成路径（已经返回规范化的路径）
             return PathResolver.generate_tsb_logs_path(work_dir)
 
     def generate_log_directories(
@@ -306,7 +307,7 @@ class PathGenerator:
         Returns:
             dict: TensorBoard目录路径字典
         """
-        # 复用统一的路径生成逻辑
+        # 复用统一的路径生成逻辑（已经返回规范化的路径）
         tensorboard_path = self.generate_unified_tensorboard_path(
             work_dir, date_str, time_str, first_start_time_str
         )

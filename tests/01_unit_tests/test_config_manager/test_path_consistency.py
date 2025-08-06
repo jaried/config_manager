@@ -2,12 +2,15 @@
 from __future__ import annotations
 from datetime import datetime
 import os
+import sys
 import tempfile
 import shutil
 import threading
 import time
 import pytest
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from utils.path_test_helper import PathTestHelper
 from config_manager import get_config_manager
 
 
@@ -41,8 +44,9 @@ class TestPathConsistency:
             assert tb_dir == tsb_dir, "tensorboard_dir应该等于tsb_logs_dir"
             
             # 验证路径格式
-            assert "/tsb_logs/" in tsb_dir
-            assert "/2025/03/0115/103045" in tsb_dir  # 1月15日是第3周
+            # 使用PathTestHelper进行平台无关的路径检查
+            PathTestHelper.assert_path_contains(tsb_dir, "/tsb_logs/")
+            PathTestHelper.assert_path_contains(tsb_dir, "/2025/03/0115/103045")  # 1月15日是第3周
             
             # 连续访问多次，确保一致性
             for i in range(10):
@@ -163,11 +167,14 @@ class TestPathConsistency:
             initial_tsb = config.paths.tsb_logs_dir
             
             # 验证tsb_logs_dir包含work_dir
-            assert initial_tsb.startswith(initial_work_dir), "tsb_logs_dir应该在work_dir下"
+            # 规范化路径后进行比较
+            norm_tsb = PathTestHelper.normalize_path(initial_tsb)
+            norm_work = PathTestHelper.normalize_path(initial_work_dir)
+            assert norm_tsb.startswith(norm_work), "tsb_logs_dir应该在work_dir下"
             
             # 验证路径结构
-            relative_path = initial_tsb[len(initial_work_dir):].lstrip(os.sep)
-            parts = relative_path.split(os.sep)
+            relative_path = norm_tsb[len(norm_work):].lstrip('/')
+            parts = relative_path.split('/')
             
             assert parts[0] == "tsb_logs", "第一级应该是tsb_logs"
             assert len(parts[1]) == 4 and parts[1].isdigit(), "第二级应该是4位年份"
@@ -193,7 +200,11 @@ class TestPathConsistency:
             tsb_dir = config.paths.tsb_logs_dir
             
             # 验证使用了指定的时间
-            assert "/2025/27/0701/120000" in tsb_dir, f"应该使用指定的first_start_time生成路径，实际: {tsb_dir}"
+            PathTestHelper.assert_path_contains(
+                tsb_dir, 
+                "/2025/27/0701/120000", 
+                f"应该使用指定的first_start_time生成路径，实际: {tsb_dir}"
+            )
             
             # 多次访问应该使用相同的时间（在缓存期内）
             for _ in range(3):
