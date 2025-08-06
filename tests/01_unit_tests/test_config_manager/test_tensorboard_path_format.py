@@ -31,8 +31,8 @@ class TestTensorboardPathFormat:
             work_dir, date_str, time_str, test_time_str
         )
         
-        # 验证路径格式 - 新格式直接在work_dir下，无tensorboard子目录
-        expected_path = f"/test/work/dir/{year}/W{week}/{month}{day}/{time}"
+        # 验证路径格式 - 路径应该包含tsb_logs子目录
+        expected_path = f"/test/work/dir/tsb_logs/{year}/{week}/{month}{day}/{time}"
         assert result['paths.tensorboard_dir'] == expected_path
         
         # 验证各个组件
@@ -74,7 +74,7 @@ class TestTensorboardPathFormat:
         year, week, monthday, time = time_parts[:4]
         # 验证各部分格式
         assert len(year) == 4 and year.isdigit(), f"年份格式错误: {year}"
-        assert week.startswith('W') and len(week) == 3 and week[1:].isdigit(), f"周数格式错误（应为WXX）: {week}"
+        assert len(week) == 2 and week.isdigit(), f"周数格式错误（应为两位数字）: {week}"
         assert len(monthday) == 4 and monthday.isdigit(), f"月日格式错误（应为MMDD）: {monthday}"
         assert len(time) == 6 and time.isdigit(), f"时间格式错误（应为HHMMSS）: {time}"
         pass
@@ -86,13 +86,13 @@ class TestTensorboardPathFormat:
         
         # 测试多个不同的日期
         test_cases = [
-            # (datetime对象, 预期周数带W前缀)
-            (datetime(2025, 1, 1, 0, 0, 0), "W01"),   # 新年第一天
-            (datetime(2025, 12, 31, 23, 59, 59), "W01"),  # 年末（可能是下一年第1周）
-            (datetime(2025, 7, 15, 12, 0, 0), "W29"),  # 年中
+            # (datetime对象, 预期周数不带W前缀, 预期ISO年份)
+            (datetime(2025, 1, 1, 0, 0, 0), "01", "2025"),   # 新年第一天
+            (datetime(2025, 12, 31, 23, 59, 59), "01", "2026"),  # 年末（属于下一年第1周）
+            (datetime(2025, 7, 15, 12, 0, 0), "29", "2025"),  # 年中
         ]
         
-        for test_time, expected_week in test_cases:
+        for test_time, expected_week, expected_iso_year in test_cases:
             test_time_str = test_time.isoformat()
             date_str = test_time.strftime('%Y%m%d')
             time_str = test_time.strftime('%H%M%S')
@@ -107,7 +107,21 @@ class TestTensorboardPathFormat:
             parts = path.split('/')
             
             # 找到周数部分（在年份后面）
-            year_idx = parts.index(test_time.strftime('%Y'))
+            # 路径格式是 /test/work/tsb_logs/YYYY/Www/mmdd/HHMMSS
+            # 使用预期的ISO年份，而不是日历年份
+            try:
+                year_idx = parts.index(expected_iso_year)
+            except ValueError:
+                # 如果直接查找失败，尝试查找tsb_logs后的年份
+                tsb_idx = parts.index('tsb_logs') if 'tsb_logs' in parts else -1
+                if tsb_idx >= 0 and tsb_idx + 1 < len(parts):
+                    if parts[tsb_idx + 1] == expected_iso_year:
+                        year_idx = tsb_idx + 1
+                    else:
+                        raise ValueError(f"未在路径中找到ISO年份 {expected_iso_year}: {path}")
+                else:
+                    raise ValueError(f"未在路径中找到ISO年份 {expected_iso_year}: {path}")
+            
             week_in_path = parts[year_idx + 1]
             
             assert week_in_path == expected_week, \
@@ -148,7 +162,7 @@ class TestTensorboardPathFormat:
             # 验证包含周数（格式应该是 年/W周/月日/时间）
             time_parts = path_parts[year_idx:]
             assert len(time_parts) >= 4, "路径应该包含至少4个部分"
-            assert time_parts[1] == "W33", f"2025年8月15日应该是第33周，实际: {time_parts[1]}"
+            assert time_parts[1] == "33", f"2025年8月15日应该是第33周，实际: {time_parts[1]}"
         pass
     
     def test_path_configuration_integration(self):
@@ -181,7 +195,7 @@ class TestTensorboardPathFormat:
         # 验证每个部分的格式
         year, week, monthday, time = time_parts[:4]
         assert len(year) == 4 and year.isdigit()
-        assert week.startswith('W') and len(week) == 3 and week[1:].isdigit()
+        assert len(week) == 2 and week.isdigit()
         assert len(monthday) == 4 and monthday.isdigit()
         assert len(time) == 6 and time.isdigit()
         pass

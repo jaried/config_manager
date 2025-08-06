@@ -890,8 +890,6 @@ class PathConfigurationManager:
                 elif hasattr(value, "_data") and isinstance(value._data, dict):
                     _create_dirs_for_fields(value, visited)
 
-        # 递归入口直接指向config.paths._data
-        if hasattr(self._config_manager, "paths") and hasattr(
-            self._config_manager.paths, "_data"
-        ):
-            _create_dirs_for_fields(self._config_manager.paths._data)
+        # 递归处理整个配置树，而不仅仅是paths节点
+        if hasattr(self._config_manager, "_data") and isinstance(self._config_manager._data, dict):
+            _create_dirs_for_fields(self._config_manager._data)

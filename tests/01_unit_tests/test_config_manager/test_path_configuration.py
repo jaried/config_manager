@@ -137,19 +137,17 @@ class TestPathGenerator:
         date_str = '20250108'
         time_str = '103045'
         
-        # 测试不传递first_start_time_str参数的情况（应该使用原有格式）
+        # 测试不传递first_start_time_str参数的情况
         result = generator.generate_log_directories(str(work_dir), date_str, time_str)
         expected = {
-            'paths.tsb_logs_dir': str(work_dir / date_str / time_str),  # 新规范：直接在work_dir下
             'paths.log_dir': str(work_dir / 'logs' / date_str / time_str)
         }
         assert result == expected
         
-        # 测试传递first_start_time_str参数的情况（tsb_logs_dir应该使用新格式）
+        # 测试传递first_start_time_str参数的情况
         first_start_time = '2025-01-08T10:30:45'
         result_with_time = generator.generate_log_directories(str(work_dir), date_str, time_str, first_start_time)
         expected_with_time = {
-            'paths.tsb_logs_dir': str(work_dir / '2025' / 'W02' / '0108' / time_str),  # 新格式：年/W周/月日/时间
             'paths.log_dir': str(work_dir / 'logs' / date_str / time_str)  # log_dir保持原有格式
         }
         assert result_with_time == expected_with_time
@@ -310,7 +308,7 @@ class TestPathConfigurationManager:
         assert 'checkpoint_dir' in paths['paths']
         assert 'best_checkpoint_dir' in paths['paths']
         assert 'debug_dir' in paths['paths']
-        assert 'tsb_logs_dir' in paths['paths']
+        # tsb_logs_dir现在是动态生成的，不在静态路径中
         assert 'log_dir' in paths['paths']
     
     def test_generate_all_paths_with_cache(self):

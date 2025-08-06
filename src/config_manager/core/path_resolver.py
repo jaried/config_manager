@@ -46,7 +46,10 @@ class PathResolver:
             time_str
         ]
         
-        return os.path.join(*path_components)
+        # 使用os.path.join构建路径，然后规范化以确保一致的分隔符
+        path = os.path.join(*path_components)
+        # 确保返回绝对路径并规范化，修复混合分隔符问题
+        return os.path.normpath(os.path.abspath(path))
 
     @staticmethod
     def resolve_config_path(config_path: str) -> str:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pickle
 from typing import Any, Dict, Optional, Type
 from pathlib import Path
+from datetime import datetime
 
 
 class SerializableConfigData:
@@ -28,6 +29,11 @@ class SerializableConfigData:
         
         if name in self._data:
             value = self._data[name]
+            
+            # 特殊处理paths属性，创建SerializablePathsNode
+            if name == 'paths' and isinstance(value, dict):
+                return SerializablePathsNode(value, self)
+            
             # 如果值是字典，递归转换为SerializableConfigData
             if isinstance(value, dict):
                 return SerializableConfigData(value)
@@ -171,6 +177,124 @@ class SerializableConfigData:
     def items(self):
         """返回配置项"""
         return self._data.items()
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> SerializableConfigData:
+        """从字典创建SerializableConfigData实例
+        
+        Args:
+            data: 配置数据字典
+            
+        Returns:
+            SerializableConfigData: 创建的实例
+        """
+        type_hints = data.get('__type_hints__', {})
+        config_path = data.get('config_file_path')
+        return cls(data=data, type_hints=type_hints, config_path=config_path)
+
+
+class SerializablePathsNode:
+    """可序列化的路径节点，提供动态路径生成功能"""
+    
+    def __init__(self, data: dict, root: Any = None):
+        """初始化可序列化路径节点
+        
+        Args:
+            data: 路径数据字典
+            root: 根配置对象（SerializableConfigData）
+        """
+        self._data = dict(data) if data else {}
+        self._root = root  # 直接存储引用，不使用weakref
+        self._tsb_cache = None
+        self._tsb_cache_time = None
+        self._cache_duration = 1.0
+    
+    def __getattr__(self, name: str) -> Any:
+        """获取属性值
+        
+        Args:
+            name: 属性名
+            
+        Returns:
+            属性值
+        """
+        # 处理动态路径属性
+        if name == 'tsb_logs_dir':
+            return self._generate_tsb_logs_dir()
+        elif name == 'tensorboard_dir':
+            # tensorboard_dir始终等于tsb_logs_dir
+            return self._generate_tsb_logs_dir()
+        
+        # 返回_data中的值
+        if name in self._data:
+            return self._data[name]
+        
+        raise AttributeError(f"'SerializablePathsNode' object has no attribute '{name}'")
+    
+    def _generate_tsb_logs_dir(self) -> str:
+        """生成TSB日志路径
+        
+        Returns:
+            str: 生成的路径
+        """
+        # 检查缓存
+        if self._tsb_cache is not None and self._tsb_cache_time is not None:
+            current_time = datetime.now()
+            if (current_time - self._tsb_cache_time).total_seconds() < self._cache_duration:
+                return self._tsb_cache
+        
+        # 获取work_dir
+        work_dir = self._data.get('work_dir')
+        if not work_dir:
+            raise ValueError("work_dir未设置，无法生成tsb_logs_dir")
+        
+        # 获取配置中的first_start_time
+        timestamp = None
+        if self._root:
+            try:
+                first_start_time = self._root.get('first_start_time')
+                if isinstance(first_start_time, str):
+                    timestamp = datetime.fromisoformat(first_start_time.replace("Z", "+00:00"))
+                elif isinstance(first_start_time, datetime):
+                    timestamp = first_start_time
+            except (AttributeError, ValueError):
+                pass
+        
+        # 使用PathResolver生成路径
+        from config_manager.core.path_resolver import PathResolver
+        generated_path = PathResolver.generate_tsb_logs_path(work_dir, timestamp)
+        
+        # 更新缓存
+        self._tsb_cache = generated_path
+        self._tsb_cache_time = datetime.now()
+        
+        return generated_path
+    
+    def get(self, key: str, default: Any = None) -> Any:
+        """获取配置值
+        
+        Args:
+            key: 配置键
+            default: 默认值
+            
+        Returns:
+            配置值或默认值
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            return default
+    
+    def __contains__(self, key: str) -> bool:
+        """检查键是否存在
+        
+        Args:
+            key: 配置键
+            
+        Returns:
+            bool: 键是否存在
+        """
+        return key in self._data or key in ('tsb_logs_dir', 'tensorboard_dir')
 
 
 def create_serializable_config(config_manager) -> SerializableConfigData:

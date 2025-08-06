@@ -67,6 +67,25 @@ class ConfigNode:
                             # 如果转换失败，返回原始值
                             pass
             
+            # 特殊处理paths：确保使用PathsConfigNode
+            if name == 'paths':
+                # 检查是否已经是PathsConfigNode
+                if hasattr(value, '__class__') and value.__class__.__name__ == 'PathsConfigNode':
+                    return value
+                # 如果是ConfigNode但不是PathsConfigNode，需要转换
+                if isinstance(value, ConfigNode) or isinstance(value, dict):
+                    try:
+                        from .core.dynamic_paths import PathsConfigNode
+                        # 获取根配置管理器引用
+                        root = self if hasattr(self, '_config_path') else None
+                        # 创建PathsConfigNode
+                        paths_node = PathsConfigNode(value, root)
+                        data[name] = paths_node
+                        return paths_node
+                    except ImportError:
+                        # 如果无法导入PathsConfigNode，降级为普通ConfigNode
+                        pass
+            
             # 确保嵌套字典被转换为ConfigNode对象
             if isinstance(value, dict) and not isinstance(value, ConfigNode):
                 built_value = ConfigNode.build(value)
@@ -364,6 +383,16 @@ class ConfigNode:
                     
                 if isinstance(value, ConfigNode):
                     result[key] = value._to_dict_recursive(visited)
+                # 特殊处理PathsConfigNode
+                elif hasattr(value, '__class__') and value.__class__.__name__ == 'PathsConfigNode':
+                    # PathsConfigNode包含weakref，需要转换为普通字典
+                    if hasattr(value, '_data'):
+                        paths_dict = {}
+                        for path_key, path_value in value._data.items():
+                            paths_dict[path_key] = path_value
+                        result[key] = paths_dict
+                    else:
+                        result[key] = {}
                 else:
                     result[key] = value
         

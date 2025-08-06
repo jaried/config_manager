@@ -60,7 +60,7 @@ first_start_time: '{test_time}'
             yyyy_mm_dd_pattern = re.compile(f'{sep}(\\d{{4}}-\\d{{2}}-\\d{{2}}){sep}')  # 匹配 /2025-01-07/ 或 \2025-01-07\ 格式
             
             # tsb_logs_dir的新格式: yyyy/Www/mmdd，其中Www是带W前缀的两位数周数
-            tsb_logs_pattern = re.compile(f'{sep}(\\d{{4}}){sep}(W\\d{{2}}){sep}(\\d{{4}}){sep}')  # 匹配 /2025/W01/0107/ 格式
+            tsb_logs_pattern = re.compile(f'{sep}(\\d{{4}}){sep}(\\d{{2}}){sep}(\\d{{4}}){sep}')  # 匹配 /2025/02/0107/ 格式
             
             # 检查所有日期相关的路径
             date_related_paths = {
@@ -88,7 +88,7 @@ first_start_time: '{test_time}'
                     assert tsb_format_match, (
                         f"{path_name}路径中未找到正确的日期格式 'yyyy/Www/mmdd'\n"
                         f"完整路径: {path_value}\n"
-                        f"预期应该包含类似 '2025/W01/0107' 的格式（年/W周/月日）"
+                        f"预期应该包含类似 '2025/02/0107' 的格式（年/周/月日）"
                     )
                     
                     # 验证tsb_logs_dir的各个组件
@@ -98,11 +98,9 @@ first_start_time: '{test_time}'
                     assert year.isdigit(), f"{path_name}的年份应该全部是数字，实际: {year}"
                     assert 2020 <= int(year) <= 2030, f"{path_name}的年份不合理: {year}"
                     
-                    assert len(week) == 3, f"{path_name}的周数长度应该是3位（W + 2位数字），实际: {len(week)}"
-                    assert week.startswith('W'), f"{path_name}的周数应该以W开头，实际: {week}"
-                    week_num = week[1:]
-                    assert week_num.isdigit(), f"{path_name}的周数部分应该是数字，实际: {week_num}"
-                    assert 1 <= int(week_num) <= 53, f"{path_name}的周数不合理: {week_num}"
+                    assert len(week) == 2, f"{path_name}的周数长度应该是2位数字，实际: {len(week)}"
+                    assert week.isdigit(), f"{path_name}的周数应该是数字，实际: {week}"
+                    assert 1 <= int(week) <= 53, f"{path_name}的周数不合理: {week}"
                     
                     assert len(monthday) == 4, f"{path_name}的月日长度应该是4位，实际: {len(monthday)}"
                     assert monthday.isdigit(), f"{path_name}的月日应该全部是数字，实际: {monthday}"
@@ -235,7 +233,7 @@ first_start_time: '{test_time}'
             # 2025-01-07是第2周
             dt = datetime.fromisoformat(test_time)
             expected_year = "2025"
-            expected_week = f"W{dt.isocalendar()[1]:02d}"  # 获取带W前缀的周数
+            expected_week = f"{dt.isocalendar()[1]:02d}"  # 获取不带W前缀的周数
             expected_monthday = "0107"  # 月日合并格式
             
             assert expected_year in config.paths.tsb_logs_dir, (
@@ -329,7 +327,7 @@ first_start_time: '{test_time}'
             # 检查tsb_logs_dir的新格式（yyyy/Www/mmdd）
             dt = datetime.fromisoformat(test_time)
             expected_year = "2025"
-            expected_week = f"W{dt.isocalendar()[1]:02d}"
+            expected_week = f"{dt.isocalendar()[1]:02d}"
             
             assert expected_year in config.paths.tsb_logs_dir, (
                 f"生产模式下tsb_logs_dir应该包含年份 {expected_year}，"
