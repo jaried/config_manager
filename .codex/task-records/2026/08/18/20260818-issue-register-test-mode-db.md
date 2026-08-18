@@ -314,3 +314,11 @@ $issue-register config，需要支持test_mode=true时，自动切换测试数�
 - 首次运营写入：在写入前因缺少唯一统计载体返回 `BacklogValidationError: Sprint 统计格式必须唯一且可识别`，Sprint 文件零写入。
 - 恢复依据：本记录“用户补充授权”已明确授权规范化 `Sprint01.md`；只补齐从现有三行唯一派生的规范统计载体，未改业务字段。重试原执行器成功，独立校验为 Issue `3`、警告 `0`、变更路径 `0`。
 - 当前提交边界：任务记录、Sprint01 运营表、方案正文、方案总结、ADR-001、ADR-002；代码、测试、配置、全局 Skill 和主工作树既有修改全部排除。
+
+## 用户启动 Codex Sprint
+
+- 时序：2026-08-18，S1-02 方案决策完成并发布后的新请求。
+- 用户原文：`$codex-sprint`
+- 适用范围：当前项目的唯一进行中 Sprint，由 `codex-sprint` 公开 DAG 决定实际 `execution_scope`；不预设或人工增删 Issue。
+- 相对已有要求：新增 Sprint 级设计与实施编排请求；不替代 S1-02 已批准方案，不授权方案决策重做、验收、范围外清理或其他业务变更。
+- 请求模式：修改/构建/提交；仅允许公开 DAG 调度到期的 `design-plan`、`implementation`、Sprint writer 发布和待验收后的整体评审。
