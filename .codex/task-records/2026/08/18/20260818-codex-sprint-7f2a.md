@@ -138,3 +138,12 @@
 - 真实回归：S1-03 closure `d5efae67d716edf34a3b80f58e1fd235988d1153` 只含小写 Git 真源总结路径，唯一父提交为 result `5db2bc8cda393641994ea71317ccdcd5ab43d4a0`；派生结果为 `handoff_status=pending`、`pending_boundary=final_publication`，恢复到合法发布边界。
 - 六维作者质量扫描：触发正确性、指令质量、渐进披露、引用深度、脚本质量、权限与安全均为 pass；主链只引用共享合同，没有建立第二状态库；helper 保持只读并对路径歧义、父提交不符和发布未完成 fail closed。
 - 全局限定提交：`a236fac`（`fix: 修复阶段交接封口判据`），仅包含 3 份合同/引用、1 个 helper 与 2 个测试文件；未推送、未改写历史、未修改冻结 S1-03 总结。
+
+## 2026-08-18 S1-03 handoff 合同修复后恢复授权（补充）
+
+- 时序：2026-08-18，全局 handoff 合同修复提交 `a236fac` 后，重新恢复同一 S1-03 implementation owner。
+- 适用范围：仅 Sprint01/S1-03 的既定 `final_publication`、merge-issue-branch M1–M6、Sprint01 `待验收` 状态、acceptance input-gate 及对应既有 S1-03/Sprint 记录。
+- 相对已有要求：补充并解除此前 `handoff_git_evidence_invalid` 协议阻塞；共享 helper 现以 `result_commit` 校验 closure 唯一父提交，并能把 Windows `Docs` 调用路径唯一映射为 Git 真源 `docs`。
+- 新冻结现场：Sprint 主工作树 `D:\\Tony\\projects2025\\config_manager`，`master@dc93a83`；Issue target `D:\\Tony\\Documents\\invest2025\\project\\config_manager\\.worktrees\\S1-03`，`S1-03@d5efae6`；closure `d5efae6` 的父提交为 result commit `5db2bc8`；Leader 已验证 helper 返回 `pending/final_publication`。
+- 禁止项：不得修改全局 Skill，不得改写冻结总结/历史，不得重放 solution/design/implementation_start/package/MC-27，不得运行 overall reviewer；保留并适配主分支已有提交，不回滚他人修改。
+- 成功终态：保持 `completion_scope=partial_with_legacy` 和 `LP-S1-03-001`/`LP-S1-03-002`，完成 merge、`待验收`、acceptance input-gate 与一次非强制 Issue worktree 清理，返回最小 `overall_review_requested` 事件。
