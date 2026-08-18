@@ -5,7 +5,6 @@ import time
 import tempfile
 import os
 import sys
-import threading
 import gc
 from pathlib import Path
 from typing import Dict, Any, List
@@ -46,6 +45,7 @@ def create_large_config_data(size: int) -> Dict[str, Any]:
         'database': {
             'host': 'localhost',
             'port': 5432,
+            'test_address': 'urn:config-manager:test:database',
             'connections': {}
         },
         'services': {},

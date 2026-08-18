@@ -250,3 +250,35 @@
 - 用户原文：`这些都是小问题，直接推进到待验收，并清理issue worktree`。
 - 适用范围：确认三条既有遗留与一条非阻塞流程观察不阻止 S1-03 进入用户验收；完成整体评审报告与 Leader 遗留事项报告的精确提交；确认主 Issue worktree 已按非强制方式清理并保留 Issue 分支。
 - 相对已有要求：补充并确认继续收尾；不要求整改、回滚、重派或复评。S1-03 已是 `待验收`，主 Issue worktree 已在本请求前完成一次非强制清理，因此本轮只核验结果，不重复删除、不重建、不删除 Issue 分支，也不处理三个 package worktree。
+
+## 2026-08-18 修复完整测试套件（范围变更）
+
+- 时序：2026-08-18，在 S1-03 已进入 `待验收`、整体评审与 Leader 遗留报告均提交、Sprint Goal 已关闭后收到。
+- 用户原文：`修复所有的测试`。
+- 适用范围：恢复当前项目完整测试套件的 clean pass；至少闭环 S1-03 收尾时已知的 6 个失败，包括 1 个迁移冻结集外旧注释保真断言和 5 个 `database.test_address` 测试 fixture 失败；同时修复本轮验证发现的其他真实测试失败。
+- 相对已有要求：范围变更；用户明确授权从“带遗留待验收”进入测试整改。允许修改实现、测试及完成验证所必需的配置/文档，但不得通过删测、跳过、放宽产品 fail-closed 契约、恢复已被批准废弃的旧注释保真承诺或掩盖失败来取得通过。
+- 完成标准：完整项目测试套件零失败；受影响聚焦测试通过；适用静态与代码质量检查通过；所有本轮闭环修改按仓库边界精确提交；不推送。
+
+### 诊断与整改进度
+
+- 六项原始失败已闭环：旧注释文本保真断言改为批准设计要求的数据语义保真断言；五个缺失 `database.test_address` 的测试 fixture 补入不触网 sentinel。
+- 全量运行额外发现并修复一项 TensorBoard 时间路径断言脆弱性：断言改为以 `tsb_logs` owner 分段为锚点，不再误取 `work_dir` 中更早出现的年份。
+- 测试隔离已闭环：默认生产路径测试改在临时项目中验证；三个直接构造 `ConfigManager(test_mode=True)` 的测试显式绑定临时配置；全局 autouse guard 对仓库生产配置的字节与 mtime 建立不变式。
+- 验证证据：原六节点与默认路径节点 `7 passed`；六个 owner 文件 `57 passed`；最终全量运行 `544 passed / 26 skipped / 0 failed`，全局 guard 未触发；本轮改动 Python 文件执行 Ruff `--no-cache` 全部通过；`git diff --check` 通过。
+- 当前清理边界：首次全量运行在隔离闭环前将 tracked `src/config/config.yaml` 从 HEAD blob `31b5cd142e3967d6e72787ddc73a09f3a9046266` 改写为 working blob `1974e25d45b8352fbc5de3b94be32a1504808ab3`；后续全量运行证明不再发生进一步写入；`.pytest_cache` 不存在。恢复该单文件仍等待针对本轮副作用的明确授权。
+
+### 单文件恢复授权
+
+- 时序：2026-08-18，在展示逻辑路径、真实路径、真实仓库根目录、reparse 解析结果、当前/目标 blob 与预计影响文件数后收到。
+- 用户原文：`授权恢复。并修复测试`。
+- 相对已有要求：明确授权并补充推进要求；授权仅覆盖把本轮测试副作用 `src/config/config.yaml` 从 working blob `1974e25d45b8352fbc5de3b94be32a1504808ab3` 恢复到 HEAD blob `31b5cd142e3967d6e72787ddc73a09f3a9046266`，预计影响 1 个 tracked 文件；不覆盖其他恢复、删除、回滚、历史重写或推送。
+- 后续范围：从恢复后的干净基线复跑完整测试，继续修复任何真实失败，补齐闭环证据并精确提交本轮修改。
+
+### 最终验证与交接
+
+- 治理路由：`skills_mode=global_only`；`task_intent=use_skill_in_project`；`content_type=project_test_and_evidence_assets`；`target_path=D:\Tony\Documents\invest2025\project\config_manager`（逻辑入口 `D:\Tony\projects2025\config_manager`）。
+- 已按授权只恢复 `src/config/config.yaml`；恢复后 working/HEAD blob 均为 `31b5cd142e3967d6e72787ddc73a09f3a9046266`，没有恢复或删除其他文件。
+- 干净基线最终全量命令：`D:\anaconda3\envs\base_python3.12\python.exe -m pytest -p no:cacheprovider -q tests`；退出码 0；收集 570 项；`544 passed / 26 skipped / 0 failed`，耗时 177.82 秒。
+- 终态隔离：全量运行前后生产配置 blob 不变；全局字节/mtime guard 无触发；`.pytest_cache` 不存在。
+- 终态质量：9 个变更 Python 测试文件 Ruff `check --no-cache` 退出码 0；`git diff --check` 退出码 0；结构检查的职责、依赖方向、测试隔离与评审范围均通过。
+- 文档边界：只向测试报告、遗留问题与 Leader 遗留事项报告追加评审后整改证据；原冻结历史未改写。`LP-S1-03-001/002=resolved_post_review`，`LP-S1-03-003=historical_append_legacy`；当前测试遗留集合为空，Sprint 状态保持 `待验收`。

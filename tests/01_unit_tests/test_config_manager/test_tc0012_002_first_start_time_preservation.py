@@ -156,6 +156,7 @@ first_start_time: "{original_time.isoformat()}"
 database:
   host: "localhost"
   port: 5432
+  test_address: "urn:config-manager:test:database"
 """)
             prod_config_path = f.name
         
@@ -262,4 +263,4 @@ __type_hints__: {{}}
             
         finally:
             assert prod_config_path.startswith(tempfile.gettempdir()), f"禁止删除非临时文件: {prod_config_path}"
-            os.unlink(prod_config_path) 
+            os.unlink(prod_config_path)

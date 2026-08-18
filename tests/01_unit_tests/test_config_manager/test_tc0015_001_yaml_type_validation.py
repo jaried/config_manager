@@ -6,14 +6,12 @@
 类型验证功能已被禁用。这些测试现在验证引号包围的值被正确保留为字符串。
 """
 from __future__ import annotations
-from datetime import datetime
-
-start_time = datetime.now()
-
-import pytest
-import tempfile
 import os
 import sys
+import tempfile
+from datetime import datetime
+
+import pytest
 import yaml
 
 # 安全添加路径
@@ -21,7 +19,12 @@ src_path = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-from src.config_manager.config_manager import get_config_manager, _clear_instances_for_testing
+from src.config_manager.config_manager import (  # noqa: E402
+    _clear_instances_for_testing,
+    get_config_manager,
+)
+
+start_time = datetime.now()
 
 
 @pytest.fixture(autouse=True)
@@ -204,7 +207,8 @@ def test_tc0015_001_006_nested_structure_string_preservation():
                 'database': {
                     'host': "localhost",  # 正常字符串
                     'port': "5432",       # 引号包围：应该保留为字符串
-                    'timeout': 30         # 正常数字
+                    'timeout': 30,         # 正常数字
+                    'test_address': "urn:config-manager:test:database"
                 },
                 'name': "test_app"        # 正常字符串
             },

@@ -61,8 +61,11 @@ class TestTC0012006ProtectedFields:
         mock_load_config.return_value = {"__data__": mock_config, "__type_hints__": {}}
 
         # 执行
-        with tempfile.TemporaryDirectory():
-            config_manager = ConfigManager(test_mode=True)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            config_manager = ConfigManager(
+                config_path=os.path.join(temporary_directory, "config.yaml"),
+                test_mode=True,
+            )
 
             # 验证网络URL没有被替换
             assert config_manager.proxy.http == "http://localhost:3213"
@@ -77,8 +80,11 @@ class TestTC0012006ProtectedFields:
         mock_load_config.return_value = {"__data__": mock_config, "__type_hints__": {}}
 
         # 执行
-        with tempfile.TemporaryDirectory():
-            config_manager = ConfigManager(test_mode=True)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            config_manager = ConfigManager(
+                config_path=os.path.join(temporary_directory, "config.yaml"),
+                test_mode=True,
+            )
 
             # 验证HTTP Headers没有被替换
             assert config_manager.headers.Accept == "text/html,application/xhtml+xml"
@@ -92,8 +98,11 @@ class TestTC0012006ProtectedFields:
         mock_load_config.return_value = {"__data__": mock_config, "__type_hints__": {}}
 
         # 执行
-        with tempfile.TemporaryDirectory():
-            config_manager = ConfigManager(test_mode=True)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            config_manager = ConfigManager(
+                config_path=os.path.join(temporary_directory, "config.yaml"),
+                test_mode=True,
+            )
 
             # 验证正则表达式没有被替换
             assert (

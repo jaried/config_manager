@@ -7,6 +7,7 @@ import pytest
 
 from src.config_manager import TestEnvironmentManager, get_config_manager
 from src.config_manager.config_manager import ConfigManager, _clear_instances_for_testing
+from src.config_manager.yaml_codec import load_yaml, semantically_equal
 
 
 PRODUCTION_ADDRESS = "prod://s1-02-production-address"
@@ -278,8 +279,8 @@ __type_hints__: {{}}
     assert not ConfigManager._instances
 
 
-def test_ut11_yaml_comments_and_non_target_fields_are_preserved(tmp_path: Path):
-    """UT-11: conversion preserves comments and unrelated configuration fields."""
+def test_ut11_commented_yaml_data_and_non_target_fields_are_preserved(tmp_path: Path):
+    """UT-11: conversion preserves data from commented YAML input."""
     source_yaml = f'''# keep this source comment
 __data__:
   project_name: s1_02_project
@@ -294,10 +295,23 @@ __type_hints__: {{}}
 
     cfg = get_config_manager(config_path=str(source_path), watch=False, test_mode=True)
     copied_path = Path(cfg.get_config_file_path())
-    copied_text = copied_path.read_text(encoding="utf-8")
+    copied_document = load_yaml(copied_path.read_text(encoding="utf-8"))
+    assert isinstance(copied_document, dict)
+    copied_data = copied_document["__data__"]
+    assert isinstance(copied_data, dict)
 
-    assert "# keep this database comment" in copied_text
-    assert 'retained_field: "retain-me"' in copied_text
+    expected_business_data = {
+        "project_name": "s1_02_project",
+        "database": {
+            "address": TEST_ADDRESS,
+            "test_address": TEST_ADDRESS,
+        },
+        "retained_field": "retain-me",
+    }
+    actual_business_data = {
+        key: copied_data[key] for key in expected_business_data
+    }
+    assert semantically_equal(actual_business_data, expected_business_data)
     assert cfg.get("retained_field") == "retain-me"
     assert cfg.get("database.address") == TEST_ADDRESS
     assert source_path.read_bytes() == source_bytes

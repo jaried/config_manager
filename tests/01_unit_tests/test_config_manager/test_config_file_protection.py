@@ -55,8 +55,6 @@ __type_hints__: {}'''
         with open(config_path, 'w', encoding='utf-8') as f:
             f.write(invalid_yaml)
             
-        original_content = invalid_yaml
-            
         config = get_config_manager(
             config_path=str(config_path),
             auto_create=True,
@@ -116,6 +114,7 @@ __type_hints__: {}'''
   base_dir: "{safe_logs_dir}"
   database:
     path: "{safe_data_dir}\\\\database.db"
+    test_address: "urn:config-manager:test:database"
   logs:
     base_root_dir: ".\\\\logs"
 __type_hints__: {{}}'''

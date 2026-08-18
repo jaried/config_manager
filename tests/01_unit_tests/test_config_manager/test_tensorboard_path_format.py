@@ -159,19 +159,14 @@ class TestTensorboardPathFormat:
             # 规范化路径后再分割
             normalized_tb_dir1 = PathTestHelper.normalize_path(tb_dir1)
             path_parts = normalized_tb_dir1.split('/')
-            # 查找4位数字的年份
-            year_idx = None
-            for i, part in enumerate(path_parts):
-                if len(part) == 4 and part.isdigit() and part == "2025":
-                    year_idx = i
-                    break
-            
-            assert year_idx is not None, f"路径中未找到2025年份: {tb_dir1}"
-            
-            # 验证包含周数（格式应该是 年/W周/月日/时间）
-            time_parts = path_parts[year_idx:]
-            assert len(time_parts) >= 4, "路径应该包含至少4个部分"
-            assert time_parts[1] == "33", f"2025年8月15日应该是第33周，实际: {time_parts[1]}"
+            assert "tsb_logs" in path_parts, f"路径中未找到tsb_logs目录: {tb_dir1}"
+            tsb_logs_index = path_parts.index("tsb_logs")
+
+            # 只解析 tsb_logs owner 之后的时间分段，避免把 work_dir 中的年份误认成格式年份。
+            time_parts = path_parts[tsb_logs_index + 1:]
+            assert time_parts[:4] == ["2025", "33", "0815", "143000"], (
+                f"TensorBoard时间路径错误: {time_parts[:4]}"
+            )
         pass
     
     def test_path_configuration_integration(self):

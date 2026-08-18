@@ -32,8 +32,13 @@ def pytest_configure(config):
 @pytest.fixture(autouse=True)
 def ensure_clean_environment():
     """确保每个测试都有干净的环境"""
-    # 在测试前清理
+    assert PROJECT_ROOT is not None
+    production_config_path = PROJECT_ROOT / "src" / "config" / "config.yaml"
+    production_config_bytes = production_config_path.read_bytes()
+    production_config_mtime_ns = production_config_path.stat().st_mtime_ns
+
     yield
+
     # 在测试后清理
     try:
         from config_manager.config_manager import _clear_instances_for_testing
@@ -41,3 +46,10 @@ def ensure_clean_environment():
     except ImportError:
         # 如果导入失败，忽略
         pass
+
+    assert production_config_path.read_bytes() == production_config_bytes, (
+        f"测试不得修改生产配置: {production_config_path}"
+    )
+    assert production_config_path.stat().st_mtime_ns == production_config_mtime_ns, (
+        f"测试不得重写生产配置: {production_config_path}"
+    )

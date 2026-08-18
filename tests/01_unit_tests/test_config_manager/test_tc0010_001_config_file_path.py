@@ -12,6 +12,7 @@ import tempfile
 import os
 import sys
 import time
+from pathlib import Path
 
 # 添加src到路径
 project_root = os.path.dirname(
@@ -23,7 +24,7 @@ if src_path not in sys.path:
 
 from src.config_manager import get_config_manager
 from src.config_manager.config_manager import _clear_instances_for_testing
-from src.config_manager.yaml_codec import load_yaml
+from src.config_manager.yaml_codec import dump_yaml, load_yaml
 
 
 @pytest.fixture(autouse=True)
@@ -80,20 +81,51 @@ class TestConfigFilePath:
             print("✓ 配置文件路径存储功能正常")
         return
 
-    def test_tc0010_001_002_config_file_path_default(self):
-        """测试默认配置路径的存储"""
-        # 使用默认路径
-        cfg = get_config_manager(first_start_time=start_time)
+    def test_tc0010_001_002_config_file_path_default(self, tmp_path, monkeypatch):
+        """测试临时项目中默认生产配置路径的存储。"""
+        temporary_project_root = tmp_path / "owner_project"
+        temporary_config_path = (
+            temporary_project_root / "src" / "config" / "config.yaml"
+        )
+        temporary_config_path.parent.mkdir(parents=True)
+        (temporary_project_root / "pyproject.toml").write_text(
+            '[project]\nname = "config-manager-test"\nversion = "0.0.0"\n',
+            encoding="utf-8",
+        )
+
+        source_config_path = Path(project_root) / "src" / "config" / "config.yaml"
+        temporary_document = load_yaml(source_config_path.read_text(encoding="utf-8"))
+        assert isinstance(temporary_document, dict)
+        temporary_data = temporary_document["__data__"]
+        assert isinstance(temporary_data, dict)
+        temporary_data["base_dir"] = str(tmp_path / "runtime")
+        temporary_config_path.write_text(
+            dump_yaml(temporary_document),
+            encoding="utf-8",
+        )
+
+        monkeypatch.chdir(temporary_project_root)
+        test_start_time = datetime.now()
+        cfg = get_config_manager(first_start_time=test_start_time)
 
         # 获取路径信息
         stored_path = cfg._data.get("config_file_path")
         retrieved_path = cfg.get_config_file_path()
         actual_path = cfg.get_config_path()
+        expected_path = str(temporary_config_path.resolve())
 
         assert stored_path is not None, "默认配置文件路径应该被存储"
-        assert stored_path == actual_path, "存储的路径应该与实际路径匹配"
-        assert retrieved_path == actual_path, "检索的路径应该与实际路径匹配"
+        assert stored_path == expected_path, "默认路径应该属于临时项目"
+        assert retrieved_path == expected_path, "检索路径应该属于临时项目"
+        assert actual_path == expected_path, "实际路径应该属于临时项目"
         assert stored_path.endswith(".yaml"), "配置文件应该是yaml格式"
+
+        saved_document = load_yaml(temporary_config_path.read_text(encoding="utf-8"))
+        assert isinstance(saved_document, dict)
+        saved_data = saved_document["__data__"]
+        assert isinstance(saved_data, dict)
+        assert saved_data["config_file_path"] == expected_path
+        assert saved_data["first_start_time"] == test_start_time.isoformat()
 
         print(f"✓ 默认配置路径存储正常: {stored_path}")
         return
