@@ -12,7 +12,7 @@
 - 🔄 **快照恢复**：便捷的配置状态保存和恢复
 - 💬 **注释保留**：完美保留YAML配置文件中的注释和格式
 - 📄 **多格式支持**：支持标准格式和原始YAML格式，自动识别
-- 🧪 **测试模式**：一键创建隔离的测试环境，智能路径替换
+- 🧪 **测试模式**：一键创建隔离的测试环境，通用路径仅切换 `base_dir`
 - 🏗️ **自动路径管理**：智能生成项目目录结构，支持调试模式和时间戳
 - 🔄 **多进程支持**：通过可序列化配置数据支持多进程环境
 - 🌐 **跨平台**：支持 Windows、Linux、macOS
@@ -59,7 +59,7 @@ def get_config_manager(
 | `auto_create` | `bool` | `False` | 否 | 配置文件不存在时是否自动创建。为 `True` 时会在指定路径创建新的配置文件 |
 | `autosave_delay` | `float` | `None` | 否 | 自动保存延迟时间（秒）。配置修改后延迟指定时间再保存，避免频繁 I/O |
 | `first_start_time` | `datetime` | `None` | 主程序需要 | 应用首次启动时间。**主程序调用时必须提供**，用于记录启动时间和生成备份文件时间戳 |
-| `test_mode` | `bool` | `False` | 否 | 是否启用测试模式。为 `True` 时创建隔离的测试环境，自动生成临时路径 |
+| `test_mode` | `bool` | `False` | 否 | 是否启用测试模式。只有显式传入 `True` 时才创建隔离的测试环境并选择测试数据库地址；自动生成临时路径 |
 
 #### 返回值
 
@@ -209,6 +209,9 @@ cfg.restore(snapshot)
 print(cfg.database.host)  # 恢复到原来的值
 ```
 
+在 `test_mode=True` 创建的实例中，运行时读取到的是测试副本的
+`database.address`；通过 `get_serializable_data()` 获取的可序列化快照也使用同一个测试活动值。
+
 ### 2. 临时配置上下文
 
 ```python
@@ -289,7 +292,7 @@ def test_my_feature():
 - 🚀 **一键启用**：只需设置 `test_mode=True`
 - 📁 **自动路径**：基于时间戳自动生成唯一测试路径
 - 📋 **配置复制**：自动从生产环境复制配置到测试环境
-- 🛠️ **智能路径替换**：自动识别并替换配置中的所有路径字段为测试环境路径
+- 🛠️ **路径规则明确**：通用路径逻辑只设置测试 `base_dir`，不恢复递归路径替换；数据库地址选择是固定键的窄例外
 - 🔄 **时间保留**：保留原配置中的first_start_time，确保时间一致性
 - 💾 **备份隔离**：自动备份功能完全隔离到测试环境
 
@@ -302,6 +305,30 @@ def test_my_feature():
 ```
 
 例如：`d:\temp\tests\20250607\143052\src\config\config.yaml`
+
+### 测试模式下的数据库地址选择
+
+测试模式只由公开 API 的 `test_mode=True` 参数触发。配置中的
+`database.address` 是活动地址，`database.test_address` 是预配置的测试地址；当配置存在
+`database` 节点且 `test_address` 是非空字符串时，测试副本中的活动值更新为
+`database.test_address`。该选择只发生在临时副本，不改写生产源文件。
+
+| API 调用与配置 | 行为 |
+|---|---|
+| `test_mode=False` | 不进入测试副本转换，`database.address` 保持生产配置中的值 |
+| `test_mode=True`，没有 `database` 节点 | no-op，沿用既有配置加载行为 |
+| `test_mode=True`，`database` 为映射且 `test_address` 为非空字符串 | 在测试副本中以 `test_address` 作为活动 `address` |
+| `test_mode=True`，`database` 不是映射，或 `test_address` 缺失、为空白或不是字符串 | 立即失败，不创建实例，也不回退到生产 `address` |
+
+标准格式和原始 YAML 格式使用相同的固定键选择规则。运行时配置和可序列化快照都读取测试副本中的活动值；地址作为不透明字符串处理，不解析、不记录、不验证网络端点，也不建立数据库连接。
+
+例如，配置只需预先同时保存生产活动值和测试预配置值：
+
+```yaml
+database:
+  address: "production-address"
+  test_address: "test-address"
+```
 
 ## 多进程配置支持
 
@@ -440,6 +467,8 @@ __data__:
   
   # 数据库配置
   database:
+    address: "production-address"  # 生产配置中的活动值
+    test_address: "test-address"    # 测试模式预配置值
     host: "localhost"     # 数据库主机地址
     port: 5432           # 数据库端口
     username: "admin"    # 数据库用户名
@@ -466,6 +495,8 @@ version: "1.0.0"
 
 # 数据库配置
 database:
+  address: "production-address"  # 生产配置中的活动值
+  test_address: "test-address"    # 测试模式预配置值
   host: "localhost"     # 数据库主机地址
   port: 5432           # 数据库端口
   username: "admin"    # 数据库用户名
@@ -599,14 +630,18 @@ ConfigManager会自动识别格式并正确处理。
 
 ### Q: 测试中如何临时修改配置？
 
-A: 推荐使用 `temporary()` 上下文管理器：
+A: 推荐使用 `temporary()` 上下文管理器修改已经加载的普通配置值：
 
 ```python
-with cfg.temporary({"test_mode": True}) as temp_cfg:
+with cfg.temporary({"debug_mode": True}) as temp_cfg:
     # 使用临时配置进行测试
     pass
 # 配置自动恢复
 ```
+
+需要测试副本和数据库地址自动选择时，必须在公开入口调用
+`get_config_manager(test_mode=True)`；`temporary()` 不会触发测试副本转换，也不会选择
+`database.test_address`。
 
 ## 许可证
 

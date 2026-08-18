@@ -1,5 +1,6 @@
 # src/config_manager/config_manager.py
 from __future__ import annotations
+from collections.abc import MutableMapping
 from datetime import datetime
 from typing import Union, Type
 
@@ -16,6 +17,10 @@ from .core.cross_platform_paths import convert_to_multi_platform_config
 
 # 全局调用链显示开关 - 手工修改这个值来控制调用链显示
 ENABLE_CALL_CHAIN_DISPLAY = False  # 默认关闭调用链显示
+
+
+class _TestDatabaseConfigurationError(ValueError):
+    """测试模式数据库地址配置不满足固定契约。"""
 
 
 class ConfigManager(ConfigManagerCore):
@@ -621,6 +626,31 @@ class ConfigManager(ConfigManagerCore):
             # 对于其他类型，直接替换
             return new_data
 
+    @staticmethod
+    def _select_test_database_address(data_root: MutableMapping[str, Any]) -> None:
+        """在测试副本的数据根中选择活动数据库地址。"""
+        if 'database' not in data_root:
+            return
+
+        database = data_root['database']
+        if not isinstance(database, MutableMapping):
+            raise _TestDatabaseConfigurationError(
+                'database must be a mapping in test_mode'
+            )
+
+        if 'test_address' not in database:
+            raise _TestDatabaseConfigurationError(
+                'database.test_address must be a non-empty string in test_mode'
+            )
+
+        test_address = database['test_address']
+        if not isinstance(test_address, str) or not test_address.strip():
+            raise _TestDatabaseConfigurationError(
+                'database.test_address must be a non-empty string in test_mode'
+            )
+
+        database['address'] = test_address
+
     @classmethod
     def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None,
                                   project_name: str = None, from_production: bool = False):
@@ -714,6 +744,11 @@ class ConfigManager(ConfigManagerCore):
             if '__data__' in loaded_data and isinstance(loaded_data['__data__'], dict):
                 loaded_data['__data__']['base_dir'] = test_base_dir
 
+            data_root = loaded_data['__data__'] \
+                if isinstance(loaded_data.get('__data__'), MutableMapping) \
+                else loaded_data
+            cls._select_test_database_address(data_root)
+
             # 更新时间信息
             if time_to_use is not None:
                 if isinstance(time_to_use, datetime):
@@ -738,6 +773,8 @@ class ConfigManager(ConfigManagerCore):
             with open(test_config_path, 'w', encoding='utf-8') as f:
                 yaml.dump(loaded_data, f)
 
+        except _TestDatabaseConfigurationError:
+            raise
         except Exception as e:
             print(f"⚠️  更新测试配置路径失败: {e}")
             # 如果YAML处理失败，尝试创建一个基本的配置文件
