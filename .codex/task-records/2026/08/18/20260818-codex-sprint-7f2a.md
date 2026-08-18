@@ -88,3 +88,12 @@
 - 时序：2026-08-18，共享 handoff validator 已返回确定性 Git 证据失败后。
 - 适用范围：同一 S1-03 owner/target/recovery action。
 - 相对已有要求：补充；validator 失败须返回最小 blocked/protocol event 与证据定位。当前分类固定为 `protocol_failure(handoff_git_evidence_invalid)`，不进入 merge 冲突或超时恢复分支。
+
+## Goal 恢复后合同阻塞复核 1
+
+- 时序：2026-08-18，用户恢复原 blocked Goal 后的第一次自动 Goal 延续；相对当前恢复请求属于执行状态补充，不改变范围。
+- 当前事实：`master=c2813699664d248745abe62e7b93f2625a5705b1`、`S1-03=d5efae67d716edf34a3b80f58e1fd235988d1153`，两侧工作树洁净，全部 Sprint Agent 无活动 turn。
+- 公开投影：Sprint01 `status=ok`、`execution_scope.remaining_count=1`，唯一 ready 仍为 `S1-03/implementation`。
+- 合同证据：共享 helper 哈希仍为 `1f80bb926c835283203af06f1d9b858ffe398857`；`validate_closure_commit()` 仍要求 summary-only closure 的唯一父提交等于 `first_sync_issue_head`，与既有 closure→result_commit 历史不一致。
+- 安全边界：项目内重跑无法改变确定性 Git 证据；绕过 helper、改写冻结总结或重写历史均不允许。修复全局合同/helper 需要新的全局写入授权，当前未取得。
+- 结论：同一 `handoff_git_evidence_invalid` 在恢复后连续出现于第 2 个 Goal turn；尚未满足重新标记 `blocked` 的三轮门槛，Sprint 编排 Goal 保持 `active`。
