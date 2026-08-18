@@ -1,0 +1,39 @@
+__data__:
+  project_name: test_project
+  experiment_name: monitor
+  base_dir: D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892
+  monitor:
+    watchlist:
+      stock:   -
+          SSE.600519
+      etf:   -
+          SSE.588000
+        - SSE.588200
+      index_option:
+        - SSE.000300
+    category_subscription_order:
+      - index_option
+      - etf
+      - stock
+      - all
+  first_start_time: '2026-08-18T09:37:32.636727'
+  config_file_path:
+    D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\src\config\config.yaml
+  paths:
+    work_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor
+    checkpoint_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor\checkpoint
+    best_checkpoint_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor\checkpoint\best
+    debug_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor\debug\20260818\093732
+    log_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor\logs\20260818\093732
+    backup_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor\backup\20260818\093732
+    cache_dir:
+      D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\test_project\monitor\cache
+__type_hints__:
+  first_start_time: datetime
+first_start_time: '2026-08-18T09:37:32.636727'

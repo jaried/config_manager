@@ -1,0 +1,30 @@
+worktree=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03
+source_root=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\src
+config_manager_module=config_manager.config_manager
+input_path=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\01_input.yaml
+input_valid=True
+input_error=
+isolated_path=D:\temp\tests\20260818\092818\e4e7a0f4_6c3a16b4_471347_b053fd46\src\config\config.yaml
+after_init_valid=True
+after_init_broken_layout=False
+after_init_error=
+save_result=True
+saved_valid=True
+saved_broken_layout=False
+saved_error=
+failure_signature_match=False
+backup_path=D:\temp\tests\20260818\092818\e4e7a0f4_6c3a16b4_471347_b053fd46\test_project\monitor\backup\20260818\092818\config_20260818_092818.yaml
+scenario_status=not_reproduced
+saved_excerpt_start
+    watchlist:
+      stock:
+        - SSE.600519
+      etf:
+        - SSE.510300
+        - SSE.000300
+    category_subscription_order:
+      - index_option
+      - etf
+      - stock
+      - all
+saved_excerpt_end

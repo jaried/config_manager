@@ -1,0 +1,26 @@
+input_path=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\01_input_commented.yaml
+isolated_path=D:\temp\tests\20260818\093732\e4e7a0f4_85e0b9d1_636727_51f34892\src\config\config.yaml
+isolated_before_valid=True
+isolated_before_error=
+original_stock_after_init_type=list
+original_parent_key_comment_after_init=[None, None, None, [CommentToken('# - SSE.600111\n', line: 7, col: 8), CommentToken('# - SSE.600519\n', line: 8, col: 8)]]
+serialized_stock_type=list
+serialized_stock_value=['SSE.600519']
+prepared_stock_type=list
+prepared_stock_value=['SSE.600519']
+prepared_parent_key_comment=[None, None, None, [CommentToken('# - SSE.600111\n', line: 7, col: 8), CommentToken('# - SSE.600519\n', line: 8, col: 8)]]
+pre_postprocess_valid=False
+pre_postprocess_broken_layout=True
+pre_postprocess_error=ScannerError: sequence entries are not allowed here
+  in "<unicode string>", line 7, column 16:
+          stock:   -
+                   ^ (line: 7)
+postprocessor_changed_output=False
+postprocessed_valid=False
+postprocessed_error=ScannerError: sequence entries are not allowed here
+  in "<unicode string>", line 7, column 16:
+          stock:   -
+                   ^ (line: 7)
+first_deviation_boundary=ConfigManagerCore._get_serializable_data -> FileOperations._prepare_data_for_save -> YAML.dump
+first_deviation_match=True
+probe_status=verified

@@ -1,0 +1,25 @@
+ruamel_input=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\02_input.yaml
+original_sequence_type=CommentedSeq
+original_sequence_comment=[None, [CommentToken('# - SSE.600111\n', line: 2, col: 4), CommentToken('# - SSE.600519\n', line: 3, col: 4)]]
+unchanged_valid=True
+unchanged_error=
+replaced_sequence_type=list
+parent_key_comment_after_replacement=[None, None, None, [CommentToken('# - SSE.600111\n', line: 2, col: 4), CommentToken('# - SSE.600519\n', line: 3, col: 4)]]
+replaced_valid=False
+replaced_broken_layout=True
+replaced_error=ScannerError: sequence entries are not allowed here
+  in "<unicode string>", line 2, column 12:
+      stock:   -
+               ^ (line: 2)
+plain_control_valid=True
+plain_control_error=
+in_place_control_valid=True
+in_place_control_error=
+causal_signature_match=True
+replaced_excerpt_start
+watchlist:
+  stock:   -
+      SSE.600519
+  etf:
+    - SSE.588000
+replaced_excerpt_end

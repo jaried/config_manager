@@ -1,0 +1,8 @@
+sys.executable=D:\anaconda3\envs\base_python3.12\python.exe
+os.name=nt
+python_version=3.12.9
+worktree=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03
+source_root=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\src
+config_manager_file=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\src\config_manager\__init__.py
+ruamel_yaml_version=0.19.1
+is_debug_version=1.0.0

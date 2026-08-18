@@ -1,0 +1,22 @@
+project_name: test_project
+experiment_name: monitor
+base_dir: D:/temp/config_manager_s1_03_source
+monitor:
+  watchlist:
+    stock:
+      # - SSE.600111
+      # - SSE.600519
+      - SSE.688825
+      - SSE.688256
+    etf:
+      # - SSE.510300
+      # - SSE.510050
+      - SSE.588000
+      - SSE.588200
+    index_option:
+      - SSE.000300
+  category_subscription_order:
+    - index_option
+    - etf
+    - stock
+    - all
