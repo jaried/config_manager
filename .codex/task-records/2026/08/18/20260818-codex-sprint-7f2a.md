@@ -147,3 +147,71 @@
 - 新冻结现场：Sprint 主工作树 `D:\\Tony\\projects2025\\config_manager`，`master@dc93a83`；Issue target `D:\\Tony\\Documents\\invest2025\\project\\config_manager\\.worktrees\\S1-03`，`S1-03@d5efae6`；closure `d5efae6` 的父提交为 result commit `5db2bc8`；Leader 已验证 helper 返回 `pending/final_publication`。
 - 禁止项：不得修改全局 Skill，不得改写冻结总结/历史，不得重放 solution/design/implementation_start/package/MC-27，不得运行 overall reviewer；保留并适配主分支已有提交，不回滚他人修改。
 - 成功终态：保持 `completion_scope=partial_with_legacy` 和 `LP-S1-03-001`/`LP-S1-03-002`，完成 merge、`待验收`、acceptance input-gate 与一次非强制 Issue worktree 清理，返回最小 `overall_review_requested` 事件。
+
+## 2026-08-18 S1-03 recovery merge 监控脉冲（补充）
+
+- 时序：2026-08-18，M3 `--no-commit` merge 已启动并出现文档治理冲突，冲突解决中。
+- 适用范围：同一 S1-03 implementation final_publication/merge action。
+- 相对已有要求：补充；要求在安全边界回报当前 M 步骤、提交状态与协议阻塞，并继续执行，不返回长输出。
+
+## 2026-08-18 S1-03 recovery M4 heartbeat（补充）
+
+- 时序：2026-08-18，M3 冲突已解决，M4 影响面与既有 legacy 映射已完成，尚未启动长测试命令。
+- 适用范围：同一 S1-03 implementation final_publication/merge action。
+- 相对已有要求：补充；若正在长测试仅回报命令与已运行时长，否则立即完成 M4 判定并继续或返回稳定阻塞；不得重复已完成取证。
+
+## 2026-08-18 S1-03 recovery cleanup 授权边界（范围收缩）
+
+- 时序：2026-08-18，M4 full suite 已完成，确认 `src/config/config.yaml` 与 `.pytest_cache` 均为本轮测试后新出现的执行器副作用。
+- 适用范围：同一 S1-03 implementation final_publication/merge action 的 M4→M5 边界。
+- 相对已有要求：范围收缩；保持当前 merge tree 与测试证据，不恢复 tracked config、不删除 cache、不进入 M5；仅完成不需要清理的只读 M4 核验，并停在精确 cleanup authorization 边界等待 Leader 取得用户授权。
+
+## 2026-08-18 S1-03 recovery M4 只读终点（补充）
+
+- 时序：2026-08-18，cleanup 用户授权仍未取得，M4 全部非破坏性核验已完成。
+- 适用范围：同一 S1-03 implementation final_publication/merge action 的 M4 判定与精确等待边界。
+- 相对已有要求：补充；回报 merge gate 候选、full 六项失败与 LP 映射、未批准决策集、未合并路径及等待边界；保持 merge tree 和两个测试副作用现场不变。
+- 实际门禁：`merge_gate_result(candidate)=pass_with_legacy`；`completion_scope=partial_with_legacy`；`legacy_ids=[LP-S1-03-001, LP-S1-03-002]`。
+- 当前测试：focused `65 passed`；migrated `63 passed, 4 skipped`；独立重建 affected `180 passed, 10 skipped`；E2E `3 passed, 10 deselected`；full `538 passed, 26 skipped, 6 failed`。
+- full 失败映射：1 个旧注释文本保真断言失败映射 `LP-S1-03-001`；5 个 `database.test_address` fixture 基线同现象失败映射 `LP-S1-03-002`；没有新增失败分类。
+- 只读结论：`unapproved_decision_set=[]`；`unmerged_paths=[]`；ruff、活动范围 ruamel 零命中、PyYAML 声明/运行依赖、设计职责与结构检查均通过。
+- Git 现场：`HEAD=129241498b01c3da6c51fa75f005ccb5d4443945`；`MERGE_HEAD=d5efae67d716edf34a3b80f58e1fd235988d1153`；M5 未启动、merge commit 尚未创建、Sprint 中 S1-03 仍为 `实施中`。
+- 测试副作用：`src/config/config.yaml` 的 M2 baseline blob 为 `31b5cd142e3967d6e72787ddc73a09f3a9046266`，当前 working blob 为 `1974e25d45b8352fbc5de3b94be32a1504808ab3`；本轮新增 `.pytest_cache` 含 2 个文件；两者与本 task record 均未暂存，S1-03 交付集合保持 staged。
+- `exact_wait_boundary=cleanup_authorization_required_before_M5`：只等待用户明确授权将 `src/config/config.yaml` 恢复到上述 M2 baseline，并删除本轮新增 `.pytest_cache`；授权前保持全部现场不变。
+- 相对上一条回报：补充落盘实际结果；按 Leader 要求保持本 task record unstaged，随后停止在同一授权边界。
+
+## 2026-08-18 S1-03 recovery blocked 审计终点（范围变更）
+
+- 时序：2026-08-18；`cleanup_authorization_required_before_M5` 已在用户触发回合及连续两次 Sprint Goal 自动延续中保持不变，满足三轮 blocked 审计。
+- 适用范围：同一 S1-03 implementation final_publication/merge action；仅复核当前安全边界，不恢复、不删除、不进入 M5。
+- 当前 Git：`HEAD=129241498b01c3da6c51fa75f005ccb5d4443945`；`MERGE_HEAD=S1-03=d5efae67d716edf34a3b80f58e1fd235988d1153`；`unmerged_paths=[]`。
+- 现场不变：`src/config/config.yaml` 仍为测试后 unstaged 副作用；`.pytest_cache` 仍为本轮新增且 untracked；本 task record 仍 unstaged；S1-03 交付集合保持 staged；merge commit 尚未创建。
+- 授权与替代路径：仍无用户对精确 config 恢复与 cache 删除的明确授权；不存在其他满足全局破坏性门禁且不改变结果的安全动作。
+- 相对已有要求：范围变更；本轮不再保持 active 等待，将 Sprint Goal 标记 `blocked`，failure_reason=`cleanup_authorization_required_before_M5`；保持 merge tree 与全部副作用现场不变。
+
+## 2026-08-18 S1-03 recovery cleanup 授权后恢复（范围变更）
+
+- 时序：2026-08-18；用户已明确回复“授权清理”，Leader 已按精确范围完成恢复与删除并核验。
+- 适用范围：同一 S1-03 implementation final_publication/merge action，从已完成的 M4 `pass_with_legacy` 继续 M5 与 acceptance input-gate。
+- 清理证据：`src/config/config.yaml` 已恢复为 `HEAD/M2 blob=31b5cd142e3967d6e72787ddc73a09f3a9046266`；项目根 `.pytest_cache` 原 3 个目录/2 个文件已删除；两目标 status clean。
+- 恢复现场：`HEAD=129241498b01c3da6c51fa75f005ccb5d4443945`；`MERGE_HEAD=S1-03=d5efae67d716edf34a3b80f58e1fd235988d1153`；`unmerged_paths=[]`。
+- 相对已有要求：范围变更；解除 `cleanup_authorization_required_before_M5`，更新 Sprint01 的 S1-03 为 `待验收`、重算统计、显式暂存合法 merge/status 路径、创建并验证 `merge(master): S1-03 实施完成合并`，随后执行 acceptance input-gate 并返回最小 `overall_review_requested` 事件。
+- 保持约束：不得重跑 M4、不得修改冻结总结、不得运行 overall reviewer、不得将本 task record 混入 merge commit；继续保留 `partial_with_legacy` 与 `LP-S1-03-001`/`LP-S1-03-002`，不回滚或覆盖他人变更。
+
+## 2026-08-18 S1-03 recovery M5 merge 结果
+
+- `update-backlog`：S1-03 已由 `实施中` 更新为 `待验收`；Sprint 总点数 10；Issue 统计为共 3、进行中 1、实施中 0、待验收 2，其余状态 0；校验器检查 3 个 Issue、0 警告、复读无变更。
+- merge commit：`0e1208ed126526bd004d49aa441925586cc508d0`，提交消息 `merge(master): S1-03 实施完成合并`。
+- 父提交：第一父 `129241498b01c3da6c51fa75f005ccb5d4443945`（M2 baseline），第二父 `d5efae67d716edf34a3b80f58e1fd235988d1153`（S1-03 closure）。
+- 祖先与冲突：Issue closure `d5efae6`、result `5db2bc8` 均为当前 Sprint HEAD 祖先；`unmerged_paths=[]`。
+- 范围：本 task record 未进入 merge commit；merge 后仅本 task record 保持 unstaged，产品、测试、Sprint 状态与清理目标均 clean。
+- M4 结论保持：`merge_gate_result=pass_with_legacy`、`completion_scope=partial_with_legacy`、`legacy_ids=[LP-S1-03-001, LP-S1-03-002]`，未重跑 M4、未修改冻结总结、未运行 overall reviewer。
+- 下一动作：以当前已合并待验收结果运行只读 acceptance input-gate；通过后执行一次非强制 Issue worktree 清理并交接 `overall_review_requested`。
+
+## 2026-08-18 测试副作用清理授权（新增）
+
+- 时序：2026-08-18，在 Sprint Goal 因 `cleanup_authorization_required_before_M5` 标记 `blocked` 后收到，执行任何恢复或删除前。
+- 用户原文：`授权清理`。
+- 适用范围：仅把 `D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml` 恢复到 M2 baseline blob `31b5cd142e3967d6e72787ddc73a09f3a9046266`，并删除本轮测试新建的 `D:\Tony\Documents\invest2025\project\config_manager\.pytest_cache`（3 个目录、2 个未跟踪缓存文件）。
+- 相对已有要求：新增明确破坏性操作授权并解除 cleanup blocked 边界；完成后恢复同一 Sprint Goal，从 M5 继续 merge commit、`待验收`、acceptance input-gate、整体 Reviewer、遗留事项报告及一次非强制 Issue worktree 清理。
+- 仍不包含：恢复、删除或清理任何其他路径；推送；改写历史；修改冻结总结；删除 Issue 分支；强制删除 worktree。
