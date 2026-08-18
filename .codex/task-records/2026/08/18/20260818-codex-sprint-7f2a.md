@@ -208,6 +208,34 @@
 - M4 结论保持：`merge_gate_result=pass_with_legacy`、`completion_scope=partial_with_legacy`、`legacy_ids=[LP-S1-03-001, LP-S1-03-002]`，未重跑 M4、未修改冻结总结、未运行 overall reviewer。
 - 下一动作：以当前已合并待验收结果运行只读 acceptance input-gate；通过后执行一次非强制 Issue worktree 清理并交接 `overall_review_requested`。
 
+## 2026-08-18 S1-03 acceptance input-gate 结果
+
+- summary validator：`handoff_status=ready`；`pending_boundary=null`；closure commit=`d5efae67d716edf34a3b80f58e1fd235988d1153`；result commit=`5db2bc8cda393641994ea71317ccdcd5ab43d4a0`；`completion_scope=partial_with_legacy`；`legacy_ids=[LP-S1-03-001, LP-S1-03-002]`。
+- 已通过输入：Issue closure/result 已合入 Sprint；merge commit=`0e1208ed126526bd004d49aa441925586cc508d0`；Sprint 状态=`待验收`；批准方案最终 AC8-01..11 非空；测试报告具备 scope/environment/commands/results/failures/skips/evidence 七章节；IM-05/07/10 的 violation 已由 LP-S1-03-001/002 完整消费。
+- 门禁结果：`input_gate_result=fail`；`target_stage=acceptance`；`input_version=S1-03-implementation-v1`；`failure_owner=implementation`；`failure_reason=acceptance_input_gate_checklist_unverified_IM-12`；`lineage_action=append_legacy`；`next_action=none`。
+- 直接阻塞证据：`S1-03_实施记录.md` 的 `IM-12 MERGE_ACCEPTANCE` 仍为 `unverified`，描述的是 merge/status/acceptance 尚未执行；该项未映射到 LP-S1-03-001/002。`acceptance/SKILL.md` input-gate 与 `closure-checklist-contract.md` CL-04 要求到期适用项为 `pass|not_applicable`；`partial_with_legacy` 例外只消费具备完整 LP 的 violation/unverified。
+- 保真边界：当前 Git/status 事实不能在 input-gate 内覆盖正式检查单字段；门禁禁止补写实施证据，用户也禁止改写冻结总结/历史。因此未伪造 `pass|pass_with_legacy`，未运行 overall reviewer，未执行 Issue worktree 清理，保留已创建的 merge commit 与 `待验收` 状态。
+- 恢复定位：若共享合同未来为 post-merge IM-12 定义非改写消费语义，可只读重跑同一 acceptance input-gate；否则需要新的明确授权/合同修复，当前 S1-03 owner 不修改全局 Skill 或历史实施字段。
+
+## 2026-08-18 S1-03 acceptance input-gate append_legacy 恢复（范围变更）
+
+- 时序：2026-08-18；Leader 指定消费 `stage-input-gate-contract.md` lines 42-47 与 CL-04 lines 49-52 的确定性 `append_legacy` 恢复分支，不返回 protocol failure。
+- 适用范围：同一 S1-03 implementation owner；只修改 `S1-03_实施记录.md` 与 `S1-03_遗留问题.md`，冻结 summary/legacy_ids、代码、测试、方案、设计和 Sprint 状态均不修改。
+- 新 finding：新增稳定 `LP-S1-03-003`，`failure_reason=acceptance_input_gate_checklist_unverified_IM-12`；事实为 merge `0e1208e` 与 Sprint `待验收` 已满足，但 IM-12 仍保留合并前 `unverified` 且未映射 LP；影响为首次 acceptance input-gate fail，产品候选/测试不变；owner=implementation；消费边界=acceptance/overall/user。
+- 恢复动作：IM-12 状态保持真实 `unverified`，证据加入实际 merge/status、首次 gate fail 与 LP-003；形成文档后只读重跑得到 `pass_with_legacy`，把结构结果写入 IM-12 同一证据，再对最终字节复跑确认 idempotent。
+- 提交边界：append_legacy 成果提交只包含实施记录与遗留问题，不夹带 summary、本 task record、代码或其他路径；本 task record 继续单独处理。
+
+## 2026-08-18 S1-03 acceptance input-gate 与清理终态
+
+- append_legacy：新增 `LP-S1-03-003`；IM-12 状态保持 `unverified`，证据定位加入 merge/status、首次 gate fail、LP-003 和结构化复跑结果；冻结 summary/legacy_ids 未修改。
+- 首次恢复门禁：`input_gate_result=pass_with_legacy`、`target_stage=acceptance`、`input_version=S1-03-implementation-v1`、`failure_owner=none`、`failure_reason=none`、`lineage_action=append_legacy`、`next_action=none`。
+- 幂等复核：最终实施记录 blob=`f2232842a08a86986cb0dfbcefea9b1ca4e5a294`、遗留问题 blob=`20527eef0864702876155e114965713c5bb4d1ad`、冻结 summary blob=`583e10ccd14252c665c89c858729560244cc13e7`；门禁前后字节一致，summary handoff 保持 `ready`。
+- append_legacy 提交：`f52c38a9f4ede732facbf1c49a5e1e8acc8af521`；只包含 `S1-03_实施记录.md` 与 `S1-03_遗留问题.md`。
+- Issue worktree 清理：预检目标 `D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03`，真实路径相同、位于仓库根内、非 symlink、清理前 branch clean、文件数 1380；执行一次无 `--force` 的 `git worktree remove` 成功。
+- 清理后：原 Issue worktree 路径不存在且不在 worktree list；分支 `S1-03` 保留在 `d5efae67d716edf34a3b80f58e1fd235988d1153`；未清理或修改既有 package worktree。
+- 最终阶段事实：merge commit=`0e1208ed126526bd004d49aa441925586cc508d0`；Sprint S1-03=`待验收`；`completion_scope=partial_with_legacy`；消费遗留为 LP-S1-03-001/002/003；未运行 overall reviewer。
+- 终态事件：`outcome=completed`；`next_action=overall_review_requested`。
+
 ## 2026-08-18 测试副作用清理授权（新增）
 
 - 时序：2026-08-18，在 Sprint Goal 因 `cleanup_authorization_required_before_M5` 标记 `blocked` 后收到，执行任何恢复或删除前。
