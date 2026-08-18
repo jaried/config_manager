@@ -243,3 +243,10 @@
 - 适用范围：仅把 `D:\Tony\Documents\invest2025\project\config_manager\src\config\config.yaml` 恢复到 M2 baseline blob `31b5cd142e3967d6e72787ddc73a09f3a9046266`，并删除本轮测试新建的 `D:\Tony\Documents\invest2025\project\config_manager\.pytest_cache`（3 个目录、2 个未跟踪缓存文件）。
 - 相对已有要求：新增明确破坏性操作授权并解除 cleanup blocked 边界；完成后恢复同一 Sprint Goal，从 M5 继续 merge commit、`待验收`、acceptance input-gate、整体 Reviewer、遗留事项报告及一次非强制 Issue worktree 清理。
 - 仍不包含：恢复、删除或清理任何其他路径；推送；改写历史；修改冻结总结；删除 Issue 分支；强制删除 worktree。
+
+## 2026-08-18 待验收与 Issue worktree 清理确认（补充）
+
+- 时序：2026-08-18，在 S1-03 整体 Reviewer 已返回 `changes_required`、Leader 遗留事项报告已落盘但尚未提交时收到。
+- 用户原文：`这些都是小问题，直接推进到待验收，并清理issue worktree`。
+- 适用范围：确认三条既有遗留与一条非阻塞流程观察不阻止 S1-03 进入用户验收；完成整体评审报告与 Leader 遗留事项报告的精确提交；确认主 Issue worktree 已按非强制方式清理并保留 Issue 分支。
+- 相对已有要求：补充并确认继续收尾；不要求整改、回滚、重派或复评。S1-03 已是 `待验收`，主 Issue worktree 已在本请求前完成一次非强制清理，因此本轮只核验结果，不重复删除、不重建、不删除 Issue 分支，也不处理三个 package worktree。
