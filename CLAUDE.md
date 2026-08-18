@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-这是一个强大的Python配置管理库，支持自动保存、类型提示、文件监视、YAML注释保留、测试模式、多进程支持等高级功能。
+这是一个强大的Python配置管理库，支持自动保存、类型提示、文件监视、YAML 数据语义校验、测试模式、多进程支持等高级功能。
 
 ## 核心架构
 
@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 核心模块 (`src/config_manager/core/`)
 
 - **manager.py**: 配置管理器核心实现
-- **file_operations.py**: 文件操作（YAML加载/保存，注释保留）
+- **file_operations.py**: 文件操作（通过安全 YAML codec 加载/保存普通数据）
 - **autosave_manager.py**: 自动保存管理器
 - **watcher.py**: 文件监视器
 - **path_resolver.py**: 路径解析器
@@ -112,8 +112,9 @@ conda run -n base_python3.12 ruff format src/ tests/
 
 ### 文件操作
 
-- 使用 `ruamel.yaml` 保留YAML注释和格式
-- 支持标准格式（包含 `__data__` 节点）和原始格式的YAML文件
+- 使用 PyYAML>=6.0 安全 codec 处理 YAML 数据
+- 支持标准格式（包含 `__data__` 与 `__type_hints__` 节点）和原始格式的YAML文件；raw 首次保存时规范化为标准包络
+- 仅保证支持范围内的数据类型和值语义；注释、排版、引号样式以及 anchor/alias 表达不属于保真契约
 - 自动备份机制，防止配置文件丢失
 
 ### 调用链追踪
@@ -155,7 +156,7 @@ def get_config_manager(
 ### 核心依赖
 
 - **Python 3.12+**: 项目基础运行环境
-- **ruamel.yaml**: YAML文件处理，保留注释
+- **PyYAML>=6.0**: YAML 安全 codec 与数据语义处理
 - **is-debug**: 调试模式检测
 
 ### 开发依赖

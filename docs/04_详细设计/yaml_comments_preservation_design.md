@@ -1,173 +1,82 @@
-# YAML注释保留功能设计文档
+# YAML codec 与数据语义设计文档
 
-## 需求背景
+> 文件路径沿用历史名称以保持文档索引稳定；本设计描述当前安全 codec 与数据语义契约，不把注释保真作为功能目标。
 
-**需求更新**：custom_manager在保存时会删除配置文件的批注，批注很重要，需要保留。
+## 1. 设计结论
 
-## 问题分析
+配置文件统一通过 PyYAML>=6.0 的集中式安全 codec 读取和写入。codec 只在受支持的 YAML 数据范围内工作，并把结果表示为普通 Python 数据树。保存成功的判据是重新解析后的数据语义等价，而不是文本字节或排版等价。
 
-### 原始问题
-- 原始实现使用标准的`pyyaml`库
-- `pyyaml`在加载和保存YAML文件时会丢失注释信息
-- 配置文件中的重要注释（如配置说明、使用指南等）在保存后消失
+公开配置管理 API、返回值和布尔成功契约保持不变；文件操作层不再依赖解析器对象中的内部节点状态，也不通过文本后处理补偿 YAML 表达。
 
-### 技术原因
-1. **标准YAML库限制**：`pyyaml`将YAML解析为纯Python数据结构，丢失格式和注释信息
-2. **数据流转过程**：配置在内存中以Python字典形式存储，保存时重新序列化，无法恢复原始注释
-3. **单向转换**：YAML → Python对象 → YAML，注释信息在第一步就丢失
+## 2. 安全 codec
 
-## 解决方案
+### 2.1 责任边界
 
-### 技术选型
-- **替换YAML库**：从`pyyaml`迁移到`ruamel.yaml`
-- **ruamel.yaml优势**：
-  - 保留YAML文件的原始格式和注释
-  - 支持往返转换（roundtrip）
-  - 维护注释与数据的关联关系
+- `yaml_codec` 是唯一的 YAML 解析、编码和安全校验入口。
+- 加载使用安全构造路径，只生成受支持的普通 Python 标量、映射和序列。
+- 导出只接受受支持的数据树及明确声明的类型提示。
+- 解析失败、unsafe tag、重复 key、未声明或不支持的数据类型必须快速失败，并且不产生部分成功结果。
+- 解析规则按项目约定的 YAML 1.2-compatible 标量语义执行；调用方不直接配置底层 loader/dumper。
 
-### 实现策略
+### 2.2 分层关系
 
-#### 1. 依赖更新
-```toml
-# pyproject.toml
-dependencies = [
-    "ruamel.yaml",  # 替换 "pyyaml"
-    "pytest"
-]
+```text
+ConfigManager / core
+        |
+FileOperations
+        |
+yaml_codec
+        |
+PyYAML>=6.0 SafeLoader / SafeDumper
 ```
 
-#### 2. FileOperations类重构
+上层只消费 codec 返回的数据树。文件操作层负责路径、备份、候选文件和替换，不保存解析器内部节点或注释状态。
 
-**核心改进**：
-- 使用`ruamel.yaml.YAML`实例替代`yaml`模块
-- 保存原始YAML数据结构以维护注释信息
-- 实现智能数据合并，更新数据同时保留格式
+## 3. 数据模型与标准包络
 
-**关键实现**：
-```python
-class FileOperations:
-    def __init__(self):
-        # 配置ruamel.yaml实例
-        self._yaml = YAML()
-        self._yaml.preserve_quotes = True
-        self._yaml.map_indent = 2
-        self._yaml.sequence_indent = 4
-        self._yaml.sequence_dash_offset = 2
-        self._yaml.default_flow_style = False
-        
-        # 保存原始结构用于注释保留
-        self._original_yaml_data = None
-        self._config_path = None
+### 3.1 普通数据树
 
-    def load_config(self, config_path: str, auto_create: bool, call_chain_tracker):
-        # 加载时保存原始YAML结构
-        loaded_data = self._yaml.load(f) or {}
-        self._original_yaml_data = loaded_data
-        self._config_path = config_path
-        return loaded_data
+内存中的配置是普通 Python 数据树。映射键、序列项、标量值和项目允许的类型提示共同构成可序列化状态；未列入支持范围的数据类型必须拒绝，而不是隐式调用任意构造器。
 
-    def save_config(self, config_path: str, data: Dict[str, Any], backup_path: str = None):
-        # 智能合并新数据到原始结构
-        data_to_save = self._prepare_data_for_save(config_path, data)
-        self._yaml.dump(data_to_save, f)
+### 3.2 两种输入形态
 
-    def _prepare_data_for_save(self, config_path: str, data: Dict[str, Any]):
-        # 如果有原始结构，则更新而不是替换
-        if self._original_yaml_data is not None and self._config_path == config_path:
-            return self._deep_update_yaml_data(self._original_yaml_data, data)
-        return data
+- 标准 YAML 包含 `__data__` 数据根，并可包含 `__type_hints__` 类型提示映射。
+- raw YAML 的文档根直接作为数据根读取。
+- 两种输入都通过同一安全 codec 解析；raw 输入首次保存时规范化为包含 `__data__` 与 `__type_hints__` 的标准包络。
+- 标准包络的字段只承载数据和类型提示，不承载文本布局或解析器状态。
 
-    def _deep_update_yaml_data(self, original: Any, new_data: Any):
-        # 递归更新，保留原始结构和注释
-        if isinstance(original, dict) and isinstance(new_data, dict):
-            for key, value in new_data.items():
-                if key in original:
-                    original[key] = self._deep_update_yaml_data(original[key], value)
-                else:
-                    original[key] = value
-            return original
-        return new_data
-```
+## 4. 保存流程与失败语义
 
-#### 3. 测试文件更新
-- 更新所有测试文件中的`yaml`导入
-- 替换`yaml.safe_load()`为`yaml.load()`
-- 移除不兼容的参数（如`default_flow_style`、`allow_unicode`）
+1. 读取并校验源文件，识别标准包络或 raw 数据根。
+2. 在内存数据树上执行本次配置变更和类型提示处理。
+3. 通过同一 codec 编码到候选文件；必要时生成备份。
+4. 使用同一 codec 重新解析候选文件，并比较支持范围内的数据类型和值语义。
+5. 语义比较成功后，再以原子替换更新目标文件；任一步失败都保留原文件内容。
 
-## 功能验证
+候选文件验证不得依赖字符串比较、格式化结果比较或注释文本比较。备份失败、权限失败、编码失败和语义验证失败均按现有文件操作错误契约返回失败。
 
-### 测试场景
-创建包含丰富注释的YAML配置文件：
-```yaml
-# 这是配置文件的顶部注释
-__data__:
-  # 用户配置部分
-  user_name: "张三"  # 用户姓名
-  user_age: 25      # 用户年龄
-  
-  # 系统配置部分
-  system:
-    debug: true     # 调试模式开关
-    timeout: 30     # 超时时间（秒）
-    
-  # 数据库配置
-  database:
-    host: "localhost"  # 数据库主机
-    port: 5432        # 数据库端口
-    
-__type_hints__: {}
+## 5. 保真边界
 
-# 文件末尾注释
-```
+以下内容不属于保存契约，允许在 codec 编码后被规范化或丢失：
 
-### 验证结果
-✅ **所有注释类型均被保留**：
-- 顶部注释
-- 行内注释  
-- 节点注释
-- 末尾注释
+- 注释和空行；
+- 缩进、换行、引号样式以及 flow/block 排版；
+- anchor/alias 名称、共享引用表达及映射布局；
+- 原始文本字节、字段排列和其他仅影响展示的 YAML 表达。
 
-✅ **数据更新正常**：
-- 现有值正确更新
-- 新值正确添加
-- 嵌套结构正确处理
+唯一的成功保证是支持范围内数据树的类型和值语义。文档、示例和测试不得把上述表达当作可观察 API 行为。
 
-## 兼容性考虑
+## 6. 兼容性与迁移
 
-### 向后兼容
-- API接口保持不变
-- 配置文件格式兼容
-- 现有功能不受影响
+- 直接依赖统一声明为 `PyYAML>=6.0`。
+- 公开 API、配置路径选择、测试模式地址选择和快照数据契约保持原有边界。
+- 已存在的 raw YAML 可以读取；写回时接受标准包络规范化。
+- 旧的解析器对象、深合并内部状态和文本注释恢复逻辑不属于当前设计。
+- 历史 Sprint、技术验证、诊断和归档文档保持原样；本文件只说明当前活动设计。
 
-### 性能影响
-- `ruamel.yaml`性能略低于`pyyaml`
-- 内存使用略有增加（保存原始结构）
-- 对于配置管理场景，性能影响可忽略
+## 7. 验证要求
 
-## 部署说明
-
-### 安装依赖
-```bash
-pip install ruamel.yaml
-```
-
-### 迁移步骤
-1. 更新`pyproject.toml`依赖
-2. 安装新依赖：`pip install ruamel.yaml`
-3. 重启应用以加载新的文件操作逻辑
-
-### 验证方法
-1. 创建带注释的配置文件
-2. 通过config_manager修改配置
-3. 检查保存后的文件是否保留注释
-
-## 总结
-
-通过将YAML处理库从`pyyaml`迁移到`ruamel.yaml`，并实现智能的数据合并策略，成功解决了配置保存时注释丢失的问题。该解决方案：
-
-- ✅ **完全保留注释**：支持所有类型的YAML注释
-- ✅ **保持功能完整**：所有原有功能正常工作
-- ✅ **向后兼容**：无需修改现有代码
-- ✅ **性能可接受**：对配置管理场景影响微小
-
-这一改进显著提升了配置文件的可维护性和用户体验。 
+- 正例覆盖标准包络、raw 输入、嵌套映射、序列、标量和类型提示。
+- 负例覆盖语法错误、unsafe tag、重复 key、未声明类型和不支持类型。
+- 保存测试采用“同 codec 重新解析并比较数据树”的断言；故意不加入文本保真断言。
+- 候选验证失败时检查目标文件字节未改变，成功时检查重新加载后的数据语义等价。
