@@ -315,3 +315,50 @@ def test_ut13_same_cache_key_reuses_consistent_selected_instance(tmp_path: Path)
     assert second.get("database.address") == TEST_ADDRESS
     assert first.get_serializable_data().get("database.address") == TEST_ADDRESS
     assert source_path.read_bytes() == source_bytes
+
+
+def test_s1_02_e2e_standard_yaml(tmp_path: Path):
+    """E2E-01: the public entry point selects one address through the snapshot."""
+    source_path, source_bytes = _write_source(tmp_path, STANDARD_YAML)
+
+    cfg = get_config_manager(config_path=str(source_path), watch=False, test_mode=True)
+    serializable = cfg.get_serializable_data()
+
+    assert cfg.database.address == TEST_ADDRESS
+    assert serializable.database.address == TEST_ADDRESS
+    assert source_path.read_bytes() == source_bytes
+
+
+def test_s1_02_e2e_raw_yaml(tmp_path: Path):
+    """E2E-02: a raw root creates address from its only test_address key."""
+    source_path, source_bytes = _write_source(tmp_path, ONLY_TEST_ADDRESS_YAML)
+
+    cfg = get_config_manager(config_path=str(source_path), watch=False, test_mode=True)
+    serializable = cfg.get_serializable_data()
+
+    assert cfg.database.address == TEST_ADDRESS
+    assert serializable.database.address == TEST_ADDRESS
+    assert source_path.read_bytes() == source_bytes
+
+
+def test_s1_02_e2e_invalid_address_fails_closed(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    """E2E-03: invalid selection fails closed without leaking address values."""
+    source_path, source_bytes = _write_source(
+        tmp_path,
+        _standard_yaml_with_database(
+            f'address: "{PRODUCTION_ADDRESS}"\ntest_address: ["{TEST_ADDRESS}"]'
+        ),
+    )
+
+    with pytest.raises(ValueError) as error:
+        get_config_manager(config_path=str(source_path), watch=False, test_mode=True)
+
+    captured = capsys.readouterr()
+    observable_text = f"{error.value}\n{captured.out}\n{captured.err}"
+    assert "database.test_address" in str(error.value)
+    assert PRODUCTION_ADDRESS not in observable_text
+    assert TEST_ADDRESS not in observable_text
+    assert source_path.read_bytes() == source_bytes
+    assert not ConfigManager._instances
