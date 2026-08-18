@@ -14,6 +14,7 @@
 |:---|:-----|:-----|:-------|:-----|:-----|:------|
 | US-001 | [US] 为ConfigNode添加dict标准方法 | 进行中 | P1 | 2 |  |  |
 | S1-02 | [US] 支持 `test_mode` 自动切换测试数据库并更新 `py-config-logger` | 待办 | P2 | 5 |  |  |
+| S1-03 | [BUG] `ConfigManager.set()+save()` 将 YAML sequence 序列化为非法单横杠 | 待办 | P1 | 3 |  |  |
 
 ## 用户故事详情
 
