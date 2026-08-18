@@ -97,3 +97,12 @@
 - 合同证据：共享 helper 哈希仍为 `1f80bb926c835283203af06f1d9b858ffe398857`；`validate_closure_commit()` 仍要求 summary-only closure 的唯一父提交等于 `first_sync_issue_head`，与既有 closure→result_commit 历史不一致。
 - 安全边界：项目内重跑无法改变确定性 Git 证据；绕过 helper、改写冻结总结或重写历史均不允许。修复全局合同/helper 需要新的全局写入授权，当前未取得。
 - 结论：同一 `handoff_git_evidence_invalid` 在恢复后连续出现于第 2 个 Goal turn；尚未满足重新标记 `blocked` 的三轮门槛，Sprint 编排 Goal 保持 `active`。
+
+## Goal 恢复后合同阻塞复核 2
+
+- 时序：2026-08-18，用户恢复原 blocked Goal 后的第二次自动 Goal 延续；相对当前恢复请求属于执行状态补充，不改变范围。
+- 当前事实：`master=0d3fc9ffc7be882c142c901b0d571401cad8addd`、`S1-03=d5efae67d716edf34a3b80f58e1fd235988d1153`，两侧工作树洁净，S1-03 owner 已终态且全部 Sprint Agent 无活动 turn。
+- 公开投影：Sprint01 `status=ok`、`execution_scope.remaining_count=1`，唯一 ready 仍为 `S1-03/implementation`。
+- 合同证据：共享 helper 哈希仍为 `1f80bb926c835283203af06f1d9b858ffe398857`；closure `d5efae6` 的实际唯一父提交仍为 result commit `5db2bc8`，不等于 `first_sync_issue_head=3cd0695`。
+- 安全边界：没有新的项目内合法恢复动作；继续需要修改全局 handoff 合同/helper 或发生等价外部状态变化，当前均未满足。
+- 结论：同一 `handoff_git_evidence_invalid` 已在恢复后的用户触发回合及两次自动延续中连续出现 3 次，且没有其他安全可推进动作；满足 Sprint 编排 Goal 的严格 `blocked` 门槛。
