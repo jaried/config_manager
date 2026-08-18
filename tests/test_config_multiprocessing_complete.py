@@ -153,7 +153,7 @@ def test_multiprocessing_scenarios():
             print(f"✓ 反序列化后app_name: {unpickled_config.app_name}")
         except Exception as e:
             print(f"✗ 序列化失败: {e}")
-            return False
+            raise AssertionError(f"序列化失败: {e}") from e
         
         # 场景1：CPU密集型处理
         print("\n4. 场景1：CPU密集型并行处理")
@@ -205,7 +205,6 @@ def test_multiprocessing_scenarios():
         print(f"✓ 路径访问: {serializable_config.get('paths.data_dir', 'N/A')}")
         
         print("\n✓ 所有测试完成！config_manager已成功支持多进程环境")
-        return True
         
     finally:
         # 清理临时文件

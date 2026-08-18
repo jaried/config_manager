@@ -41,11 +41,9 @@ def test_config_manager_pickle_issue():
         # 尝试pickle序列化
         try:
             pickle.dumps(config)
-            print("✗ config_manager对象意外地可以被pickle序列化")
-            return False
+            assert False, "config_manager对象意外地可以被pickle序列化"
         except (TypeError, AttributeError) as e:
             print(f"✓ 验证了问题存在: {e}")
-            return True
             
     finally:
         # 清理临时文件
@@ -88,18 +86,15 @@ def test_multiprocessing_with_config():
         if hasattr(config, 'get_serializable_data'):
             serializable_config = config.get_serializable_data()
         else:
-            print("✗ 配置管理器尚未实现get_serializable_data方法")
-            return False
+            assert False, "配置管理器尚未实现get_serializable_data方法"
         
         # 尝试在多进程中使用配置数据
         try:
             with mp.Pool(processes=2) as pool:
                 results = pool.map(worker_function, [serializable_config, serializable_config])
                 print(f"多进程处理结果: {results}")
-                return True
         except Exception as e:
-            print(f"✗ 多进程处理失败: {e}")
-            return False
+            raise AssertionError(f"多进程处理失败: {e}") from e
             
     finally:
         # 清理临时文件

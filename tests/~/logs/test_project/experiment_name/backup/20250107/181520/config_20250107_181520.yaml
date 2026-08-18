@@ -6,7 +6,7 @@ __data__:
     windows: D:\Windows\Project
     linux: ~/logs
   experiment_name: experiment_name
-  config_file_path: /tmp/tests/20250807/001933/b9a7c5a5_073894_5a4745db/src/config/config.yaml
+  config_file_path: /tmp/tests/20250807/023717/b9a7c5a5_570005_5ce1f5b0/src/config/config.yaml
   paths:
     work_dir: ~/logs/test_project/experiment_name
     log_dir: ~/logs/test_project/experiment_name/logs/20250107/181520
@@ -35,5 +35,5 @@ __data__:
   log_dir: /tmp/original/log/path
 __type_hints__:
   first_start_time: datetime
-base_dir: /tmp/tests/20250807/001933/b9a7c5a5_073894_5a4745db
-first_start_time: '2025-08-07T00:19:33.086636'
+base_dir: /tmp/tests/20250807/023717/b9a7c5a5_570005_5ce1f5b0
+first_start_time: '2025-08-07T02:37:17.582822'

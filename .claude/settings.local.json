@@ -35,7 +35,11 @@
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git rev-parse:*)",
+      "Skill(issue-confirm)",
+      "Skill(design-plan)",
+      "Bash(gh issue comment:*)"
     ],
     "deny": []
   }
