@@ -106,3 +106,35 @@
 - 合同证据：共享 helper 哈希仍为 `1f80bb926c835283203af06f1d9b858ffe398857`；closure `d5efae6` 的实际唯一父提交仍为 result commit `5db2bc8`，不等于 `first_sync_issue_head=3cd0695`。
 - 安全边界：没有新的项目内合法恢复动作；继续需要修改全局 handoff 合同/helper 或发生等价外部状态变化，当前均未满足。
 - 结论：同一 `handoff_git_evidence_invalid` 已在恢复后的用户触发回合及两次自动延续中连续出现 3 次，且没有其他安全可推进动作；满足 Sprint 编排 Goal 的严格 `blocked` 门槛。
+
+## 全局 handoff 合同修复授权
+
+- 时序：2026-08-18，在 Sprint 编排 Goal 因 `handoff_git_evidence_invalid` 标记 `blocked` 后收到。
+- 类型：范围扩展与明确授权。
+- 用户原文：`授权`
+- 授权解释：对应上一轮唯一待确认事项，明确允许修改 `D:\Tony\ubuntu_settings` 中的全局 handoff 合同和共享校验器；完成诊断、验证和按仓库边界提交后，恢复 Sprint01 Goal 并继续 S1-03 收尾。
+- 仍不包含：推送、重写 Git 历史、绕过 handoff 门禁、改写冻结 S1-03 总结或清理用户分支。
+
+## 全局 Skill 作者批次路由
+
+- `effective_write_directory`: `D:\Tony\ubuntu_settings`
+- `skills_mode`: `project_inherits_global`
+- `task_intent`: `modify_skill`
+- `content_type`: `cross_skill_contract`
+- `target_path`: `D:\Tony\ubuntu_settings\.claude\skills\references\stage-handoff-summary-contract.md` 与其确定性实现/契约测试 `D:\Tony\ubuntu_settings\.claude\skills\resources\helpers\`
+- `change_profile`: `orchestration`
+- 作者 owner：当前主 Agent；不委托全局写入，不新增第二合同或状态库。
+- 目标：使阶段结束顺序、总结字段、closure Git 证据与 helper 的可执行判据一致，并让现有 S1-03 正规历史通过同一门禁。
+- 非目标：修改 S1-03 冻结总结或历史、扩大阶段状态、绕过 Git 证据、改变 Sprint DAG 或业务结果。
+- 成功证据：合同与 helper 单一真源一致；正向、边界、失败及现有 S1-03 回归通过；直接消费者/契约测试通过；全局仓库限定提交完成。
+
+## 全局 handoff 合同修复结果
+
+- 时序：2026-08-18，取得全局写入授权后、恢复 Sprint01 前；相对上一节属于完成证据补充。
+- 仓库边界更正：逻辑写入根仍为 `D:\Tony\ubuntu_settings`，实际承载并提交目标文件的嵌套 Git 仓库为 `D:\Tony\ubuntu_settings\.claude`；提交时只暂存本任务 6 个文件，保留该仓库的其他用户修改。
+- 合同修复：跨阶段 closure 的唯一父提交改为 `result_commit`；`first_sync_*` 只保留阶段 target/resolver 所有的首次同步证据，不再承担统一封口父节点语义；implementation 顺序明确为 stage-start 同步、结果提交、summary-only closure、最终发布。
+- helper 修复：`validate_closure_commit()` 与 `derive_handoff()` 消费 `result_commit`；新增 Git 跟踪路径规范化，Windows 调用路径 `Docs/...` 可唯一映射到 Git 真源 `docs/...`，不存在或大小写折叠歧义时继续 fail closed。
+- 测试证据：目标测试先以旧 helper 出现 `2 failed, 2 passed`；修复及格式化后，handoff/acceptance/forward-compatibility 相关集合 `23 passed`，Ruff review 通过，`git diff --check` 通过，`codex-sprint` 与 `implementation` 的 `quick_validate.py` 均返回 `Skill is valid!`。
+- 真实回归：S1-03 closure `d5efae67d716edf34a3b80f58e1fd235988d1153` 只含小写 Git 真源总结路径，唯一父提交为 result `5db2bc8cda393641994ea71317ccdcd5ab43d4a0`；派生结果为 `handoff_status=pending`、`pending_boundary=final_publication`，恢复到合法发布边界。
+- 六维作者质量扫描：触发正确性、指令质量、渐进披露、引用深度、脚本质量、权限与安全均为 pass；主链只引用共享合同，没有建立第二状态库；helper 保持只读并对路径歧义、父提交不符和发布未完成 fail closed。
+- 全局限定提交：`a236fac`（`fix: 修复阶段交接封口判据`），仅包含 3 份合同/引用、1 个 helper 与 2 个测试文件；未推送、未改写历史、未修改冻结 S1-03 总结。
