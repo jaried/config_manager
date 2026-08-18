@@ -1,4 +1,5 @@
 # src/config_manager/config_manager.py
+# ruff: noqa: E402
 from __future__ import annotations
 from collections.abc import MutableMapping
 from datetime import datetime
@@ -11,6 +12,7 @@ import threading
 import uuid
 import tempfile
 from typing import Any
+from .yaml_codec import dump_yaml, load_yaml
 from .core.manager import ConfigManagerCore
 from .core.path_resolver import PathResolver
 from .core.cross_platform_paths import convert_to_multi_platform_config
@@ -170,7 +172,7 @@ class ConfigManager(ConfigManagerCore):
             if first_start_time is not None:
                 try:
                     time_suffix = f":{first_start_time.strftime('%Y%m%d_%H%M%S')}"
-                except:
+                except Exception:
                     pass
             return f"fallback:test:{test_identifier}{time_suffix}"
     
@@ -654,16 +656,8 @@ class ConfigManager(ConfigManagerCore):
     @classmethod
     def _update_test_config_paths(cls, test_config_path: str, first_start_time: datetime = None,
                                   project_name: str = None, from_production: bool = False):
-        """更新测试配置中的路径信息，保留YAML注释"""
+        """更新测试配置中的路径信息并按安全数据语义写回。"""
         try:
-            from ruamel.yaml import YAML
-            yaml = YAML()
-            yaml.preserve_quotes = True
-            yaml.map_indent = 2
-            yaml.sequence_indent = 4
-            yaml.sequence_dash_offset = 2
-            yaml.default_flow_style = False
-
             # 读取配置文件并处理Windows路径转义问题
             with open(test_config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -679,8 +673,7 @@ class ConfigManager(ConfigManagerCore):
             # 修复常见的Windows路径转义问题
             content = re.sub(r'"([a-zA-Z]:\\[^"]*)"', fix_windows_path, content)
 
-            # 解析修复后的YAML内容，保留注释结构
-            loaded_data = yaml.load(content) or {}
+            loaded_data = load_yaml(content) or {}
 
             # 获取原配置中的first_start_time
             original_first_start_time = loaded_data.get('first_start_time')
@@ -769,14 +762,13 @@ class ConfigManager(ConfigManagerCore):
                         # print(f"🔧 清理__data__节点中的系统键污染: {sys_key}")
                         del data_section[sys_key]
 
-            # 保存更新后的配置，直接使用原始数据以保留注释
-            with open(test_config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(loaded_data, f)
+            with open(test_config_path, 'w', encoding='utf-8', newline='\n') as f:
+                f.write(dump_yaml(loaded_data))
 
         except _TestDatabaseConfigurationError:
             raise
         except Exception as e:
-            print(f"⚠️  更新测试配置路径失败: {e}")
+            print(f"⚠️  更新测试配置路径失败: {type(e).__name__}")
             # 如果YAML处理失败，尝试创建一个基本的配置文件
             try:
                 print("尝试创建基本配置文件...")
@@ -793,14 +785,12 @@ class ConfigManager(ConfigManagerCore):
                     '__type_hints__': {}
                 }
 
-                from ruamel.yaml import YAML
-                yaml = YAML()
-                with open(test_config_path, 'w', encoding='utf-8') as f:
-                    yaml.dump(basic_config, f)
+                with open(test_config_path, 'w', encoding='utf-8', newline='\n') as f:
+                    f.write(dump_yaml(basic_config))
                 print("✓ 已创建基本配置文件")
 
             except Exception as e2:
-                print(f"⚠️  创建基本配置文件也失败: {e2}")
+                print(f"⚠️  创建基本配置文件也失败: {type(e2).__name__}")
 
     @classmethod
     def _create_empty_test_config(cls, test_config_path: str, first_start_time: datetime = None,
@@ -860,49 +850,10 @@ class ConfigManager(ConfigManagerCore):
         }
 
         try:
-            from ruamel.yaml import YAML
-            yaml = YAML()
-            yaml.preserve_quotes = True
-            yaml.default_flow_style = False
-
-            with open(test_config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(empty_config, f)
-
+            with open(test_config_path, 'w', encoding='utf-8', newline='\n') as f:
+                f.write(dump_yaml(empty_config))
         except Exception as e:
-            print(f"⚠️  创建空测试配置失败: {e}")
-            # 回退到简单的文件创建
-            time_str = time_to_use.isoformat()
-            with open(test_config_path, 'w', encoding='utf-8') as f:
-                f.write(f"""__data__:
-  config_file_path: {test_config_path}
-  first_start_time: {time_str}
-  project_name: {final_project_name}
-  experiment_name: default
-  base_dir: {temp_base_dir}
-  app_name: {final_project_name}系统
-  version: 1.0.0
-  paths:
-    work_dir: {project_base_dir}
-    log_dir: {os.path.join(project_base_dir, 'logs')}
-    checkpoint_dir: {os.path.join(project_base_dir, 'checkpoint')}
-    best_checkpoint_dir: {os.path.join(project_base_dir, 'checkpoint', 'best')}
-    debug_dir: {os.path.join(project_base_dir, 'debug')}
-    data_dir: {os.path.join(project_base_dir, 'data')}
-    output_dir: {os.path.join(project_base_dir, 'output')}
-    temp_dir: {os.path.join(project_base_dir, 'temp')}
-    cache_dir: {os.path.join(project_base_dir, 'cache')}
-    backup_dir: {os.path.join(project_base_dir, 'backup')}
-    download_dir: {os.path.join(project_base_dir, 'downloads')}
-    upload_dir: {os.path.join(project_base_dir, 'uploads')}
-    storage_dir: {os.path.join(project_base_dir, 'storage')}
-__type_hints__:
-  project_name: str
-  experiment_name: str
-  base_dir: str
-  app_name: str
-  version: str
-  first_start_time: str
-""")
+            print(f"⚠️  创建空测试配置失败: {type(e).__name__}")
 
     def is_test_mode(self) -> bool:
         """判断是否为测试模式"""
@@ -916,48 +867,26 @@ __type_hints__:
             with open(self._config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 
-            # 如果内容是标准格式（包含__data__），尝试提取原始内容
             try:
-                from ruamel.yaml import YAML
-                yaml = YAML()
-                yaml.preserve_quotes = True
-                yaml.default_flow_style = False
-                
-                parsed_content = yaml.load(content)
-                if isinstance(parsed_content, dict) and '__data__' in parsed_content:
-                    # 是标准格式，提取__data__部分作为原始内容
-                    original_data = parsed_content['__data__']
-                    # 过滤掉ConfigManager自动添加的字段
-                    filtered_data = {}
-                    for key, value in original_data.items():
-                        if key not in ['config_file_path', 'first_start_time', 'paths', '__type_hints__']:
-                            filtered_data[key] = value
-                    
-                    # 如果有用户数据，重新生成为YAML格式
-                    if filtered_data:
-                        from io import StringIO
-                        output = StringIO()
-                        yaml.dump(filtered_data, output)
-                        return output.getvalue()
-                    else:
-                        # 没有用户数据，返回空
-                        return ""
-                else:
-                    # 是原始格式，需要过滤掉自动添加的字段
-                    filtered_data = {}
-                    for key, value in parsed_content.items():
-                        if key not in ['config_file_path', 'first_start_time', 'paths', '__type_hints__']:
-                            filtered_data[key] = value
-                    
-                    # 如果有用户数据，重新生成为YAML格式
-                    if filtered_data:
-                        from io import StringIO
-                        output = StringIO()
-                        yaml.dump(filtered_data, output)
-                        return output.getvalue()
-                    else:
-                        # 没有用户数据，返回空
-                        return ""
+                parsed_content = load_yaml(content)
+                if not isinstance(parsed_content, dict):
+                    return content
+                data_root = (
+                    parsed_content['__data__']
+                    if isinstance(parsed_content.get('__data__'), dict)
+                    else parsed_content
+                )
+                filtered_data = {
+                    key: value
+                    for key, value in data_root.items()
+                    if key not in {
+                        'config_file_path',
+                        'first_start_time',
+                        'paths',
+                        '__type_hints__',
+                    }
+                }
+                return dump_yaml(filtered_data) if filtered_data else ""
             except Exception:
                 # 解析失败，直接返回原始内容
                 return content

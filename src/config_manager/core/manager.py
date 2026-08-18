@@ -4,13 +4,13 @@ from datetime import datetime
 
 import os
 import threading
-import atexit
 import time
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional, Type
 from collections.abc import Iterable, Mapping
 from ..config_node import ConfigNode
+from ..yaml_codec import validate_supported_data
 from .path_resolver import PathResolver
 from .file_operations import FileOperations
 from .autosave_manager import AutosaveManager
@@ -91,8 +91,8 @@ class ConfigManagerCore(ConfigNode):
         # 检查是否是已弃用的属性
         if name == 'work_dir':
             raise AttributeError(
-                f"config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
-                f"这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
+                "config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
+                "这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
             )
         
         # 调用父类的__getattr__方法
@@ -535,31 +535,29 @@ class ConfigManagerCore(ConfigNode):
     def _create_backup_file(self, backup_path: str, data: dict) -> bool:
         """创建备份文件，不输出额外信息"""
         try:
-            import os
-            backup_dir = os.path.dirname(backup_path)
-            if backup_dir:
-                os.makedirs(backup_dir, exist_ok=True)
-
-            tmp_backup_path = f"{backup_path}.tmp"
-            with open(tmp_backup_path, 'w', encoding='utf-8') as f:
-                self._file_ops._yaml.dump(data, f)
-
-            os.replace(tmp_backup_path, backup_path)
-            return True
+            return self._file_ops.create_backup_only(backup_path, data)
         except Exception as e:
-            logger.warning(f"备份文件创建失败: {str(e)}")
+            logger.warning(f"备份文件创建失败: {type(e).__name__}")
             return False
 
     def _can_safely_serialize(self) -> bool:
         """检查配置数据是否可以安全序列化"""
         try:
-            # 尝试序列化to_dict()的结果
-            import yaml
-            test_data = self.to_dict()
-            yaml.safe_dump(test_data)
+            validate_supported_data(self._to_plain_data(self.to_dict()))
             return True
         except Exception:
             return False
+
+    @classmethod
+    def _to_plain_data(cls, value: Any) -> Any:
+        """Convert ConfigNode values nested in mappings or sequences to plain data."""
+        if isinstance(value, ConfigNode):
+            return cls._to_plain_data(value.to_dict())
+        if type(value) is dict:
+            return {key: cls._to_plain_data(item) for key, item in value.items()}
+        if type(value) is list:
+            return [cls._to_plain_data(item) for item in value]
+        return value
 
     def _get_serializable_data(self) -> dict:
         """获取可序列化的配置数据，使用改进的递归保护机制"""
@@ -579,8 +577,7 @@ class ConfigManagerCore(ConfigNode):
         try:
             # 使用ConfigNode的to_dict方法，这个方法已经有防护机制
             if hasattr(self, '_data'):
-                result = self.to_dict()
-                return result
+                return self._to_plain_data(self.to_dict())
             else:
                 return {}
         except Exception as e:
@@ -588,7 +585,8 @@ class ConfigManagerCore(ConfigNode):
             # 如果to_dict失败，尝试直接访问_data
             if hasattr(self, '_data') and self._data:
                 try:
-                    return dict(self._data) if isinstance(self._data, dict) else {}
+                    data = dict(self._data) if isinstance(self._data, dict) else {}
+                    return self._to_plain_data(data)
                 except Exception:
                     return {}
             return {}
@@ -936,8 +934,8 @@ class ConfigManagerCore(ConfigNode):
         # 特殊处理work_dir：不允许设置，已弃用
         if key == 'work_dir':
             raise AttributeError(
-                f"config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
-                f"这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
+                "config.work_dir 已弃用，请使用 config.paths.work_dir 代替。\n"
+                "这是为了统一路径管理结构，所有路径都应该在 paths 命名空间下。"
             )
         
         # 特殊处理paths.tensorboard_dir：只读属性
