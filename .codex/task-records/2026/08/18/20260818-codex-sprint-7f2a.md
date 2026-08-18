@@ -277,8 +277,25 @@
 ### 最终验证与交接
 
 - 治理路由：`skills_mode=global_only`；`task_intent=use_skill_in_project`；`content_type=project_test_and_evidence_assets`；`target_path=D:\Tony\Documents\invest2025\project\config_manager`（逻辑入口 `D:\Tony\projects2025\config_manager`）。
+
+### 独立复核结果
+
+- 基线：`master` HEAD=`42177900e9271911ee631b3a0a74f3f2c50cc2d2`；复核前除本节任务记录外无工作树变更。
+- 完整命令：`D:\anaconda3\envs\base_python3.12\python.exe -m pytest -p no:cacheprovider -q tests`。
+- 实际结果：退出码 0；收集 570 项；`544 passed / 26 skipped / 0 failed`，耗时 185.53 秒；没有 collection error、没有新增 skip、没有实际失败节点需要修复。
+- 静态复核：上一轮 9 个变更 Python 测试文件执行 Ruff `check --no-cache`，退出码 0；命令前后源码无变化。
+- 副作用复核：`src/config/config.yaml` 运行前后 working/HEAD blob 均为 `31b5cd142e3967d6e72787ddc73a09f3a9046266`；全局字节/mtime guard 未触发；`.pytest_cache` 不存在；仓库内没有新增测试副作用。
+- 处理结论：当前测试套件已全绿，本轮没有依据修改产品或测试代码；只提交本次用户请求与独立复核证据，不推送。
 - 已按授权只恢复 `src/config/config.yaml`；恢复后 working/HEAD blob 均为 `31b5cd142e3967d6e72787ddc73a09f3a9046266`，没有恢复或删除其他文件。
 - 干净基线最终全量命令：`D:\anaconda3\envs\base_python3.12\python.exe -m pytest -p no:cacheprovider -q tests`；退出码 0；收集 570 项；`544 passed / 26 skipped / 0 failed`，耗时 177.82 秒。
 - 终态隔离：全量运行前后生产配置 blob 不变；全局字节/mtime guard 无触发；`.pytest_cache` 不存在。
 - 终态质量：9 个变更 Python 测试文件 Ruff `check --no-cache` 退出码 0；`git diff --check` 退出码 0；结构检查的职责、依赖方向、测试隔离与评审范围均通过。
 - 文档边界：只向测试报告、遗留问题与 Leader 遗留事项报告追加评审后整改证据；原冻结历史未改写。`LP-S1-03-001/002=resolved_post_review`，`LP-S1-03-003=historical_append_legacy`；当前测试遗留集合为空，Sprint 状态保持 `待验收`。
+
+## 2026-08-18 再次修复测试（补充请求）
+
+- 时序：上一轮完整测试整改已由提交 `42177900e9271911ee631b3a0a74f3f2c50cc2d2` 闭环后收到。
+- 用户原文：`修复测试`。
+- 相对已有要求：补充复核请求；以当前 `master` 为新基线重新执行完整测试套件，修复本轮实际复现的全部失败，并保持既有 test-mode fail-closed、YAML 数据语义和生产配置隔离契约。
+- 完成标准：完整测试套件零失败；适用 Ruff、配置不变式与工作树副作用检查通过；若产生修改则精确提交，不推送；若当前套件已全绿则记录可复核证据，不制造无依据改动。
+- 治理路由：`skills_mode=global_only`；`task_intent=use_skill_in_project`；`content_type=project_test_and_evidence_assets`；`target_path=D:\Tony\Documents\invest2025\project\config_manager`（逻辑入口 `D:\Tony\projects2025\config_manager`）。
