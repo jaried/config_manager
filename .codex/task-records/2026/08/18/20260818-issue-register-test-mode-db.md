@@ -293,3 +293,24 @@ $issue-register config，需要支持test_mode=true时，自动切换测试数�
 ```text
 1
 ```
+## 方案整体批准回复
+
+- 时序：2026-08-18，用户直接回复上一条 assistant 批准帧后记录。
+- 用户原文：`1`
+- 适用范围：`S1-02-solution-v5` 完整方案；批准帧 `S1-02:S1-02-solution-v5:approval:2`。
+- 相对已有要求：确认；不新增、不替代、不扩大既有业务要求或交付范围。
+- 待执行门禁：本记录只保存原始回复；是否构成有效批准，仍须由 `solution-decision` 逐项核验批准收据、紧邻关系、Issue target、版本、审查和工作树未漂移。
+
+## 方案批准消费与写回
+
+- 时序：2026-08-18，上述批准回复记录之后。
+- 适用范围：`S1-02-solution-v5` 方案批准收据、ADR final、Sprint 运营投影和方案阶段提交/发布。
+- 相对已有要求：执行已批准动作；不新增、不替代、不扩大业务范围，不实施代码、测试或 `py-config-logger` 修改。
+- 确认段 Goal：`01a01253-4870-7560-88fd-f177503c0fdc`；objective 同时绑定 `approval_frame_id=S1-02:S1-02-solution-v5:approval:2` 与当前紧邻用户回复定位。
+- 批准收据：Issue、Session、版本、批准对象、重确认集合和允许回复逐项一致；`approval_receipt_status=consumed`、`approval_status=approved`。
+- 批准定位：`S1-02:S1-02-solution-v5:approval:2 + conversation:current-thread:assistant-final@S1-02:S1-02-solution-v5:approval:2 + conversation:current-thread:user-reply-1@S1-02:S1-02-solution-v5:approval:2`。
+- ADR 写回：`architecture-design approval_final/create` 已完成；ADR-001/002 均为“已接受”，`final_sync_status=pass`。
+- 运营投影：`S1-02=方案已决策/P2/5`；Sprint 总点数 `10`；Issue 统计为待办 `1`、方案已决策 `1`、进行中 `1`。
+- 首次运营写入：在写入前因缺少唯一统计载体返回 `BacklogValidationError: Sprint 统计格式必须唯一且可识别`，Sprint 文件零写入。
+- 恢复依据：本记录“用户补充授权”已明确授权规范化 `Sprint01.md`；只补齐从现有三行唯一派生的规范统计载体，未改业务字段。重试原执行器成功，独立校验为 Issue `3`、警告 `0`、变更路径 `0`。
+- 当前提交边界：任务记录、Sprint01 运营表、方案正文、方案总结、ADR-001、ADR-002；代码、测试、配置、全局 Skill 和主工作树既有修改全部排除。
