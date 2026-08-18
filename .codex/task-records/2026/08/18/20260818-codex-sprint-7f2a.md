@@ -43,3 +43,48 @@
 - 当前事实：`master=3cd06950c07eadd5ad042191fcbbb50ad4dcabd2`、`S1-03=d5efae67d716edf34a3b80f58e1fd235988d1153`，与前两轮一致；主工作树仍同时存在非 S1-03 的已修改、已删除和未跟踪文件；全部 Issue/package Agent 均无活动 turn。
 - 安全边界：继续 M2 必须提交完整脏基线，但当前入口禁止暂存或提交非本任务文件；绕过 M2、stash、切换/重写用户分支、在替代 worktree 更新 master 或改写工作树均不在授权范围内。
 - 结论：同一不可恢复合并阻塞已连续满足 3 个 Goal turns，且没有剩余安全可推进动作；按 Goal blocked 审计应把 Sprint 编排 Goal 标记为 `blocked`。恢复条件是用户先妥善提交非 S1-03 修改并使 master 主工作树洁净。
+
+## 2026-08-18 S1-03 implementation 恢复请求（新增）
+
+- 时序：2026-08-18，收到 Leader 冻结信封后、执行任何恢复核验前。
+- 适用范围：Sprint01 / S1-03，固定阶段 `implementation`；仅从已固化 implementation 合并边界恢复，推进至 `overall_review_requested` 或真实协议终态。
+- 相对已有要求：新增恢复授权与边界更新；上次 M2 阻塞已由用户授权提交 `a83bdf2921d3dd8dad6f358f8391e2ba0f867b30` 解除，Sprint 主工作树声明为洁净。
+- 冻结输入：Sprint target `master` / `D:\\Tony\\projects2025\\config_manager`（真实根 `D:\\Tony\\Documents\\invest2025\\project\\config_manager`），issue target `S1-03` / `D:\\Tony\\Documents\\invest2025\\project\\config_manager\\.worktrees\\S1-03`；Sprint HEAD `a83bdf2`，issue HEAD / summary closure `d5efae6`，result commit `5db2bc8`，completion_scope `partial_with_legacy`，legacy `LP-S1-03-001`、`LP-S1-03-002`。
+- 执行约束：完整读取并遵守 `codex-sprint`、`implementation`、`auto-commit` 及直接契约；先核验固定 target、冻结 summary/plan、Git 祖先、工作树和首个 pending boundary；不得重跑 solution/design/start/package/MC-27 整改或生成新候选；不得重派/重建 P01–P03。
+- 合并授权：若 `merge_ready` 合法，由原 implementation owner/Sprint writer 按 merge-issue-branch M1–M6 完成 Issue→Sprint 合并、M4 门禁、待验收更新、merge commit 和 acceptance input-gate；冲突只在 Sprint target 解决并保留范围外修改。
+- 返回约束：不运行整体 reviewer；只返回最小终态事件及 merge commit、summary/legacy/input-gate 报告定位；历史合同漂移时返回准确协议终态，禁止伪造 ready 或改写历史字段；`partial_with_legacy` 必须保持真实失败分类。
+
+## 2026-08-18 S1-03 recovery 监控脉冲（补充）
+
+- 时序：2026-08-18，S1-03 恢复动作执行中，尚处治理/直接契约核验边界。
+- 适用范围：同一 S1-03 implementation recovery action 与既定 Sprint/Issue target。
+- 相对已有要求：补充；保持原 owner，不重放已完成边界；长测试或合并继续到下一安全边界，仅返回 heartbeat 或最小终态事件。
+
+## 治理路由核验（2026-08-18）
+
+- `skills_mode`: `global_only`
+- `task_intent`: `use_skill_in_project`
+- `content_type`: `project_task_record_and_frozen_issue_assets`
+- `target_path`: `D:\\Tony\\Documents\\invest2025\\project\\config_manager` 内既有 S1-03/Sprint01 资产；技能真源只读。
+- 路径证据：`cwd_real=git_root_real=D:/Tony/Documents/invest2025/project/config_manager`，逻辑入口 `D:\\Tony\\projects2025\\config_manager` 为同一仓库别名。
+
+## 2026-08-18 S1-03 recovery 第二次监控脉冲（补充）
+
+- 时序：2026-08-18，直接契约读取完成、target/summary/plan/Git 只读核验开始前。
+- 适用范围：同一 S1-03 implementation recovery action。
+- 相对已有要求：补充；在安全边界返回简短 heartbeat 或最小终态事件，不发送正文、diff 或长测试输出；保持原 owner 和既定 target。
+
+## 2026-08-18 S1-03 recovery 终态（protocol failure）
+
+- 固定 target 核验：Sprint `master@a83bdf2921d3dd8dad6f358f8391e2ba0f867b30`；Issue `S1-03@d5efae67d716edf34a3b80f58e1fd235988d1153`；Issue worktree 洁净；共同祖先 `3cd06950c07eadd5ad042191fcbbb50ad4dcabd2`。
+- 冻结计划核验：`S1-03-plan-v1`，validator `status=pass units=8 luna_waves=2`；未重派或重建 P01/P02/P03。
+- 冻结总结核验：`status=partial_with_legacy`、`frozen=true`、result commit `5db2bc8cda393641994ea71317ccdcd5ab43d4a0`、legacy IDs `LP-S1-03-001`/`LP-S1-03-002`。
+- 首个 pending boundary：共享 `stage_handoff_summary.py` 在 closure Git 证据校验处 fail closed，错误 `handoff_git_evidence_invalid`；summary-only closure `d5efae67d716edf34a3b80f58e1fd235988d1153` 的唯一父提交实际为 `5db2bc8cda393641994ea71317ccdcd5ab43d4a0`，不等于总结声明的 `first_sync_issue_head=3cd06950c07eadd5ad042191fcbbb50ad4dcabd2`。
+- 协议结果：`merge_ready` 不合法；未执行 M3–M6、未创建 merge commit、未更新 `待验收`、未运行 acceptance input-gate、未运行 overall reviewer、未清理 Issue worktree。保持冻结历史字段与 `partial_with_legacy` 真实失败分类，禁止伪造 ready。
+- 恢复定位：`docs/01_Sprint记录/Sprint01/S1-03/S1-03_方案实施总结.md:23-28`；helper：`D:\\Tony\\ubuntu_settings\\.claude\\skills\\resources\\helpers\\stage_handoff_summary.py:229-243`。
+
+## 2026-08-18 S1-03 recovery 第三次监控提醒（补充）
+
+- 时序：2026-08-18，共享 handoff validator 已返回确定性 Git 证据失败后。
+- 适用范围：同一 S1-03 owner/target/recovery action。
+- 相对已有要求：补充；validator 失败须返回最小 blocked/protocol event 与证据定位。当前分类固定为 `protocol_failure(handoff_git_evidence_invalid)`，不进入 merge 冲突或超时恢复分支。
