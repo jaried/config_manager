@@ -1,0 +1,32 @@
+worktree=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03
+source_root=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\src
+config_manager_module=config_manager.config_manager
+input_path=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\01_input_commented.yaml
+input_valid=True
+input_error=
+isolated_path=D:\temp\tests\20260818\092934\e4e7a0f4_85e0b9d1_899100_aa37cc36\src\config\config.yaml
+after_init_valid=True
+after_init_broken_layout=False
+after_init_error=
+save_result=True
+saved_valid=False
+saved_broken_layout=True
+saved_error=ScannerError: sequence entries are not allowed here
+  in "D:\temp\tests\20260818\092934\e4e7a0f4_85e0b9d1_899100_aa37cc36\src\config\config.yaml", line 7, column 16
+failure_signature_match=True
+backup_path=D:\temp\tests\20260818\092934\e4e7a0f4_85e0b9d1_899100_aa37cc36\test_project\monitor\backup\20260818\092934\config_20260818_092934.yaml
+scenario_status=reproduced
+saved_excerpt_start
+    watchlist:
+      stock:   -
+          SSE.600519
+      etf:   -
+          SSE.588000
+        - SSE.588200
+        - SSE.000300
+    category_subscription_order:
+      - index_option
+      - etf
+      - stock
+      - all
+saved_excerpt_end

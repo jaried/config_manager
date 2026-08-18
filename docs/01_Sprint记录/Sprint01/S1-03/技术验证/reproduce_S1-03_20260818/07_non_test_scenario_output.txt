@@ -1,0 +1,15 @@
+input_path=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\01_input_commented.yaml
+runtime_path=D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\07_runtime_config.yaml
+test_mode=False
+source_valid=True
+source_error=
+after_init_valid=True
+after_init_broken_layout=False
+after_init_error=
+save_result=True
+saved_valid=False
+saved_broken_layout=True
+saved_error=ScannerError: sequence entries are not allowed here
+  in "D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\07_runtime_config.yaml", line 7, column 16
+failure_signature_match=True
+scenario_status=reproduced

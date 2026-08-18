@@ -1,0 +1,36 @@
+__data__:
+  project_name: test_project
+  experiment_name: monitor
+  base_dir: D:/temp/config_manager_s1_03_source
+  monitor:
+    watchlist:
+      stock:   -
+          SSE.600519
+      etf:   -
+          SSE.588000
+        - SSE.588200
+      index_option:
+        - SSE.000300
+    category_subscription_order:
+      - index_option
+      - etf
+      - stock
+      - all
+  config_file_path:
+    D:\Tony\Documents\invest2025\project\config_manager\.worktrees\S1-03\docs\01_Sprint记录\Sprint01\S1-03\技术验证\reproduce_S1-03_20260818\07_runtime_config.yaml
+  first_start_time: '2026-08-18T09:41:26.718851'
+  paths:
+    work_dir: D:\temp\config_manager_s1_03_source\test_project\monitor
+    checkpoint_dir:
+      D:\temp\config_manager_s1_03_source\test_project\monitor\checkpoint
+    best_checkpoint_dir:
+      D:\temp\config_manager_s1_03_source\test_project\monitor\checkpoint\best
+    debug_dir:
+      D:\temp\config_manager_s1_03_source\test_project\monitor\debug\20260818\094126
+    log_dir:
+      D:\temp\config_manager_s1_03_source\test_project\monitor\logs\20260818\094126
+    backup_dir:
+      D:\temp\config_manager_s1_03_source\test_project\monitor\backup\20260818\094126
+    cache_dir: D:\temp\config_manager_s1_03_source\test_project\monitor\cache
+__type_hints__:
+  first_start_time: datetime

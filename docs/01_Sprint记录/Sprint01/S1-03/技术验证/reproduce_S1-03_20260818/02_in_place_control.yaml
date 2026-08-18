@@ -1,0 +1,7 @@
+watchlist:
+  stock:
+    # - SSE.600111
+    # - SSE.600519
+    - SSE.600519
+  etf:
+    - SSE.588000

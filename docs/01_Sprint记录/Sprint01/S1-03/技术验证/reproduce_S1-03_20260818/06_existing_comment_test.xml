@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.181" timestamp="2026-08-18T09:39:18.425454+08:00" hostname="Tony-HP"><testcase classname="tests.test_yaml_comments_preservation" name="test_yaml_comments_preservation_edge_cases" time="0.117" /></testsuite></testsuites>
