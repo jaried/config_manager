@@ -281,3 +281,15 @@ $issue-register config，需要支持test_mode=true时，自动切换测试数�
 - 已完成动作：任务记录和 `Sprint01.md` 已精确暂存；范围外文件未暂存。
 - 恢复策略：保持物理目录与用户现有变更不动；对原始需求内容执行 Git clean-filter 后，以精确小写 `docs/01_Sprint记录/Sprint01/S1-02/S1-02_原始需求.md` 写入索引；重新核对三文件边界、EOL、diff 和 HEAD 后提交。
 - 冻结推荐：保持 `issue-register-S1-02-v1` 原文与映射，不重新计算。
+
+## 用户选择后续主链
+
+- 记录时间：2026-08-18（Asia/Shanghai）
+- 时序：Issue 登记完成并展示冻结智能推荐后的用户回复
+- 适用范围：`S1-02` 的下一主链阶段
+- 相对已有要求：新增阶段选择；消费冻结映射后立即失效
+- 冻结映射：`1 -> /solution-decision S1-02`
+
+```text
+1
+```
