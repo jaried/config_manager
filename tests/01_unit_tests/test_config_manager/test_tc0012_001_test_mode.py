@@ -178,6 +178,8 @@ __data__:
   database:
     host: "prod-db"
     port: 3306
+    address: "prod://legacy-production"
+    test_address: "test://legacy-test"
 __type_hints__: {}
 """)
             prod_config_path = f.name
@@ -195,6 +197,7 @@ __type_hints__: {}
             assert cfg.get('app_name') == "生产应用"
             assert cfg.get('version') == "2.0.0"
             assert cfg.get('database.host') == "prod-db"
+            assert cfg.get('database.address') == "test://legacy-test"
             
             # 修改测试配置，不应影响生产配置
             cfg.app_name = "测试应用"
@@ -438,6 +441,8 @@ __data__:
   database:
     host: "prod-db"
     port: 3306
+    address: "prod://legacy-production"
+    test_address: "test://legacy-test"
 __type_hints__: {}
 """)
             prod_config_path = f.name
@@ -462,6 +467,7 @@ __type_hints__: {}
             assert cfg.get('app_name') == "生产应用"
             assert cfg.get('version') == "2.0.0"
             assert cfg.get('database.host') == "prod-db"
+            assert cfg.get('database.address') == "test://legacy-test"
             
             # 验证first_start_time被更新为测试时间
             stored_time = cfg.get('first_start_time')
@@ -556,4 +562,4 @@ __type_hints__: {}
             print(f"  {i+1}. {path}")
         
         print(f"✓ 发现的环境日期: {sorted(date_dirs)}")
-        print("✓ 基于时间的环境管理验证通过") 
+        print("✓ 基于时间的环境管理验证通过")
