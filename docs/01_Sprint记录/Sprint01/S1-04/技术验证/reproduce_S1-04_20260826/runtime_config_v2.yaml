@@ -1,0 +1,19 @@
+__data__:
+  base_dir:
+    windows: D:/Tony/Documents/invest2025/project/config_manager/docs/01_Sprint记录/Sprint01/S1-04/技术验证/reproduce_S1-04_20260826/sandbox
+    ubuntu: /tmp/s1-04-unused
+  experiment_name: case_v2
+  progress: after
+  project_name: s1_04_validation
+  config_file_path: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\runtime_config_v2.yaml
+  first_start_time: '2026-08-26T14:46:07.956954'
+  paths:
+    work_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2
+    checkpoint_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2\checkpoint
+    best_checkpoint_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2\checkpoint\best
+    debug_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2\debug\20260826\144607
+    log_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2\logs\20260826\144607
+    backup_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2\backup\20260826\144607
+    cache_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\sandbox\s1_04_validation\case_v2\cache
+__type_hints__:
+  first_start_time: datetime

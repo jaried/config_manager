@@ -1,0 +1,19 @@
+__data__:
+  progress: after
+  config_file_path: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\runtime_config_v1.yaml
+  first_start_time: '2026-08-26T14:43:34.823735'
+  base_dir:
+    windows: D:\temp
+    ubuntu: D:\temp
+  paths:
+    work_dir: D:\temp\project_name\experiment_name
+    checkpoint_dir: D:\temp\project_name\experiment_name\checkpoint
+    best_checkpoint_dir: D:\temp\project_name\experiment_name\checkpoint\best
+    debug_dir: D:\temp\project_name\experiment_name\debug\20260826\144334
+    log_dir: D:\temp\project_name\experiment_name\logs\20260826\144334
+    backup_dir: D:\temp\project_name\experiment_name\backup\20260826\144334
+    cache_dir: D:\temp\project_name\experiment_name\cache
+  project_name: project_name
+  experiment_name: experiment_name
+__type_hints__:
+  first_start_time: datetime

@@ -1,0 +1,31 @@
+首次命令：
+D:\anaconda3\envs\base_python3.12\python.exe docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\01_scenario.py
+
+工作目录：
+D:\Tony\Documents\invest2025\project\config_manager
+
+退出码：0
+
+stdout：
+{
+  "backup_count_after": 0,
+  "backup_count_before": 0,
+  "callback_count": 0,
+  "config_manager_import": "D:\\Tony\\Documents\\invest2025\\project\\config_manager\\src\\config_manager\\__init__.py",
+  "failure_signature_match": false,
+  "manager_backup_argument_nonempty": true,
+  "new_backup_paths": [],
+  "observed_messages": [
+    "配置已自动备份到 D:\\temp\\project_name\\experiment_name\\backup\\20260826\\144334\\runtime_config_v1_20260826_144334.yaml",
+    "🔒 跳过内部保存触发的文件变化检测"
+  ],
+  "progress_after": "after",
+  "watcher_internal_flag_after": false,
+  "watcher_mtime_advanced": true,
+  "watcher_processed_saved_mtime": true
+}
+配置已自动备份到 D:\temp\project_name\experiment_name\backup\20260826\144334\runtime_config_v1_20260826_144334.yaml
+
+stderr：空
+
+判定：调用方探针错误。脚本把备份根错误固定在复现目录，实际 `cfg.paths.backup_dir` 位于 `D:\temp\project_name\experiment_name\backup\20260826\144334`，因此 `failure_signature_match=false` 不能判定原 BUG 未复现。该目录含 1 个本次创建的 YAML 资源，保留原位等待用户决定处置。
