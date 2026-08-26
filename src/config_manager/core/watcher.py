@@ -1,14 +1,13 @@
 # src/config_manager/core/watcher.py
 from __future__ import annotations
 from datetime import datetime
-
-start_time = datetime.now()
-
 import os
 import time
 import threading
 from contextlib import contextmanager
 from typing import Callable
+
+start_time = datetime.now()
 
 
 class FileWatcher:
