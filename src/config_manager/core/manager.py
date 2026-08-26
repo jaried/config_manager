@@ -71,6 +71,11 @@ class ConfigManagerCore(ConfigNode):
         self._autosave_count = 0
         self._autosave_last_time = time.time()
 
+        # 当前自动保存 debounce 批次的变化意图
+        self._pending_autosave_roots = set()
+        self._pending_autosave_unknown = False
+        self._autosave_intent_lock = threading.Lock()
+
     def __getattr__(self, name: str) -> Any:
         """重写__getattr__方法，在根配置管理器中检查work_dir弃用"""
         # 特殊处理first_start_time：返回datetime对象而不是字符串
@@ -390,15 +395,35 @@ class ConfigManagerCore(ConfigNode):
         # 添加延迟保存标志检查
         if hasattr(self, '_delayed_saving') and self._delayed_saving:
             return False
-        
+
         self._delayed_saving = True
         # 注意：不设置_serializing标志，避免序列化数据为空
         try:
+            # 当前回调只消费一个完整的 debounce 批次，避免旧意图
+            # 泄漏到下一批次。
+            with self._autosave_intent_lock:
+                pending_roots = set(self._pending_autosave_roots)
+                pending_unknown = self._pending_autosave_unknown
+                self._pending_autosave_roots.clear()
+                self._pending_autosave_unknown = False
+
             # 检查是否有其他保存操作正在进行
             if hasattr(self, '_saving') and self._saving:
                 return False
-            
-            # 执行保存操作
+
+            progress_only = (
+                not pending_unknown and pending_roots == {'progress'}
+            )
+            if progress_only:
+                if self._watcher:
+                    with self._watcher._internal_save_guard():
+                        saved = self._save_config_only()
+                        if saved:
+                            self._watcher._confirm_internal_save()
+                    return saved
+                return self._save_config_only()
+
+            # 普通、混合、未知或空意图继续使用通用保存。
             return self.save()
         finally:
             self._delayed_saving = False
@@ -681,18 +706,31 @@ class ConfigManagerCore(ConfigNode):
         self.reload()
         return
 
-    def _schedule_autosave(self):
+    def _schedule_autosave(self, changed_roots: set[str] | None = None):
         """安排自动保存或标记需要保存"""
-        # 添加递归保护机制
-        if hasattr(self, '_scheduling_autosave') and self._scheduling_autosave:
-            # print("🔄 检测到递归调用，跳过自动保存调度")
-            return
-        
         # 如果正在保存过程中，不要再次调度自动保存
         if (hasattr(self, '_saving') and self._saving) or (hasattr(self, '_delayed_saving') and self._delayed_saving):
             print("💾 正在保存，跳过自动保存调度")
             return
-            
+
+        # 已加载配置的运行时调用先合并批次意图；即使后续频率
+        # 保护跳过 timer，也不能丢失已经观察到的普通根段。
+        config_loaded = (
+            hasattr(self, '_config_loaded_successfully')
+            and self._config_loaded_successfully
+        )
+        if config_loaded and not getattr(self, '_during_initialization', False):
+            with self._autosave_intent_lock:
+                if changed_roots is None:
+                    self._pending_autosave_unknown = True
+                else:
+                    self._pending_autosave_roots.update(changed_roots)
+
+        # 添加递归保护机制
+        if hasattr(self, '_scheduling_autosave') and self._scheduling_autosave:
+            # print("🔄 检测到递归调用，跳过自动保存调度")
+            return
+
         # 添加频繁调用保护：如果1秒内调用超过10次，直接退出
         current_time = time.time()
         if current_time - self._autosave_last_time < 1.0:
@@ -706,9 +744,9 @@ class ConfigManagerCore(ConfigNode):
             self._autosave_count = 1
             self._autosave_last_time = current_time
             # print("🔄 重置自动保存调度计数器")
-            
+
         self._scheduling_autosave = True
-        
+
         try:
             from ..config_manager import ENABLE_CALL_CHAIN_DISPLAY
 
@@ -722,7 +760,7 @@ class ConfigManagerCore(ConfigNode):
                     print(f"获取调用链失败: {e}")
 
             # 只有在成功加载过配置的情况下才进行保存操作
-            if hasattr(self, '_config_loaded_successfully') and self._config_loaded_successfully:
+            if config_loaded:
                 # 在初始化期间只标记需要保存，初始化完成后正常调度自动保存
                 if getattr(self, '_during_initialization', False):
                     self._need_save = True
@@ -1003,10 +1041,10 @@ class ConfigManagerCore(ConfigNode):
             self._regenerate_paths()
         
         if type_hint:
-            self.set_type_hint(key, type_hint)
-        
+            self._type_hints[key] = type_hint.__name__
+
         if autosave:
-            self._schedule_autosave()
+            self._schedule_autosave({key.split('.', 1)[0]})
         return
 
     def get_type_hint(self, key: str) -> Optional[str]:
@@ -1041,7 +1079,10 @@ class ConfigManagerCore(ConfigNode):
             self.set(key, value, autosave=False)
 
         if autosave:
-            self._schedule_autosave()
+            changed_roots = {
+                key.split('.', 1)[0] for key in updates
+            }
+            self._schedule_autosave(changed_roots)
         return
 
     def get_config_path(self) -> str:
