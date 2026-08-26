@@ -1,0 +1,37 @@
+命令：
+D:\anaconda3\envs\base_python3.12\python.exe docs\01_Sprint记录\Sprint01\S1-04\技术验证\reproduce_S1-04_20260826\01_scenario.py
+
+工作目录：
+D:\Tony\Documents\invest2025\project\config_manager
+
+退出码：0
+
+stdout：
+{
+  "backup_count_after": 1,
+  "backup_count_before": 1,
+  "backup_progress_after": "after",
+  "backup_rewritten_by_progress_save": true,
+  "callback_count": 0,
+  "cleanup_messages": [
+    "配置已自动备份到 D:\\Tony\\Documents\\invest2025\\project\\config_manager\\docs\\01_Sprint记录\\Sprint01\\S1-04\\技术验证\\reproduce_S1-04_20260826\\sandbox\\s1_04_validation\\case_v2\\backup\\20260826\\144607\\runtime_config_v2_20260826_144607.yaml"
+  ],
+  "config_manager_import": "D:\\Tony\\Documents\\invest2025\\project\\config_manager\\src\\config_manager\\__init__.py",
+  "failure_signature_match": true,
+  "input_change_keys": [
+    "progress"
+  ],
+  "manager_backup_argument": "sandbox\\s1_04_validation\\case_v2\\backup\\20260826\\144607\\runtime_config_v2_20260826_144607.yaml",
+  "observed_messages": [
+    "配置已自动备份到 D:\\Tony\\Documents\\invest2025\\project\\config_manager\\docs\\01_Sprint记录\\Sprint01\\S1-04\\技术验证\\reproduce_S1-04_20260826\\sandbox\\s1_04_validation\\case_v2\\backup\\20260826\\144607\\runtime_config_v2_20260826_144607.yaml",
+    "🔒 跳过内部保存触发的文件变化检测"
+  ],
+  "progress_after": "after",
+  "watcher_internal_flag_after": false,
+  "watcher_mtime_advanced": true,
+  "watcher_processed_saved_mtime": true
+}
+
+stderr：空
+
+判定：`verified`。输入变化仅为 `progress`；主配置和备份都保存为 `after`；进度保存改写了初始化时已存在的备份；watcher 处理了保存后的 mtime 并输出内部保存检测消息，但没有调用外部变化回调。退出清理产生的另一次备份消息已单独列入 `cleanup_messages`，不参与进度保存判定。
