@@ -316,6 +316,18 @@ class ConfigNode:
         value = self._data.get(key, default)
         return value
 
+    def keys(self):
+        """返回配置键视图"""
+        return self._data.keys()
+
+    def values(self):
+        """返回配置值视图"""
+        return self._data.values()
+
+    def items(self):
+        """返回配置项视图"""
+        return self._data.items()
+
     def update(self, *args, **kwargs):
         """更新节点内容"""
         if args:
