@@ -951,8 +951,8 @@ class ConfigManager(ConfigManagerCore):
         if key == 'base_dir' and isinstance(value, str):
             value = convert_to_multi_platform_config(value, 'base_dir')
 
-        # 设置值
-        super().set(key, value, type_hint=type_hint)
+        # 设置值；由 facade 统一负责一次自动保存调度。
+        super().set(key, value, autosave=False, type_hint=type_hint)
 
         # 如果是路径相关配置，更新路径配置
         if self._should_update_path_config(key):
@@ -960,7 +960,7 @@ class ConfigManager(ConfigManagerCore):
 
         # 安排自动保存
         if autosave:
-            self._schedule_autosave()
+            self._schedule_autosave({key.split('.', 1)[0]})
 
     def cleanup(self):
         """清理所有资源，停止线程并关闭文件"""

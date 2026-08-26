@@ -121,7 +121,7 @@ class ConfigNode:
             if (not getattr(self, '_saving', False) and 
                 not getattr(self, '_delayed_saving', False) and
                 not getattr(self, '_serializing', False)):
-                self._schedule_autosave()
+                self._schedule_autosave({name})
         return
 
     def __delattr__(self, name: str):
