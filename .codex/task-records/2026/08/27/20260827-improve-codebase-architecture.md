@@ -1,0 +1,34 @@
+# 任务记录：improve-codebase-architecture
+
+- 时间：2026-08-27（Asia/Shanghai）
+- 请求原文：`$improve-codebase-architecture`
+- 请求类型：新增；范围为当前 `config_manager` 仓库的架构扫描与候选报告。
+- 适用范围：仅当前仓库；先完成探索与临时 HTML 报告，不实施代码或文档改动，不设计接口。
+- 处理顺序：读取治理基线与相关技能 → 冻结 Git/工作区范围 → 读取领域词汇与 ADR → 结合近期提交扫描热点并生成报告 → 请用户选择候选后再进入 grilling。
+- 授权边界：本请求授权只读扫描、生成 OS 临时目录报告并尝试打开报告；未授权生产代码、项目文档、Git 提交或其他仓库写入。
+- 扫描基线：`sprint01@53d151c3a128ad03788aa0f4c4df19ce1d74e8a8`；除本任务记录外无既有工作区改动。
+- 已读取：全局 `CLAUDE.md`、`improve-codebase-architecture`、`codebase-design`、`HTML-REPORT.md`、`drop-pink-elephant`、`no-negative-echo`；仓库无 `CONTEXT.md`。
+- 重点证据：近期提交集中于 S1-01 `ConfigNode` 字典视图与 S1-04 keyed progress autosave；只读扫描确认 mutation observation、path materialization、plain-data projection、save/watcher acknowledgement 四个候选，其中前两项具备 Strong 证据。
+- 报告：`D:\temp\architecture-review-20260827-192438.html`，已生成并准备打开；未修改生产代码或项目文档。
+- 用户补充（2026-08-27）：选择 Candidate 01-04 全部继续探索，并询问 Candidate 02 中 `SerializablePathsNode` 需要序列化时的影响。相对原请求：范围补充，仍不授权实施。
+- 序列化核对：当前受支持的跨进程载体是 `SerializableConfigData`/plain dict；`ConfigNode.to_dict()` 将 `PathsConfigNode` 转为普通 paths 数据，worker 端由 `SerializableConfigData.__getattr__` 按需重建 `SerializablePathsNode`。现有测试 pickle 的是 `SerializableConfigData`，未形成直接 pickle `SerializablePathsNode` 的契约。
+- 影响判断：Candidate 02 可保留，但共享 path materialization 必须保持纯数据、动态字段不落入 payload、worker 端可重建；直接 pickle `config.paths` 属于新增兼容契约，需另行确认。
+- grilling 确认 1：用户选择 `1`，保持现有 `SerializableConfigData`/plain dict 序列化契约；动态路径消费端重建，不把派生路径写入 payload。
+- grilling 确认 2：用户选择 `1`，Candidate 01 纳入全部用户可观察 mutation；观察 module 记录属性/字典/删除/批量/Core dotted/嵌套/path 事实，S1-04 保存策略仍由 Core 决定。
+- grilling 确认 3：用户选择 `1`，Candidate 02 按需派生动态路径，保留 adapter-local cache，并在输入变化时失效；动态字段不写入序列化 payload。
+- grilling 确认 4：用户选择 `1`，Candidate 02 将路径计算与目录创建分离；动态访问无文件系统副作用，显式目录物化由一个实际运行 owner 执行，`auto_create` 只控制调用。
+- 用户补充（2026-08-27）：`config.paths` 下面的路径需要自动创建。相对 grilling 确认 4：保留计算/创建职责分离，但自动创建必须作为受控初始化或显式配置流程的一部分，不再假设完全手动调用。
+- grilling 确认 4a：用户选择 `1`，`auto_create=True` 时在配置初始化完成后统一创建 `config.paths` 下的目录；`auto_create=False` 只计算/暴露路径，动态属性读取不创建目录。
+- 当前 grilling 问题 4b：确认 `config.paths` 下自动创建的字段范围；当前 active walker 按字段名/目录语义筛选，测试中 `data_path`、`output_path` 等非 `_dir` 字段明确不创建。
+- grilling 确认 4b：用户选择 `1`，按目录语义筛选自动创建范围：核心生成目录 + 明确的自定义目录字段；`data_path`、`output_path` 等文件/普通字符串保持不创建。
+- 当前 grilling 问题 5：确认 Candidate 02 平台路径选择策略；`PathGenerator` 使用当前平台→`ubuntu`→首值回退，而 `CrossPlatformPathManager` 对 `ubuntu` 别名更严格，两套 implementation 目前可能给出不同结果。
+- 用户补充（2026-08-27）：平台路径只取当前平台；非当前平台配置跳过，不参与回退或目录创建。相对问题 5 的三个选项，收敛为“当前平台严格匹配”口径。
+- 当前 grilling 问题 5a：若 `config.paths` 没有当前平台键，确认是清晰报错、跳过该路径继续，还是允许平台无关标量；这决定自动创建与配置可用性的可观察结果。
+- 用户纠正（2026-08-27）：`config.paths` 已有对应的平台根路径时，按当前平台对应的根路径计算和创建即可；不需要把“缺少当前平台键”抽象成独立的通用平台回退问题。相对问题 5a，优先确认平台根路径字段与其下目录字段的消费关系。
+- 用户新增查询（2026-08-27）：询问当前平台根路径与 `config.paths` 自动创建的实际实现，并确认是否需要修改；本轮改为只读核对，不授权代码、文档或配置修改。
+- 只读核对结论（2026-08-27）：当前实现从顶层 `base_dir` 选择平台根路径，初始化阶段生成 `config.paths`，递归创建非空字符串且字段名以 `_dir` 结尾的目录；当前平台根路径存在时已满足本次需求，不需要代码修改。`SerializablePathsNode` 仍按 `SerializableConfigData`/plain dict 传递后按需重建，不需要新增直接节点序列化。
+- 只读核对边界（2026-08-27）：`PathGenerator`/`PathConfigurationManager` 仍保留历史平台回退，公共 `CrossPlatformPathManager` 规则更严格；`auto_create=False` 主要控制缺失配置文件创建，不是严格的目录物化禁用开关。两项属于后续架构统一候选，不阻塞当前用法。
+- 报告已补充当前结论并重新打开：`D:\temp\architecture-review-20260827-192438.html`。未运行测试，因本轮为只读实现核对且未授权修改。
+- 状态：本轮查询与架构扫描闭环，保留任务记录待提交；代码、配置和项目文档均未修改。
+- 提交运行时核验（2026-08-27）：按 `auto-commit` 将提交脚本归类为 `standalone_script`，使用已验证 `D:\anaconda3\envs\base_python3.12\python.exe`；probe 返回 `sys.executable` 同路径、`os.name=nt`、Python 3.12.9。
+- 状态：已完成扫描与报告；进入 grilling，先评估四项候选及 `SerializablePathsNode` 序列化兼容影响。
