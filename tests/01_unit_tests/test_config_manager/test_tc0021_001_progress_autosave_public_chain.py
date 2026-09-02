@@ -2,7 +2,7 @@
 from __future__ import annotations
 from datetime import datetime
 start_time = datetime.now()
-# ruff: noqa: E402
+# ruff: noqa: DTZ001, DTZ005, I001, PLR1711, RUF013, UP006, UP035
 
 from collections.abc import Callable
 from pathlib import Path
