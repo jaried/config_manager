@@ -12,6 +12,8 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,13 +38,15 @@ jobs:
           import pytest
           import yaml
           import is_debug
+          import config_manager
           import src.config_manager
 
           print(f"python={platform.python_version()}")
           print(f"pytest={pytest.__version__}")
           print(f"pyyaml={yaml.__version__}")
           print(f"is_debug={is_debug.__file__}")
-          print(f"config_manager={src.config_manager.__file__}")
+          print(f"config_manager={config_manager.__file__}")
+          print(f"src_config_manager={src.config_manager.__file__}")
           PY
 
       - name: Static policy gate
