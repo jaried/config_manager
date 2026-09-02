@@ -127,17 +127,17 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only \
-            73a47ff5f0ae4485d9d5248aac6c8af10b90a49e \
+            260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2 \
             b0dd63db8e5557eadae092e1d49e7c994206799b \
             | tee s1-05-changed-paths.log
           expected="tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py"
           test "$(cat s1-05-changed-paths.log)" = "$expected"
           test -z "$(git diff --name-only \
-            73a47ff5f0ae4485d9d5248aac6c8af10b90a49e \
+            260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2 \
             b0dd63db8e5557eadae092e1d49e7c994206799b \
             -- src/config_manager)"
           git diff --exit-code \
-            73a47ff5f0ae4485d9d5248aac6c8af10b90a49e \
+            260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2 \
             b0dd63db8e5557eadae092e1d49e7c994206799b \
             -- tests/01_unit_tests/test_config_manager/test_progress_autosave.py
 
