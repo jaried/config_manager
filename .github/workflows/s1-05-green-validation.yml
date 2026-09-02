@@ -1,0 +1,143 @@
+name: S1-05 Green Validation
+
+on:
+  push:
+    branches:
+      - S1-05-green-validation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            PyYAML pytest pytest-asyncio pytest-xdist ruff \
+            "git+https://github.com/jaried/is_debug.git"
+
+      - name: Environment probe
+        run: |
+          python - <<'PY'
+          import platform
+          import pytest
+          import yaml
+          import is_debug
+          import src.config_manager
+
+          print(f"python={platform.python_version()}")
+          print(f"pytest={pytest.__version__}")
+          print(f"pyyaml={yaml.__version__}")
+          print(f"is_debug={is_debug.__file__}")
+          print(f"config_manager={src.config_manager.__file__}")
+          PY
+
+      - name: Static policy gate
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+
+          path = Path(
+              "tests/01_unit_tests/test_config_manager/"
+              "test_tc0021_001_progress_autosave_public_chain.py"
+          )
+          text = path.read_text(encoding="utf-8")
+          lines = text.splitlines()
+          expected_header = [
+              "# tests/01_unit_tests/test_config_manager/"
+              "test_tc0021_001_progress_autosave_public_chain.py",
+              "from __future__ import annotations",
+              "from datetime import datetime",
+              "start_time = datetime.now()",
+          ]
+          assert lines[:4] == expected_header
+          assert len(lines) <= 300
+          assert max(map(len, lines)) <= 120
+          module = ast.parse(text)
+          functions = [
+              node for node in module.body if isinstance(node, ast.FunctionDef)
+          ]
+          expected_name = (
+              "test_tc0021_001_001_progress_public_chain_"
+              "persists_without_backup"
+          )
+          assert [node.name for node in functions] == [expected_name]
+          for function in functions:
+              returns = [
+                  node for node in ast.walk(function) if isinstance(node, ast.Return)
+              ]
+              assert returns
+              assert all(node.value is None for node in returns)
+          forbidden = ["print(", "time.sleep", "threading", "multiprocessing"]
+          assert all(token not in text for token in forbidden)
+          print(f"line_count={len(lines)}")
+          print(f"max_line_length={max(map(len, lines))}")
+          print(f"test_function={functions[0].name}")
+          PY
+
+      - name: Changed paths gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only \
+            73a47ff5f0ae4485d9d5248aac6c8af10b90a49e \
+            dfec475c1f611b2b8705f74339d0729adfc0b5fc \
+            | tee s1-05-changed-paths.log
+          expected="tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py"
+          test "$(cat s1-05-changed-paths.log)" = "$expected"
+          test -z "$(git diff --name-only \
+            73a47ff5f0ae4485d9d5248aac6c8af10b90a49e \
+            dfec475c1f611b2b8705f74339d0729adfc0b5fc \
+            -- src/config_manager)"
+          git diff --exit-code \
+            73a47ff5f0ae4485d9d5248aac6c8af10b90a49e \
+            dfec475c1f611b2b8705f74339d0729adfc0b5fc \
+            -- tests/01_unit_tests/test_config_manager/test_progress_autosave.py
+
+      - name: Green single test
+        run: |
+          python -m pytest -p no:cacheprovider -q \
+            tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py::test_tc0021_001_001_progress_public_chain_persists_without_backup
+
+      - name: Parallel independence
+        run: |
+          python -m pytest -p no:cacheprovider -q -n 2 \
+            tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py
+
+      - name: Focused suite
+        run: |
+          python -m pytest -p no:cacheprovider -q \
+            tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py \
+            tests/01_unit_tests/test_config_manager/test_progress_autosave.py
+
+      - name: Affected suite
+        run: |
+          python -m pytest -p no:cacheprovider -q \
+            tests/test_config_manager/test_tc0002_001_autosave_feature.py \
+            tests/01_unit_tests/test_config_manager/test_internal_save_no_reload.py \
+            tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py \
+            tests/01_unit_tests/test_config_manager/test_tc0014_001_single_save_mechanism.py \
+            tests/01_unit_tests/test_config_manager/test_tc0017_001_frequent_load_save.py \
+            tests/01_unit_tests/test_config_manager/test_yaml_codec.py
+
+      - name: Full suite
+        run: python -m pytest -p no:cacheprovider -q tests
+
+      - name: Ruff
+        run: |
+          python -m ruff check --no-cache \
+            tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py
