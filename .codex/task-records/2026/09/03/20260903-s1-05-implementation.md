@@ -6,8 +6,8 @@
 - 方案：`S1-05-solution-v2-approved`
 - 设计：`S1-05-design-v1`
 - 计划：`S1-05-plan-v1`
-- target：`S1-05`
-- 状态：`completed`
+- target：`S1-05 → sprint01`
+- 状态：`ready_for_acceptance`
 
 ## 实施结果
 
@@ -22,9 +22,15 @@
 - Affected：`98 passed, 1 skipped`。
 - Full：`565 passed, 26 skipped`。
 - GitHub Actions：run=`33667182758`，job=`100371701085`，结论=`success`。
+- Issue 成果提交：`071e708bd19a9775458190703d4d4e311faa1454`。
+- Issue 总结封口：`1f8166f0bf83bcadc64a6fb3797470fa601b3583`。
+- 正式 PR：`#17`。
+- Sprint 合并提交：`5b2057917bd8c819e9c0761392e7eadb2203c79a`。
 - `database_test_isolation_result=not_applicable_zero_connection_scope`。
 - `unapproved_decision_set=[]`。
 
-## 下一步
+## 发布结果
 
-形成 Issue 成果提交，合入 `sprint01`，发布为“待验收”，再只读核验 acceptance input-gate。
+- Sprint01 中 S1-05 已更新为“待验收”。
+- acceptance input-gate 只读核验通过。
+- 当前状态为 `ready_for_acceptance`，尚未记录用户验收结论。
