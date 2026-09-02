@@ -32,7 +32,7 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          python -m pip install PyYAML pytest ruff
+          python -m pip install PyYAML pytest pytest-asyncio psutil ruff
           python -m pip install is-debug
           if ($LASTEXITCODE -ne 0) {
             python -m pip install git+https://github.com/jaried/is_debug.git
@@ -42,7 +42,7 @@ jobs:
       - name: Runtime probe
         shell: pwsh
         run: |
-          python -c "import platform, pytest, yaml; print(platform.platform()); print(platform.python_version()); print(pytest.__version__); print(yaml.__version__)"
+          python -c "import platform, psutil, pytest, yaml; print(platform.platform()); print(platform.python_version()); print(pytest.__version__); print(yaml.__version__); print(psutil.__version__)"
           python -c "import src.config_manager as package; print(package.__file__)"
 
       - name: TDD red - formal regression asset absent at design baseline
