@@ -1,0 +1,169 @@
+name: S1-05 Release Validation
+
+on:
+  push:
+    branches:
+      - S1-05-release-validation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMPLEMENTATION_BASE: 260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2
+  IMPLEMENTATION_CANDIDATE: 892dcd82aeb2858345545eb0e7179a12d0f6f911
+  TEST_FILE: tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py
+
+jobs:
+  linux-regression-delta:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            PyYAML psutil pytest pytest-asyncio pytest-xdist ruff \
+            "git+https://github.com/jaried/is_debug.git"
+
+      - name: Bind workflow tree to final candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "$IMPLEMENTATION_CANDIDATE:$TEST_FILE")" = \
+            "$(git hash-object "$TEST_FILE")"
+          test -z "$(git diff --name-only \
+            "$IMPLEMENTATION_CANDIDATE" HEAD -- src/config_manager tests)"
+          test "$(git diff --name-only \
+            "$IMPLEMENTATION_BASE" "$IMPLEMENTATION_CANDIDATE" -- '*.py')" = \
+            "$TEST_FILE"
+
+      - name: Ruff syntax and focused behavior
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
+        run: |
+          python -m ruff check --no-cache "$TEST_FILE"
+          python -m py_compile "$TEST_FILE"
+          python -m pytest -p no:cacheprovider -q \
+            "$TEST_FILE::test_tc0021_001_001_progress_public_chain_persists_without_backup"
+          python -m pytest -p no:cacheprovider -q -n 2 "$TEST_FILE"
+          python -m pytest -p no:cacheprovider -q \
+            "$TEST_FILE" \
+            tests/01_unit_tests/test_config_manager/test_progress_autosave.py
+
+      - name: Compare full regression with design baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git worktree add ../s1-05-baseline "$IMPLEMENTATION_BASE"
+
+          set +e
+          PYTHONPATH="$PWD:$PWD/src" \
+            python -m pytest -p no:cacheprovider -q tests \
+            > candidate-full.log 2>&1
+          candidate_exit=$?
+          (
+            cd ../s1-05-baseline
+            PYTHONPATH="$PWD:$PWD/src" \
+              python -m pytest -p no:cacheprovider -q tests \
+              > ../config_manager/baseline-full.log 2>&1
+          )
+          baseline_exit=$?
+          set -e
+
+          cat candidate-full.log
+          cat baseline-full.log
+          echo "CANDIDATE_EXIT_CODE=$candidate_exit"
+          echo "BASELINE_EXIT_CODE=$baseline_exit"
+
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          def parse_log(path_text: str) -> tuple[int, int, int, set[str]]:
+              text = Path(path_text).read_text(encoding="utf-8")
+              summary_match = re.search(
+                  r"(\d+) failed, (\d+) passed, (\d+) skipped",
+                  text,
+              )
+              assert summary_match is not None
+              failed = int(summary_match.group(1))
+              passed = int(summary_match.group(2))
+              skipped = int(summary_match.group(3))
+              failures = {
+                  line.split(" - ", 1)[0].removeprefix("FAILED ")
+                  for line in text.splitlines()
+                  if line.startswith("FAILED ")
+              }
+              result = failed, passed, skipped, failures
+              return result
+
+          candidate = parse_log("candidate-full.log")
+          baseline = parse_log("baseline-full.log")
+          assert candidate[0] == baseline[0]
+          assert candidate[1] == baseline[1] + 1
+          assert candidate[2] == baseline[2]
+          assert candidate[3] == baseline[3]
+          assert candidate[3] == {
+              "tests/01_unit_tests/test_config_manager/"
+              "test_config_file_protection.py::"
+              "TestConfigFileProtection::test_complex_windows_paths_handling"
+          }
+          print(f"candidate={candidate[:3]}")
+          print(f"baseline={baseline[:3]}")
+          print("new_failures=0")
+          PY
+
+  windows-full:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check `
+            PyYAML psutil pytest pytest-asyncio pytest-xdist ruff `
+            "git+https://github.com/jaried/is_debug.git"
+
+      - name: Bind workflow tree to final candidate
+        shell: pwsh
+        run: |
+          $candidateBlob = git rev-parse "$env:IMPLEMENTATION_CANDIDATE`:$env:TEST_FILE"
+          $workingBlob = git hash-object $env:TEST_FILE
+          if ($candidateBlob -ne $workingBlob) {
+              throw "测试文件与最终候选不一致"
+          }
+          $unexpected = git diff --name-only $env:IMPLEMENTATION_CANDIDATE HEAD -- src/config_manager tests
+          if ($unexpected) {
+              throw "验证分支包含额外代码差量: $unexpected"
+          }
+
+      - name: Ruff focused and full suite
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH = "$pwd;$pwd\src"
+          python -m ruff check --no-cache $env:TEST_FILE
+          python -m py_compile $env:TEST_FILE
+          python -m pytest -p no:cacheprovider -q `
+            "$env:TEST_FILE::test_tc0021_001_001_progress_public_chain_persists_without_backup"
+          python -m pytest -p no:cacheprovider -q -n 2 $env:TEST_FILE
+          python -m pytest -p no:cacheprovider -q tests
