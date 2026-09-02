@@ -16,7 +16,7 @@
 | S1-02 | [US] 支持 `test_mode` 自动切换测试数据库并更新 `py-config-logger` | 待验收 | P2 | 5 |  |  |
 | S1-03 | [BUG] `ConfigManager.set()+save()` 将 YAML sequence 序列化为非法单横杠 | 待验收 | P1 | 3 |  |  |
 | S1-04 | [BUG] config.progress 变化触发配置自动备份 | 待验收 | P2 | 2 |  |  |
-| S1-05 | [BUG] config.progress 变化时 config.yaml 正常保存且不触发备份 | 设计完成 | P2 | 2 |  | S1-05-design-v1 |
+| S1-05 | [BUG] config.progress 变化时 config.yaml 正常保存且不触发备份 | 设计完成 | P2 | 2 |  |  |
 
 **Sprint 总点数**：14
 
