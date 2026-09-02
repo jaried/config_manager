@@ -1,0 +1,132 @@
+name: S1-05 validation
+
+on:
+  pull_request:
+    branches:
+      - S1-05
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: "1"
+
+jobs:
+  validation:
+    name: Windows Python 3.12 validation
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install PyYAML pytest ruff
+          python -m pip install is-debug
+          if ($LASTEXITCODE -ne 0) {
+            python -m pip install git+https://github.com/jaried/is_debug.git
+          }
+          python -m pip install -e . --no-deps
+
+      - name: Runtime probe
+        shell: pwsh
+        run: |
+          python -c "import platform, pytest, yaml; print(platform.platform()); print(platform.python_version()); print(pytest.__version__); print(yaml.__version__)"
+          python -c "import src.config_manager as package; print(package.__file__)"
+
+      - name: TDD red - formal regression asset absent at design baseline
+        shell: pwsh
+        run: |
+          git worktree add "$env:RUNNER_TEMP\s1-05-red" 260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2
+          Push-Location "$env:RUNNER_TEMP\s1-05-red"
+          python -m pytest tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py -v --tb=short
+          $redExit = $LASTEXITCODE
+          Pop-Location
+          git worktree remove "$env:RUNNER_TEMP\s1-05-red" --force
+          Write-Host "expected_red_exit=$redExit"
+          if ($redExit -eq 0) {
+            Write-Error "The formal regression asset unexpectedly existed at the design baseline."
+            exit 1
+          }
+
+      - name: Static project rules
+        shell: pwsh
+        run: |
+          @'
+          from __future__ import annotations
+
+          import ast
+          from pathlib import Path
+
+          path = Path(
+              "tests/01_unit_tests/test_config_manager/"
+              "test_tc0021_001_progress_autosave_public_chain.py"
+          )
+          text = path.read_text(encoding="utf-8")
+          lines = text.splitlines()
+          expected_header = [
+              "# tests/01_unit_tests/test_config_manager/"
+              "test_tc0021_001_progress_autosave_public_chain.py",
+              "from __future__ import annotations",
+              "from datetime import datetime",
+              "start_time = datetime.now()",
+          ]
+          assert lines[:4] == expected_header
+          assert len(lines) <= 300
+          assert max(len(line) for line in lines) <= 120
+
+          module = ast.parse(text)
+          functions = [
+              node
+              for node in ast.walk(module)
+              if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+          ]
+          assert functions
+          for function in functions:
+              assert isinstance(function.body[-1], (ast.Return, ast.Pass)), function.name
+              for node in ast.walk(function):
+                  if isinstance(node, ast.Return):
+                      assert not (
+                          isinstance(node.value, ast.Constant)
+                          and node.value.value is None
+                      ), function.name
+          print(f"static_lines={len(lines)}")
+          print(f"static_max_line={max(len(line) for line in lines)}")
+          print(f"static_functions={len(functions)}")
+          '@ | python -
+
+      - name: Ruff
+        shell: pwsh
+        run: |
+          python -m ruff check tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py
+
+      - name: Issue focused
+        shell: pwsh
+        run: |
+          python -m pytest tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py -v --tb=short --basetemp="$env:RUNNER_TEMP\pytest-s1-05-focused"
+
+      - name: Progress focused
+        shell: pwsh
+        run: |
+          python -m pytest tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py tests/01_unit_tests/test_config_manager/test_progress_autosave.py -v --tb=short --basetemp="$env:RUNNER_TEMP\pytest-s1-05-progress"
+
+      - name: Affected suite
+        shell: pwsh
+        run: |
+          python -m pytest tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py tests/01_unit_tests/test_config_manager/test_progress_autosave.py tests/01_unit_tests/test_config_manager/test_internal_save_no_reload.py tests/01_unit_tests/test_config_manager/test_tc0017_001_frequent_load_save.py tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py tests/01_unit_tests/test_config_manager/test_yaml_codec.py tests/01_unit_tests/test_config_manager/test_tc0011_002_yaml_sequence_persistence.py -v --tb=short --basetemp="$env:RUNNER_TEMP\pytest-s1-05-affected"
+
+      - name: Full suite
+        shell: pwsh
+        run: |
+          python -m pytest tests -v --tb=short --basetemp="$env:RUNNER_TEMP\pytest-s1-05-full"
