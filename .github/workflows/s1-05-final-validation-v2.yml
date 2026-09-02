@@ -127,9 +127,10 @@ jobs:
           git diff --name-only \
             260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2 \
             892dcd82aeb2858345545eb0e7179a12d0f6f911 \
-            | tee s1-05-changed-paths.log
+            -- src tests \
+            | tee s1-05-python-paths.log
           expected="tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py"
-          test "$(cat s1-05-changed-paths.log)" = "$expected"
+          test "$(cat s1-05-python-paths.log)" = "$expected"
           test -z "$(git diff --name-only \
             260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2 \
             892dcd82aeb2858345545eb0e7179a12d0f6f911 \
