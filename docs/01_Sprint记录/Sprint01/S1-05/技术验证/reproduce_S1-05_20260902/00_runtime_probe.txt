@@ -1,0 +1,20 @@
+config_manager_root_uv_sync_exit=1
+config_manager_root_uv_sync_result=is-debug>=1.0.0 not found in current package registry
+config_manager_root_uv_lock=absent
+config_manager_root_venv_python=D:\Tony\Documents\invest2025\project\config_manager\.venv\Scripts\python.exe
+config_manager_root_venv_version=3.13.9
+config_manager_root_venv_yaml=None
+config_manager_root_venv_pytest=None
+config_manager_root_venv_is_debug=None
+
+bakamh_uv_sync_check_exit=0
+bakamh_uv_sync_check_result=up-to-date lockfile; checked 66 packages; would make no changes
+python_executable=D:\Tony\Documents\invest2025\project\bakamh\.venv\Scripts\python.exe
+os.name=nt
+python_version=3.12.9
+config_manager_import=D:\Tony\Documents\invest2025\project\config_manager\src\config_manager\__init__.py
+config_manager_dist=0.1.0
+is_debug_import=D:\Tony\Documents\invest2025\project\is_debug\src\is_debug\__init__.py
+is_debug_dist=1.0.0
+yaml_version=6.0.3
+pytest_version=9.1.1

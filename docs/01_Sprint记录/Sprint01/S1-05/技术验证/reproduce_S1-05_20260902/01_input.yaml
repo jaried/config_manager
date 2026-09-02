@@ -1,0 +1,8 @@
+__data__:
+  base_dir:
+    windows: D:/Tony/Documents/invest2025/project/config_manager/docs/01_Sprint记录/Sprint01/S1-05/技术验证/reproduce_S1-05_20260902/sandbox
+    ubuntu: /tmp/s1-05-unused
+  experiment_name: accepted_behavior
+  progress: before
+  project_name: s1_05_validation
+__type_hints__: {}

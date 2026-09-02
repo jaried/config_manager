@@ -1,0 +1,27 @@
+command:
+D:\Tony\Documents\invest2025\project\bakamh\.venv\Scripts\python.exe docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\01_scenario.py
+
+exit_code=0
+
+配置已从 D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\runtime_config.yaml 加载
+监视当前配置路径: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\runtime_config.yaml
+配置文件监视器已启动
+{
+  "backups_after": {
+    "sandbox\\s1_05_validation\\accepted_behavior\\backup\\20260902\\095401\\runtime_config_20260902_095401.yaml": 1788314041665139800
+  },
+  "backups_before": {
+    "sandbox\\s1_05_validation\\accepted_behavior\\backup\\20260902\\095401\\runtime_config_20260902_095401.yaml": 1788314041665139800
+  },
+  "backups_unchanged": true,
+  "config_manager_import": "D:\\Tony\\Documents\\invest2025\\project\\config_manager\\src\\config_manager\\__init__.py",
+  "config_progress_after": "after",
+  "main_file_changed": true,
+  "pending_roots_after": [],
+  "pending_unknown_after": false,
+  "python_executable": "D:\\Tony\\Documents\\invest2025\\project\\bakamh\\.venv\\Scripts\\python.exe",
+  "save_config_calls": 0,
+  "save_config_only_calls": 1,
+  "watcher_internal_flag_after": false,
+  "watcher_mtime_matches_file": true
+}

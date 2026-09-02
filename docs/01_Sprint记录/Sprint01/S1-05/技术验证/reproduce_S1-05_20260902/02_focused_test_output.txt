@@ -1,0 +1,11 @@
+command:
+D:\Tony\Documents\invest2025\project\bakamh\.venv\Scripts\python.exe -m pytest -p no:cacheprovider -q --basetemp=D:\temp\pytest-s1-05-20260902-01 tests\01_unit_tests\test_config_manager\test_progress_autosave.py
+
+exit_code=0
+platform win32 -- Python 3.12.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\Tony\Documents\invest2025\project\config_manager
+configfile: pytest.ini
+collected 16 items
+tests\01_unit_tests\test_config_manager\test_progress_autosave.py ...... [ 37%]
+..........                                                               [100%]
+16 passed in 0.31s

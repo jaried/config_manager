@@ -1,0 +1,19 @@
+__data__:
+  base_dir:
+    windows: D:/Tony/Documents/invest2025/project/config_manager/docs/01_Sprint记录/Sprint01/S1-05/技术验证/reproduce_S1-05_20260902/sandbox
+    ubuntu: /tmp/s1-05-unused
+  experiment_name: accepted_behavior
+  progress: after
+  project_name: s1_05_validation
+  config_file_path: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\runtime_config.yaml
+  first_start_time: '2026-09-02T09:54:01.489619'
+  paths:
+    work_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior
+    checkpoint_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior\checkpoint
+    best_checkpoint_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior\checkpoint\best
+    debug_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior\debug\20260902\095401
+    log_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior\logs\20260902\095401
+    backup_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior\backup\20260902\095401
+    cache_dir: D:\Tony\Documents\invest2025\project\config_manager\docs\01_Sprint记录\Sprint01\S1-05\技术验证\reproduce_S1-05_20260902\sandbox\s1_05_validation\accepted_behavior\cache
+__type_hints__:
+  first_start_time: datetime
