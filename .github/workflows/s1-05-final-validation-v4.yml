@@ -1,0 +1,178 @@
+name: S1-05 Final Validation V4
+
+on:
+  push:
+    branches:
+      - S1-05-final-validation-v4
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
+      IMPLEMENTATION_BASE: 260b27da0f4dfe5d1b7a92f0b99f979d00f1a6b2
+      IMPLEMENTATION_CANDIDATE: 56709703745e87ca360456b28686af87e3ac63d8
+      TEST_FILE: tests/01_unit_tests/test_config_manager/test_tc0021_001_progress_autosave_public_chain.py
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            PyYAML psutil pytest pytest-asyncio pytest-xdist ruff \
+            "git+https://github.com/jaried/is_debug.git"
+
+      - name: Environment probe
+        run: |
+          python - <<'PY'
+          import platform
+          import psutil
+          import pytest
+          import yaml
+          import is_debug
+          import config_manager
+          import src.config_manager
+
+          print(f"python={platform.python_version()}")
+          print(f"pytest={pytest.__version__}")
+          print(f"pyyaml={yaml.__version__}")
+          print(f"psutil={psutil.__version__}")
+          print(f"is_debug={is_debug.__file__}")
+          print(f"config_manager={config_manager.__file__}")
+          print(f"src_config_manager={src.config_manager.__file__}")
+          PY
+
+      - name: Static and design conformance
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+
+          path = Path(
+              "tests/01_unit_tests/test_config_manager/"
+              "test_tc0021_001_progress_autosave_public_chain.py"
+          )
+          text = path.read_text(encoding="utf-8")
+          lines = text.splitlines()
+          expected_header = [
+              "# tests/01_unit_tests/test_config_manager/"
+              "test_tc0021_001_progress_autosave_public_chain.py",
+              "from __future__ import annotations",
+              "from datetime import datetime",
+              "start_time = datetime.now()",
+          ]
+          assert lines[:4] == expected_header
+          assert len(lines) <= 300
+          assert max(map(len, lines)) <= 120
+
+          module = ast.parse(text)
+          class_names = [
+              node.name for node in module.body if isinstance(node, ast.ClassDef)
+          ]
+          assert class_names == [
+              "CapturingAutosaveManager",
+              "RecordingFileOperations",
+          ]
+          module_functions = [
+              node.name for node in module.body if isinstance(node, ast.FunctionDef)
+          ]
+          assert module_functions == [
+              "_build_manager",
+              "_seed_main_and_backup",
+              "_snapshot_backup_tree",
+              "test_tc0021_001_001_progress_public_chain_persists_without_backup",
+          ]
+
+          functions = [
+              node for node in ast.walk(module) if isinstance(node, ast.FunctionDef)
+          ]
+          for function in functions:
+              returns = [
+                  node for node in ast.walk(function) if isinstance(node, ast.Return)
+              ]
+              assert returns
+              for return_node in returns:
+                  value = return_node.value
+                  if value is None or isinstance(value, ast.Name):
+                      continue
+                  assert isinstance(value, ast.Tuple)
+                  assert all(isinstance(item, ast.Name) for item in value.elts)
+
+          forbidden = [
+              "return None",
+              "print(",
+              "time.sleep",
+              "threading",
+              "multiprocessing",
+          ]
+          assert all(token not in text for token in forbidden)
+          print(f"line_count={len(lines)}")
+          print(f"max_line_length={max(map(len, lines))}")
+          print(f"function_count={len(functions)}")
+          PY
+
+      - name: Changed paths gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only \
+            "$IMPLEMENTATION_BASE" \
+            "$IMPLEMENTATION_CANDIDATE" \
+            -- '*.py' \
+            | tee s1-05-python-changed-paths.log
+          test "$(cat s1-05-python-changed-paths.log)" = "$TEST_FILE"
+          test -z "$(git diff --name-only \
+            "$IMPLEMENTATION_BASE" \
+            "$IMPLEMENTATION_CANDIDATE" \
+            -- src/config_manager)"
+          git diff --exit-code \
+            "$IMPLEMENTATION_BASE" \
+            "$IMPLEMENTATION_CANDIDATE" \
+            -- tests/01_unit_tests/test_config_manager/test_progress_autosave.py
+
+      - name: Ruff and syntax
+        run: |
+          python -m ruff check --isolated --select E4,E7,E9,F "$TEST_FILE"
+          python -m py_compile "$TEST_FILE"
+
+      - name: Green single test
+        run: |
+          python -m pytest -p no:cacheprovider -q \
+            "$TEST_FILE::test_tc0021_001_001_progress_public_chain_persists_without_backup"
+
+      - name: Parallel independence
+        run: |
+          python -m pytest -p no:cacheprovider -q -n 2 "$TEST_FILE"
+
+      - name: Progress focused
+        run: |
+          python -m pytest -p no:cacheprovider -q \
+            "$TEST_FILE" \
+            tests/01_unit_tests/test_config_manager/test_progress_autosave.py
+
+      - name: Affected
+        run: |
+          python -m pytest -p no:cacheprovider -q \
+            "$TEST_FILE" \
+            tests/01_unit_tests/test_config_manager/test_progress_autosave.py \
+            tests/01_unit_tests/test_config_manager/test_internal_save_no_reload.py \
+            tests/01_unit_tests/test_config_manager/test_tc0017_001_frequent_load_save.py \
+            tests/01_unit_tests/test_config_manager/test_tc0012_004_backup_isolation.py \
+            tests/01_unit_tests/test_config_manager/test_yaml_codec.py \
+            tests/01_unit_tests/test_config_manager/test_tc0011_002_yaml_sequence_persistence.py
+
+      - name: Full suite
+        run: python -m pytest -p no:cacheprovider -q tests
