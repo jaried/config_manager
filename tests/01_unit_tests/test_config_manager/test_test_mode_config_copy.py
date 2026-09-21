@@ -93,6 +93,32 @@ def test_test_mode_config_copy_with_extreme_types(tmp_path):
     assert config.get("deep_nested")["a"]["b"]["c"]["d"] == 1
 
 
+def test_test_mode_config_copy_prefers_current_logger_over_stale_snapshot(tmp_path):
+    """test_mode 不应让旧的 __data__.logger 覆盖当前配置正文。"""
+    prod_dir = tmp_path / "src" / "config"
+    prod_dir.mkdir(parents=True, exist_ok=True)
+    prod_path = prod_dir / "config.yaml"
+    data = {
+        "logger": {
+            "global_console_level": "info",
+            "global_file_level": "debug",
+        },
+        "__data__": {
+            "logger": {
+                "global_console_level": "invalid_level",
+                "global_file_level": "invalid_level",
+            },
+        },
+    }
+    with open(prod_path, "w", encoding="utf-8") as f:
+        f.write(dump_yaml(data))
+
+    config = get_config_manager(config_path=str(prod_path), test_mode=True)
+
+    assert config.logger.global_console_level == "info"
+    assert config.logger.global_file_level == "debug"
+
+
 def test_test_mode_config_copy_with_invalid_yaml(tmp_path):
     # 生产配置为非法yaml时，test_mode只生成极简配置
     prod_dir = tmp_path / "src" / "config"

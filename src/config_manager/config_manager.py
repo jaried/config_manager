@@ -740,6 +740,18 @@ class ConfigManager(ConfigManagerCore):
             data_root = loaded_data['__data__'] \
                 if isinstance(loaded_data.get('__data__'), MutableMapping) \
                 else loaded_data
+
+            # 测试副本应以配置正文中的 logger 声明为准，避免历史
+            # __data__ 快照中的运行时值覆盖当前配置并污染隔离测试环境。
+            if (
+                isinstance(data_root, MutableMapping)
+                and isinstance(loaded_data.get('logger'), MutableMapping)
+                and isinstance(data_root.get('logger'), MutableMapping)
+            ):
+                data_root['logger'] = cls._deep_update_yaml_data(
+                    data_root['logger'], loaded_data['logger']
+                )
+
             cls._select_test_database_address(data_root)
 
             # 更新时间信息

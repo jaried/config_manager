@@ -59,3 +59,23 @@
 - Sprint 状态：`S1-05` 从 `待办` 更新为 `方案已决策`，点数、优先级、标题、依赖和 Phase 保持当前值。
 - 提交消息：`docs(S1-05): 发布 config.progress 保存且不触发备份方案`；总结封口为 `docs(S1-05): 冻结方案决策交接总结`。
 - 范围外修改：`.codex/task-records/2026/08/27/20260827-improve-codebase-architecture.md` 保留且不进入本次提交。
+
+## 推送请求
+
+- 时序：用户于 2026-09-03 输入 `推送`。
+- 适用范围：当前 `config_manager` 仓库 `sprint01` 分支上已发布的 S1-05 方案阶段提交。
+- 关系：在已完成本地方案发布基础上的新增外部同步动作；不改变 S1-05 需求、方案、Sprint 状态或提交内容。
+- 授权边界：仅在核对远端与上游目标后推送当前分支；不修改、重写或清理本地历史，不推送其他分支。
+- 状态：待核验远端、上游、工作树与目标提交。
+
+## 推送结果
+
+- 目标：同一仓库的 `origin/sprint01`，远端地址为 `git@github.com:jaried/config_manager.git`；本次连接使用等价 HTTPS 地址，未修改远端配置。
+- 连接核验：原 SSH 配置因首行编码错误无法解析；GitHub ED25519 主机指纹已核对为官方发布的 `SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU`。
+- 凭据：使用现有 GitHub CLI `jaried` 登录会话的临时 Git credential helper；本地 `id_ed25519` 未获得 GitHub 公钥认证。
+- dry-run：通过，显示 `sprint01 -> sprint01` 新分支推送。
+- 实际推送：退出码 `0`，远端创建 `sprint01` 分支。
+- 远端复核：`refs/heads/sprint01 = 2ddb9b2c37e18e9be5d51a057a5b2cb36fc222ea`。
+- 本地复核：`sprint01` HEAD 同为 `2ddb9b2c37e18e9be5d51a057a5b2cb36fc222ea`，暂存区为空。
+- 本地未提交状态：保留 `.codex/task-records/2026/08/27/20260827-improve-codebase-architecture.md` 与本记录的本次推送追加；两者均未进入远端提交。
+- 结论：当前已提交的 S1-05 方案阶段内容已同步到远端 `sprint01`；本地分支仍未设置 upstream 跟踪，不影响本次目标完成。

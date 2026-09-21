@@ -31,4 +31,9 @@
 - 报告已补充当前结论并重新打开：`D:\temp\architecture-review-20260827-192438.html`。未运行测试，因本轮为只读实现核对且未授权修改。
 - 状态：本轮查询与架构扫描闭环，保留任务记录待提交；代码、配置和项目文档均未修改。
 - 提交运行时核验（2026-08-27）：按 `auto-commit` 将提交脚本归类为 `standalone_script`，使用已验证 `D:\anaconda3\envs\base_python3.12\python.exe`；probe 返回 `sys.executable` 同路径、`os.name=nt`、Python 3.12.9。
+- 用户继续（2026-08-27）：在确认当前路径根与 `config.paths` 自动创建需求无需代码修改后，要求继续架构候选收敛；保持只读方案讨论，实施授权另行确认。
+- 当前 grilling 问题 6：Candidate 03 的 plain-data projection 是否保留现有 standard envelope 与 raw 输出两种持久化形态，只收拢转换 owner，不改变公开 schema/API。
+- grilling 确认 6：用户选择 `1`，Candidate 03 保留标准封装与 raw 两种外部形态，只统一 plain-data projection owner，不改变现有 schema/API。
+- 当前 grilling 问题 7：确认 Candidate 03 的职责 owner；在保留 ADR-001 的 `FileOperations` 文件生命周期与 `yaml_codec` 编解码职责前，由 projection module 负责递归 plain data、system-key 过滤和 envelope/raw 组装，还是继续由 Core/FileOperations 分担。
+- 用户继续（2026-08-27）：未对当前问题 7 给出编号确认，仅要求继续；问题 7 保持待确认，推荐方案只作为工作假设，不视为已批准设计或实施授权。
 - 状态：已完成扫描与报告；进入 grilling，先评估四项候选及 `SerializablePathsNode` 序列化兼容影响。
