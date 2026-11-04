@@ -1,0 +1,35 @@
+{
+  "contract": "joint-publication-manifest-v1",
+  "title": "config_manager 只读通用层与可写专用层双文件配置",
+  "jointDocuments": [
+    {
+      "label": "联合方案决策（config_manager 部分）",
+      "path": "docs/01_Sprint记录/Sprint01/00-联合方案决策/2026-11-04/联合方案决策.md"
+    }
+  ],
+  "formalDocument": "docs/01_Sprint记录/Sprint01/00-联合方案决策/2026-11-04/正式发布与DAG.md",
+  "drafts": [
+    {
+      "draftKey": "cm-dual-config",
+      "type": "US",
+      "priority": "P1",
+      "title": "`get_config_manager` 支持只读通用层与可写专用层",
+      "atomicResult": "get_config_manager 新增 base_config_path：加载时通用层与专用层逐层合并、专用覆盖通用；保存只把与通用层不同或通用层缺少的键写入专用文件，通用文件始终不写；无 base_config_path 的调用行为不变。",
+      "acceptance": [
+        "无 base_config_path 时既有测试套件全部通过。",
+        "两层合并：专用层同名标量覆盖通用层，嵌套 mapping 逐层合并，列表整体替换。",
+        "保存后专用文件只含差集键；通用文件字节在保存、autosave、初始化回写前后完全一致。",
+        "watch=True 与 base_config_path 同时给出时抛 ValueError。",
+        "test_mode 只复制专用层，通用层不变，get_serializable_data() 含合并后的完整键。",
+        "通用层缺失时 get_config_manager 返回 None。"
+      ]
+    }
+  ],
+  "relations": [
+    { "draftKey": "cm-dual-config", "peerIssue": "S1-01" },
+    { "draftKey": "cm-dual-config", "peerIssue": "S1-02" },
+    { "draftKey": "cm-dual-config", "peerIssue": "S1-03" },
+    { "draftKey": "cm-dual-config", "peerIssue": "S1-04" },
+    { "draftKey": "cm-dual-config", "peerIssue": "S1-05" }
+  ]
+}
