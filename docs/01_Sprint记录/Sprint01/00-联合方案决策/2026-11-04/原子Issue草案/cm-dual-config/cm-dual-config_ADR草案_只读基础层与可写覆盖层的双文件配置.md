@@ -1,19 +1,21 @@
-# NEW-CM-LAYERED-CONFIG: 只读基础层与可写覆盖层的双文件配置
+# ADR-003：只读基础层与可写覆盖层的双文件配置
 
-- 状态：草案（approval_draft），待用户最终批准
-- 作用域：config_manager 项目
-- 相关方案：base_env `docs/01_Sprint记录/Sprint06/00-联合方案决策/2026-11-04/联合方案决策.md` §5.2；切片 `cm-dual-config`
+**状态**：已接受
+**日期**：2026-11-04
+**决策者**：Tony（批准记录 `docs/01_Sprint记录/Sprint01/00-联合方案决策/2026-11-04/批准记录.md`，草案集 `b4997e7c`）
+**相关 Issue**：`S1-06`
+**相关文档**：`docs/01_Sprint记录/Sprint01/S1-06/S1-06_方案决策.md`；base_env `docs/01_Sprint记录/Sprint06/00-联合方案决策/2026-11-04/联合方案决策.md` §5.2
 
-## 生命周期请求
+## 生命周期记录
 
-- request_id：`CM-LAYERED-CONFIG-CREATE-DRAFT-01`
-- source_issue：`cm-dual-config`（正式编号发布时登记）
-- source_stage：`solution-decision`
-- phase / action / scope：`approval_draft / create / project`
-- target_adr：`NEW-CM-LAYERED-CONFIG`
-- executor：`architecture-design`
-- rationale：消费项目需要「多入口共用的通用配置 + 单入口专用配置」；现有 ConfigManager 只认一个文件并整份回写，消费方若自行合并会复制配置状态 owner。
-- approval_locator：空（草案阶段）
+- `request_id`：`S1-06-ADR-003-CREATE-FINAL`
+- `source_issue`：`S1-06`（联合草案切片 `cm-dual-config`）
+- `source_stage`：`solution-decision`
+- `phase / action / scope`：`approval_final / create / project`
+- `target_adr`：`ADR-003`
+- `executor`：`architecture-design`
+- `rationale`：消费项目需要「多入口共用的通用配置 + 单入口专用配置」；现有 ConfigManager 只认一个文件并整份回写，消费方若自行合并会复制配置状态 owner。
+- `approval_locator`：`docs/01_Sprint记录/Sprint01/00-联合方案决策/2026-11-04/批准记录.md`
 
 ## 背景
 
