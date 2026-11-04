@@ -1,0 +1,54 @@
+{
+  "draft_key": "S1-06",
+  "scope_repo": "config_manager",
+  "scope_branch": "sprint01",
+  "state": "approved",
+  "source_document": "docs/01_Sprint记录/Sprint01/00-联合方案决策/2026-11-04/原子Issue草案/cm-dual-config/方案决策草案.md",
+  "issue_blockers": [],
+  "implementation_items": [
+    {
+      "objective": "新增两层合并与差集纯函数。",
+      "owner_surface": "src/config_manager/core/layered_config.py",
+      "allowed_scope": "该新文件与其单元测试。",
+      "completion_evidence": "test_layered_config.py 中合并/差集用例通过。",
+      "required_behavior_checks": [
+        "标量覆盖",
+        "嵌套合并",
+        "列表替换",
+        "相等键省略",
+        "空 mapping 省略",
+        "输入不被修改"
+      ],
+      "item_dependencies": []
+    },
+    {
+      "objective": "ConfigManagerCore 加载两层并按差集保存。",
+      "owner_surface": "src/config_manager/core/manager.py",
+      "allowed_scope": "initialize、_load、save、_delayed_save、_save_config_only、reload、初始化备份路径选择。",
+      "completion_evidence": "分层加载与保存用例通过；通用层文件哈希前后一致。",
+      "required_behavior_checks": [
+        "标准与原始格式通用层",
+        "通用层缺失返回加载失败",
+        "first_start_time 与 paths 只写专用层",
+        "类型提示差集"
+      ],
+      "item_dependencies": [
+        "I01"
+      ]
+    },
+    {
+      "objective": "公开参数、watch 校验、缓存键与 test_mode。",
+      "owner_surface": "src/config_manager/config_manager.py",
+      "allowed_scope": "get_config_manager 及其 test_mode 路径。",
+      "completion_evidence": "watch 冲突、缓存键、test_mode 用例通过；既有全套测试通过。",
+      "required_behavior_checks": [
+        "无 base_config_path 行为不变",
+        "ValueError 文本",
+        "test_mode 只复制专用层"
+      ],
+      "item_dependencies": [
+        "I02"
+      ]
+    }
+  ]
+}
