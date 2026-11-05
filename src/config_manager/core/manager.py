@@ -18,6 +18,7 @@ from .watcher import FileWatcher
 from .call_chain import CallChainTracker
 from .path_configuration import PathConfigurationManager
 from .cross_platform_paths import convert_to_multi_platform_config, get_platform_path
+from .layered_config import diff_from_base, merge_layers
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,10 @@ class ConfigManagerCore(ConfigNode):
         # 基本属性
         self._original_config_path = None
         self._config_path = None
+        self._base_config_path = None
+        self._base_data = {}
+        self._base_type_hints = {}
+        self._base_load_failed = False
         self._watch = False
         self._auto_create = True
         self._type_hints = {}
@@ -104,7 +109,7 @@ class ConfigManagerCore(ConfigNode):
         return super().__getattr__(name)
 
     def initialize(self, config_path: str, watch: bool, auto_create: bool, autosave_delay: float,
-                   first_start_time: datetime = None) -> bool:
+                   first_start_time: datetime = None, base_config_path: str = None) -> bool:
         """初始化配置管理器"""
         # 重复初始化检测
         with self._initialization_lock:
@@ -157,12 +162,23 @@ class ConfigManagerCore(ConfigNode):
         # 设置基本属性
         self._original_config_path = config_path
         self._config_path = self._path_resolver.resolve_config_path(config_path)
+        self._base_config_path = (
+            self._path_resolver.resolve_config_path(base_config_path)
+            if base_config_path is not None
+            else None
+        )
         self._watch = watch
         self._auto_create = auto_create
 
         try:
             # 加载配置
             loaded = self._load()
+
+            # 通用层是只读前置依赖。失败时在读取专用层、自动创建、
+            # 首次启动时间、路径派生和任何保存入口之前短路。
+            if self._base_config_path is not None and self._base_load_failed:
+                logger.error(f"通用配置加载失败: {self._base_config_path}")
+                return False
 
             # 如果加载失败且配置文件存在，说明是解析错误，不应该覆盖
             if not loaded and os.path.exists(self._config_path):
@@ -212,7 +228,7 @@ class ConfigManagerCore(ConfigNode):
                 self._need_backup = False
             
             # 启动文件监视（在所有初始化完成后）
-            if watch and self._watcher:
+            if watch and self._watcher and getattr(self, '_config_loaded_successfully', False):
                 # 在测试模式下，如果原始配置路径不同于当前配置路径，监视原始路径
                 watch_path = self._config_path
                 true_original = getattr(self, '_true_original_config_path', None)
@@ -256,78 +272,95 @@ class ConfigManagerCore(ConfigNode):
             except Exception as e:
                 print(f"获取加载调用链失败: {e}")
 
-        loaded = self._file_ops.load_config(
+        self._base_load_failed = False
+
+        # Base is always read-only and never auto-created.  Do not load the
+        # overlay after a base failure so initialization can fail closed.
+        base_data = {}
+        base_type_hints = {}
+        if self._base_config_path is not None:
+            loaded_base = self._file_ops.load_config(
+                self._base_config_path,
+                False,
+                self._call_chain_tracker,
+            )
+            if loaded_base is None:
+                self._base_load_failed = True
+                self._config_loaded_successfully = False
+                if ENABLE_CALL_CHAIN_DISPLAY:
+                    logger.debug("通用配置加载失败")
+                return False
+            base_data, base_type_hints = self._decode_loaded_config(loaded_base)
+
+        loaded_overlay = self._file_ops.load_config(
             self._config_path,
             self._auto_create,
-            self._call_chain_tracker
+            self._call_chain_tracker,
         )
 
-        # 修复：None表示加载失败，空字典{}表示成功加载空配置
-        if loaded is not None:
-            self._data.clear()
-
-            # 检查是否为标准格式（包含__data__节点）
-            if '__data__' in loaded:
-                # 标准格式：合并__data__节点和顶层别名引用键
-                raw_data = loaded.get('__data__', {}).copy()
-                self._type_hints = loaded.get('__type_hints__', {})
-                
-                # 添加顶层的别名引用键（非系统键），但__data__中的值具有更高优先级
-                for key, value in loaded.items():
-                    if not key.startswith('__') and key not in raw_data:
-                        raw_data[key] = value
-                
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    logger.debug("检测到标准格式，加载__data__节点和顶层别名引用")
-            else:
-                # 原始格式：直接使用整个loaded数据，但排除内部键
-                raw_data = {}
-                for key, value in loaded.items():
-                    # 排除ConfigManager的内部键
-                    if not key.startswith('__'):
-                        raw_data[key] = value
-                self._type_hints = {}
-                if ENABLE_CALL_CHAIN_DISPLAY:
-                    logger.debug("检测到原始格式，直接加载配置数据")
-
-            # 重建数据结构（过滤系统键，防止污染）
-            if raw_data:
-                # 定义需要过滤的系统键
-                system_keys = {'__type_hints__', '__data__', 'debug_mode'}
-                
-                for key, value in raw_data.items():
-                    # 过滤系统键，防止从污染文件加载时污染内存数据结构
-                    if key in system_keys:
-                        if ENABLE_CALL_CHAIN_DISPLAY:
-                            logger.debug(f"过滤加载时的系统键污染: {key}")
-                        continue
-                        
-                    if isinstance(value, dict):
-                        # 递归转换字典中的字符串化数据
-                        converted_dict = self._convert_stringified_data_recursive(value)
-                        self._data[key] = ConfigNode(converted_dict)
-                    else:
-                        # 检查并转换字符串化的列表
-                        converted_value = self._convert_stringified_data(value)
-                        self._data[key] = converted_value
-
+        # None means loading failed; an empty mapping is a successful empty
+        # configuration and must not be confused with failure.
+        if loaded_overlay is None:
+            self._config_loaded_successfully = False
             if ENABLE_CALL_CHAIN_DISPLAY:
-                logger.debug("配置加载完成")
+                logger.debug("专用配置加载失败")
+            return False
 
-            # 标记配置加载成功
-            self._config_loaded_successfully = True
-            
-            # 更新 _base_dir
-            self._update_base_dir()
-            
-            return True
+        overlay_data, overlay_type_hints = self._decode_loaded_config(loaded_overlay)
+        merged_data = (
+            merge_layers(base_data, overlay_data)
+            if self._base_config_path is not None
+            else overlay_data
+        )
+        merged_type_hints = {
+            **base_type_hints,
+            **overlay_type_hints,
+        }
+
+        self._data.clear()
+        for key, value in merged_data.items():
+            if isinstance(value, dict):
+                self._data[key] = ConfigNode(value)
+            else:
+                self._data[key] = value
+
+        self._base_data = base_data
+        self._base_type_hints = base_type_hints
+        self._type_hints = merged_type_hints
+        self._config_loaded_successfully = True
+        self._update_base_dir()
 
         if ENABLE_CALL_CHAIN_DISPLAY:
-            logger.debug("配置加载失败")
+            logger.debug("配置加载完成")
+        return True
 
-        # 标记配置加载失败
-        self._config_loaded_successfully = False
-        return False
+    def _decode_loaded_config(self, loaded: Mapping[str, Any]) -> tuple[dict, dict]:
+        """Decode the existing standard/raw YAML envelopes into plain data."""
+        if not isinstance(loaded, Mapping):
+            return {}, {}
+
+        if '__data__' in loaded and isinstance(loaded.get('__data__'), Mapping):
+            raw_data = dict(loaded.get('__data__', {}))
+            raw_hints = loaded.get('__type_hints__', {})
+            type_hints = dict(raw_hints) if isinstance(raw_hints, Mapping) else {}
+            for key, value in loaded.items():
+                if not key.startswith('__') and key not in raw_data:
+                    raw_data[key] = value
+        else:
+            raw_data = {
+                key: value
+                for key, value in loaded.items()
+                if not key.startswith('__')
+            }
+            type_hints = {}
+
+        converted_data = {}
+        system_keys = {'__type_hints__', '__data__', 'debug_mode'}
+        for key, value in raw_data.items():
+            if key in system_keys:
+                continue
+            converted_data[key] = self._convert_stringified_data_recursive(value)
+        return converted_data, type_hints
 
     def save(self):
         """保存配置到文件"""
@@ -352,13 +385,7 @@ class ConfigManagerCore(ConfigNode):
                 except Exception as e:
                     print(f"获取保存调用链失败: {e}")
 
-            # 获取可序列化的数据，过滤掉无法序列化的对象
-            serializable_data = self._get_serializable_data()
-            
-            data_to_save = {
-                '__data__': serializable_data,
-                '__type_hints__': self._type_hints
-            }
+            data_to_save = self._get_save_payload()
 
             backup_path = self._file_ops.get_backup_path(
                 self._config_path,
@@ -435,13 +462,7 @@ class ConfigManagerCore(ConfigNode):
         if ENABLE_CALL_CHAIN_DISPLAY:
             logger.debug("=== 静默保存配置（无备份） ===")
 
-        # 获取可序列化的数据，过滤掉无法序列化的对象
-        serializable_data = self._get_serializable_data()
-        
-        data_to_save = {
-            '__data__': serializable_data,
-            '__type_hints__': self._type_hints
-        }
+        data_to_save = self._get_save_payload()
 
         # 通知文件监视器即将进行内部保存
         if self._watcher:
@@ -529,14 +550,8 @@ class ConfigManagerCore(ConfigNode):
             backup_time = getattr(self, '_backup_time', datetime.now())
             backup_path = self._file_ops.get_backup_path(self._config_path, backup_time, self)
             
-            # 获取可序列化的数据
-            serializable_data = self._get_serializable_data()
-            
-            # 准备要备份的数据
-            data_to_backup = {
-                '__data__': serializable_data,
-                '__type_hints__': self._type_hints
-            }
+            # 准备与所有其他保存入口一致的差集 payload
+            data_to_backup = self._get_save_payload()
             
             # 只创建备份文件，不保存主配置文件
             backup_success = self._file_ops.create_backup_only(backup_path, data_to_backup)
@@ -617,6 +632,47 @@ class ConfigManagerCore(ConfigNode):
             return {}
         finally:
             self._serialization_depth -= 1
+
+    def _get_save_payload(self) -> dict:
+        """Build the payload for the writable overlay file."""
+        serializable_data = self._get_serializable_data()
+        if self._base_config_path is not None:
+            serializable_data = diff_from_base(serializable_data, self._base_data)
+            type_hints = self._filter_overlay_type_hints(
+                self._type_hints,
+                serializable_data,
+            )
+        else:
+            type_hints = dict(self._type_hints)
+        return {
+            '__data__': serializable_data,
+            '__type_hints__': type_hints,
+        }
+
+    @staticmethod
+    def _filter_overlay_type_hints(type_hints: Mapping[str, Any], diff: Mapping[str, Any]) -> dict:
+        """Keep hints whose dotted path belongs to an overlay diff path."""
+        changed_paths = set()
+
+        def collect(mapping: Mapping[str, Any], prefix: str = '') -> None:
+            for key, value in mapping.items():
+                path = f'{prefix}.{key}' if prefix else str(key)
+                if isinstance(value, Mapping) and value:
+                    collect(value, path)
+                else:
+                    changed_paths.add(path)
+
+        collect(diff)
+        filtered = {}
+        for key, value in type_hints.items():
+            hint_path = str(key)
+            if any(
+                changed == hint_path
+                or hint_path.startswith(f'{changed}.')
+                for changed in changed_paths
+            ):
+                filtered[key] = value
+        return filtered
 
     def _convert_stringified_data(self, value):
         """检测并转换字符串化的数据结构（如字符串化的列表）"""

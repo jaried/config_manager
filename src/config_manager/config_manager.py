@@ -38,25 +38,36 @@ class ConfigManager(ConfigManagerCore):
     def __new__(cls, config_path: str = None,
                 watch: bool = True, auto_create: bool = False,
                 autosave_delay: float = 0.1, first_start_time: datetime = None,
-                test_mode: bool = False, original_config_path: str = None):
+                test_mode: bool = False, original_config_path: str = None,
+                base_config_path: str = None):
         
         # 设置测试模式标志
         cls._test_mode = test_mode
         
         if test_mode:
             # 测试模式：使用多例模式
-            return cls._create_test_instance(config_path, watch, auto_create, autosave_delay, first_start_time, original_config_path)
+            return cls._create_test_instance(
+                config_path, watch, auto_create, autosave_delay, first_start_time,
+                original_config_path, base_config_path=base_config_path,
+            )
         else:
             # 生产模式：使用基于路径的实例缓存模式  
-            return cls._create_production_instance(config_path, watch, auto_create, autosave_delay, first_start_time)
+            return cls._create_production_instance(
+                config_path, watch, auto_create, autosave_delay, first_start_time,
+                base_config_path=base_config_path,
+            )
 
     @classmethod
     def _create_test_instance(cls, config_path: str, watch: bool, auto_create: bool, 
-                             autosave_delay: float, first_start_time: datetime, original_config_path: str = None, cache_key: str = None):
+                             autosave_delay: float, first_start_time: datetime,
+                             original_config_path: str = None, cache_key: str = None,
+                             base_config_path: str = None):
         """创建测试模式实例（多例模式）"""
         # 使用传入的缓存键或生成新的缓存键
         if cache_key is None:
-            cache_key = cls._generate_test_cache_key(config_path, first_start_time)
+            cache_key = cls._generate_test_cache_key(
+                config_path, first_start_time, base_config_path
+            )
         
         if cache_key not in cls._instances:
             with cls._thread_lock:
@@ -74,7 +85,9 @@ class ConfigManager(ConfigManagerCore):
                         instance._true_original_config_path = original_config_path
                     
                     success = instance.initialize(
-                        config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
+                        config_path, watch, auto_create, autosave_delay,
+                        first_start_time=first_start_time,
+                        base_config_path=base_config_path,
                     )
                     
                     if not success:
@@ -87,10 +100,11 @@ class ConfigManager(ConfigManagerCore):
 
     @classmethod
     def _create_production_instance(cls, config_path: str, watch: bool, auto_create: bool, 
-                                   autosave_delay: float, first_start_time: datetime):
+                                   autosave_delay: float, first_start_time: datetime,
+                                   base_config_path: str = None):
         """创建生产模式实例（基于路径的实例缓存模式）"""
         # 生成缓存键
-        cache_key = cls._generate_production_cache_key(config_path)
+        cache_key = cls._generate_production_cache_key(config_path, base_config_path)
         
         if cache_key not in cls._production_instances:
             with cls._thread_lock:
@@ -104,7 +118,9 @@ class ConfigManager(ConfigManagerCore):
                     instance._test_mode = False
                     
                     success = instance.initialize(
-                        config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time
+                        config_path, watch, auto_create, autosave_delay,
+                        first_start_time=first_start_time,
+                        base_config_path=base_config_path,
                     )
                     
                     if not success:
@@ -117,30 +133,43 @@ class ConfigManager(ConfigManagerCore):
         return cls._production_instances[cache_key]
     
     @classmethod
-    def _generate_production_cache_key(cls, config_path: str) -> str:
+    def _generate_production_cache_key(
+            cls, config_path: str, base_config_path: str = None
+    ) -> str:
         """生成生产模式的缓存键，基于配置文件的绝对路径"""
         try:
             if config_path is not None:
                 # 显式路径：使用绝对路径，标准化路径分隔符
                 abs_path = os.path.abspath(config_path)
                 normalized_path = abs_path.replace('\\', '/')
-                return f"production:{normalized_path}"
+                cache_key = f"production:{normalized_path}"
             else:
                 # 默认路径：基于当前工作目录
                 cwd = os.getcwd()
                 default_config_path = os.path.join(cwd, "src", "config", "config.yaml")
                 abs_path = os.path.abspath(default_config_path)
                 normalized_path = abs_path.replace('\\', '/')
-                return f"production:{normalized_path}"
+                cache_key = f"production:{normalized_path}"
+            if base_config_path is not None:
+                base_abs_path = os.path.abspath(base_config_path)
+                base_normalized = base_abs_path.replace('\\', '/')
+                cache_key = f"{cache_key}:base:{base_normalized}"
+            return cache_key
         except Exception:
             # 如果路径解析失败，生成一个基于输入参数的缓存键
             if config_path is not None:
-                return f"production:explicit:{config_path}"
+                cache_key = f"production:explicit:{config_path}"
             else:
-                return f"production:default:{os.getcwd()}"
+                cache_key = f"production:default:{os.getcwd()}"
+            if base_config_path is not None:
+                cache_key = f"{cache_key}:base:{base_config_path}"
+            return cache_key
 
     @classmethod  
-    def _generate_test_cache_key(cls, config_path: str, first_start_time: datetime = None) -> str:
+    def _generate_test_cache_key(
+            cls, config_path: str, first_start_time: datetime = None,
+            base_config_path: str = None
+    ) -> str:
         """生成测试模式的缓存键，同一测试用例内相同路径返回相同键，不同测试用例间隔离"""
         try:
             # 获取测试用例标识符实现测试间隔离
@@ -164,6 +193,9 @@ class ConfigManager(ConfigManagerCore):
                 normalized_dir = os.path.abspath(current_dir).replace('\\', '/')
                 base_key = f"explicit:{normalized_dir}:test:{test_identifier}{time_suffix}"
             
+            if base_config_path is not None:
+                base_abs_path = os.path.abspath(base_config_path)
+                base_key = f"{base_key}:base:{base_abs_path.replace('\\', '/')}"
             return base_key
         except Exception:
             # 如果出错，生成一个基于测试标识符的缓存键
@@ -174,7 +206,10 @@ class ConfigManager(ConfigManagerCore):
                     time_suffix = f":{first_start_time.strftime('%Y%m%d_%H%M%S')}"
                 except Exception:
                     pass
-            return f"fallback:test:{test_identifier}{time_suffix}"
+            fallback = f"fallback:test:{test_identifier}{time_suffix}"
+            if base_config_path is not None:
+                fallback = f"{fallback}:base:{base_config_path}"
+            return fallback
     
     @classmethod
     def _get_test_identifier(cls) -> str:
@@ -216,7 +251,8 @@ class ConfigManager(ConfigManagerCore):
     def __init__(self, config_path: str = None,
                  watch: bool = False, auto_create: bool = False,
                  autosave_delay: float = 0.1, first_start_time: datetime = None,
-                 test_mode: bool = False, original_config_path: str = None):
+                 test_mode: bool = False, original_config_path: str = None,
+                 base_config_path: str = None):
         """初始化配置管理器，单例模式下可能被多次调用"""
         # 单例模式下，__init__可能被多次调用，但只有第一次有效
         pass
@@ -1025,7 +1061,8 @@ def get_config_manager(
         auto_create: bool = False,
         autosave_delay: float = None,
         first_start_time: datetime = None,
-        test_mode: bool = False
+        test_mode: bool = False,
+        base_config_path: str = None,
 ) -> ConfigManager | None:
     """
     获取配置管理器单例
@@ -1037,10 +1074,14 @@ def get_config_manager(
         autosave_delay: 自动保存延迟时间（秒）
         first_start_time: 首次启动时间
         test_mode: 测试模式开关，为True时创建完全隔离的测试环境
+        base_config_path: 只读通用层配置文件路径
 
     Returns:
         ConfigManager 实例，如果初始化失败则返回None
     """
+    if base_config_path is not None and watch:
+        raise ValueError("base_config_path requires watch=False")
+
     # 测试模式特殊处理：如果当前有生产模式实例，需要清理
     if test_mode and ConfigManager._production_instances:
         print("⚠️  测试模式：清理现有生产模式实例")
@@ -1050,7 +1091,9 @@ def get_config_manager(
     if test_mode:
         # 测试模式下，先检查缓存，避免重复生成测试环境
         original_config_path = config_path  # 保存原始路径
-        cache_key = ConfigManager._generate_test_cache_key(original_config_path, first_start_time)
+        cache_key = ConfigManager._generate_test_cache_key(
+            original_config_path, first_start_time, base_config_path
+        )
         
         # 如果缓存中已有实例，直接返回
         if cache_key in ConfigManager._instances:
@@ -1061,7 +1104,7 @@ def get_config_manager(
         # 直接调用_create_test_instance，传入正确的缓存键避免重复计算
         return ConfigManager._create_test_instance(
             test_config_path, watch, True, autosave_delay, first_start_time, 
-            original_config_path, cache_key
+            original_config_path, cache_key, base_config_path
         )
     else:
         # 非测试模式：智能检测测试环境 - 如果配置路径包含临时目录，自动启用auto_create
@@ -1079,10 +1122,11 @@ def get_config_manager(
     # 在测试模式下传递原始配置路径
     if test_mode:
         manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
-                                test_mode=test_mode, original_config_path=original_config_path)
+                                test_mode=test_mode, original_config_path=original_config_path,
+                                base_config_path=base_config_path)
     else:
         manager = ConfigManager(config_path, watch, auto_create, autosave_delay, first_start_time=first_start_time,
-                                test_mode=test_mode)
+                                test_mode=test_mode, base_config_path=base_config_path)
 
     if manager:
         # 修复：只在首次初始化时设置项目路径，避免重复初始化
