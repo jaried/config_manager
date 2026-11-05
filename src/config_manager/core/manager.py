@@ -668,7 +668,6 @@ class ConfigManagerCore(ConfigNode):
             hint_path = str(key)
             if any(
                 changed == hint_path
-                or changed.startswith(f'{hint_path}.')
                 or hint_path.startswith(f'{changed}.')
                 for changed in changed_paths
             ):

@@ -21,7 +21,7 @@ def merge_layers(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[st
         if isinstance(base_value, Mapping) and isinstance(value, Mapping):
             merged[key] = merge_layers(base_value, value)
         else:
-            merged[key] = deepcopy(value)
+            merged[key] = _copy_value(value)
     return merged
 
 
@@ -36,7 +36,7 @@ def diff_from_base(merged: Mapping[str, Any], base: Mapping[str, Any]) -> dict[s
     diff: dict[str, Any] = {}
     for key, value in merged.items():
         if key not in base:
-            diff[key] = deepcopy(value)
+            diff[key] = _copy_value(value)
             continue
 
         base_value = base[key]
@@ -45,11 +45,22 @@ def diff_from_base(merged: Mapping[str, Any], base: Mapping[str, Any]) -> dict[s
             if nested:
                 diff[key] = nested
         elif value != base_value:
-            diff[key] = deepcopy(value)
+            diff[key] = _copy_value(value)
     return diff
 
 
 def _copy_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
     """Deep-copy a mapping into an ordinary dictionary."""
 
-    return {key: deepcopy(item) for key, item in value.items()}
+    return {key: _copy_value(item) for key, item in value.items()}
+
+
+def _copy_value(value: Any) -> Any:
+    """Recursively copy mappings as ordinary dicts and preserve other types."""
+    if isinstance(value, Mapping):
+        return {key: _copy_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_copy_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_copy_value(item) for item in value)
+    return deepcopy(value)
